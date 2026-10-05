@@ -17,9 +17,9 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="font-sans pb-20 select-none">
+<body class="font-sans pb-24 select-none">
 
-    <!-- Top Fixed Header (Gradient Blue + White Contrast) -->
+    <!-- Top Fixed Header -->
     <header class="gradient-header text-white p-3 sticky top-0 z-40 shadow-xl border-b border-blue-500/30">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2.5">
@@ -43,10 +43,24 @@
 
     <main class="max-w-md mx-auto p-3 space-y-2.5">
 
+        <!-- 🎁 20 ETB WELCOME BONUS BANNER -->
+        <div id="welcomeBonusBanner" class="p-3 bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-500/20 rounded-2xl border border-yellow-500/40 flex justify-between items-center shadow-md">
+            <div class="flex items-center gap-2.5">
+                <span class="text-2xl animate-bounce">🎁</span>
+                <div>
+                    <h4 class="font-black text-xs text-yellow-300">የ 20 ብር ነፃ ቦነስ!</h4>
+                    <p class="text-[10px] text-slate-300">አሁኑኑ ይውሰዱና 2 ዙር በነፃ ይጫወቱ</p>
+                </div>
+            </div>
+            <button onclick="claimWelcomeBonus()" class="gradient-blue text-white px-3.5 py-1.5 rounded-xl font-black text-xs shadow-md active:scale-95 transition">
+                ውሰድ
+            </button>
+        </div>
+
         <!-- ================= TAB 1: BINGO ARENA ================= -->
         <section id="tab-game" class="space-y-2.5">
             
-            <!-- Compact Pot & Timer Bar (No Space Wasted) -->
+            <!-- Compact Pot & Timer Bar -->
             <div class="grid grid-cols-2 gap-2">
                 <div class="glass-box p-2.5 rounded-2xl text-center relative overflow-hidden border border-blue-500/30 shadow-sm">
                     <p class="text-[9px] font-bold text-slate-300 uppercase tracking-wider">የዙሩ ድራሽ (Pot)</p>
@@ -59,12 +73,29 @@
                 </div>
             </div>
 
-            <!-- 1. SELECTION STAGE: ALL 60 CARDS VISIBLE DIRECTLY WITHOUT SCROLLING -->
-            <div id="cardPickerSection" class="space-y-1.5">
+            <!-- 1. SELECTION STAGE: CARDS UP TO 999 WITH DIRECT INPUT & FAST GRID -->
+            <div id="cardPickerSection" class="space-y-2">
+                
+                <!-- Pick Card by Number (1 to 999) & Random Pick -->
+                <div class="glass-box p-2.5 rounded-2xl border border-blue-500/30 space-y-1.5 shadow-sm">
+                    <div class="flex justify-between items-center text-[11px] font-bold">
+                        <span class="text-white flex items-center gap-1"><i class="fa-solid fa-ticket text-yellow-400"></i> ካርድ ይምረጡ (1 - 999)</span>
+                        <span class="text-yellow-400 font-black">10 ETB</span>
+                    </div>
+                    <div class="flex gap-1.5">
+                        <input id="directCardInput" type="number" min="1" max="999" placeholder="የካርድ ቁጥር (ለምሳሌ 232)" class="w-full text-xs font-bold p-2 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-blue-500">
+                        <button onclick="buyCustomCard()" class="gradient-blue text-white px-3 py-2 rounded-xl font-black text-xs shadow-md whitespace-nowrap active:scale-95 transition">
+                            ቁረጥ
+                        </button>
+                        <button onclick="buyRandomCard()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-xl font-black text-xs shadow-md whitespace-nowrap active:scale-95 transition flex items-center gap-1">
+                            <i class="fa-solid fa-shuffle"></i> በዘፈቀደ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Fast Selection Grid (Quick Access Cards) -->
                 <div class="flex justify-between items-center px-1">
-                    <h3 class="font-black text-xs text-white flex items-center gap-1">
-                        <i class="fa-solid fa-layer-group text-blue-400"></i> ካርድ ይምረጡ (20 ETB)
-                    </h3>
+                    <span class="text-[10px] text-slate-400 font-bold">ፈጣን ምርጫ ካርዶች</span>
                     <div class="flex gap-2 text-[9px] font-bold">
                         <span class="flex items-center gap-1 text-blue-300"><span class="w-2 h-2 rounded-full bg-blue-500"></span> ክፍት</span>
                         <span class="flex items-center gap-1 text-emerald-300"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> የእኛ</span>
@@ -72,13 +103,12 @@
                     </div>
                 </div>
 
-                <!-- 60 Card Tight Grid (6 Columns x 10 Rows - Fits Entirely on Screen) -->
                 <div id="cardGrid" class="grid grid-cols-6 gap-1.5 bg-slate-900/90 p-2.5 rounded-2xl border border-blue-500/20 shadow-md">
-                    <!-- Cards 1-60 injected here -->
+                    <!-- Cards 1-60 injected here for instant 1-tap buy -->
                 </div>
             </div>
 
-            <!-- 2. PLAYING STAGE: 60 CARDS DISAPPEAR -> LIVE CALLING & BINGO BOARD -->
+            <!-- 2. PLAYING STAGE: BINGO CALLING & LIVE MASTER BOARD -->
             <div id="playingBoardContainer" class="hidden space-y-2.5">
                 
                 <!-- Current Ball Sphere -->
@@ -95,9 +125,7 @@
                                 <span class="text-[9px] font-bold text-slate-400 uppercase">የወጡ ቁጥሮች</span>
                                 <span class="text-xs font-black text-blue-400"><span id="calledCount">0</span>/75</span>
                             </div>
-                            <div id="recentBalls" class="flex gap-1 flex-wrap max-h-12 overflow-y-auto no-scrollbar justify-start">
-                                <!-- Balls pills -->
-                            </div>
+                            <div id="recentBalls" class="flex gap-1 flex-wrap max-h-12 overflow-y-auto no-scrollbar justify-start"></div>
                         </div>
                     </div>
                 </div>
@@ -105,9 +133,7 @@
                 <!-- B-I-N-G-O 1-75 Master Board -->
                 <div class="glass-box p-2.5 rounded-2xl border border-slate-800 shadow-md">
                     <div class="text-center text-[10px] font-bold text-slate-400 mb-1.5">የጥሪ ሰሌዳ (B I N G O)</div>
-                    <div class="space-y-1 text-xs font-bold" id="masterBingoBoard">
-                        <!-- Rows for B, I, N, G, O -->
-                    </div>
+                    <div class="space-y-1 text-xs font-bold" id="masterBingoBoard"></div>
                 </div>
 
                 <!-- User's Active 5x5 Card -->
@@ -120,9 +146,7 @@
                         <div class="grid grid-cols-5 text-center font-black text-blue-400 text-xs mb-1">
                             <div>B</div><div>I</div><div>N</div><div>G</div><div>O</div>
                         </div>
-                        <div id="bingoBoard" class="grid grid-cols-5 gap-1 text-center font-black">
-                            <!-- 5x5 Grid Cells -->
-                        </div>
+                        <div id="bingoBoard" class="grid grid-cols-5 gap-1 text-center font-black"></div>
                     </div>
                 </div>
             </div>
@@ -130,8 +154,6 @@
 
         <!-- ================= TAB 2: WALLET ================= -->
         <section id="tab-wallet" class="hidden space-y-3">
-            
-            <!-- Side-by-Side Top Switch: DEPOSIT vs WITHDRAW -->
             <div class="grid grid-cols-2 gap-2 p-1 bg-slate-900 rounded-2xl border border-slate-800">
                 <button onclick="switchWalletView('deposit')" id="btnWalletDep" class="py-2 rounded-xl font-black text-xs gradient-blue text-white shadow-md transition">
                     <i class="fa-solid fa-arrow-down mr-1"></i> ማስገቢያ (Deposit)
@@ -149,7 +171,6 @@
                         <h3 class="font-black text-xs text-white">የክፍያ አካውንቶች</h3>
                     </div>
 
-                    <!-- CBE -->
                     <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
                         <div>
                             <span class="font-black text-xs text-white">CBE (ንግድ ባንክ)</span>
@@ -161,7 +182,6 @@
                         </button>
                     </div>
 
-                    <!-- Telebirr -->
                     <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
                         <div>
                             <span class="font-black text-xs text-white">Telebirr (ቴሌብር)</span>
@@ -174,7 +194,6 @@
                     </div>
                 </div>
 
-                <!-- Deposit SMS Form -->
                 <div class="glass-box p-3 rounded-2xl space-y-2.5 border border-blue-500/20">
                     <h4 class="font-black text-xs text-white flex items-center gap-1.5">
                         <i class="fa-solid fa-comment-sms text-green-400"></i> የ SMS ማረጋገጫ ማስገቢያ
@@ -208,7 +227,7 @@
                 </button>
             </div>
 
-            <!-- PROMO CODE BOX (AT BOTTOM) -->
+            <!-- PROMO CODE -->
             <div class="glass-box p-3 rounded-2xl border-2 border-dashed border-blue-500/40 space-y-2">
                 <div class="flex items-center gap-1.5">
                     <i class="fa-solid fa-gift text-yellow-400 text-sm"></i>
@@ -250,7 +269,7 @@
             <div id="historyList" class="space-y-2"></div>
         </section>
 
-        <!-- ================= TAB 5: SETTINGS (ቅንብሮች ⚙️) ================= -->
+        <!-- ================= TAB 5: SETTINGS ================= -->
         <section id="tab-settings" class="hidden space-y-3">
             <div class="glass-box p-3 rounded-2xl space-y-2.5 border border-slate-800">
                 <h3 class="font-black text-xs text-white flex items-center gap-2">
@@ -259,7 +278,7 @@
                 
                 <div class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800">
                     <div>
-                        <p class="font-bold text-xs text-white">የድምጽ ጥሪ (Voice Caller)</p>
+                        <p class="font-bold text-xs text-white">የሴት ድምጽ ጥሪ (Female Caller)</p>
                         <p class="text-[9px] text-slate-400">ቁጥሮች ሲወጡ "B 12" እያለች ትጣራለች</p>
                     </div>
                     <button onclick="toggleVoice()" id="btnVoiceToggle" class="px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30">
@@ -268,7 +287,6 @@
                 </div>
             </div>
 
-            <!-- Telegram Links -->
             <div class="glass-box p-3 rounded-2xl space-y-2.5 border border-slate-800">
                 <h3 class="font-black text-xs text-white flex items-center gap-2">
                     <i class="fa-brands fa-telegram text-blue-400"></i> ማህበራዊ ትስስር (Social Links)
@@ -299,17 +317,17 @@
                 </a>
             </div>
 
-            <!-- Rules -->
             <div class="glass-box p-3 rounded-2xl space-y-1.5 text-[10px] text-slate-400 border border-slate-800">
                 <h4 class="font-black text-white text-xs">የ Dash Bingo ህጎች</h4>
-                <p>• 1 ካርድ = 20 ETB።</p>
-                <p>• አግድም፣ ቁልቁል ወይም ሰያፍ (Diagonal) ቀድሞ የሞላ ተጫዋች ሙሉ ድራሹን ይወስዳል።</p>
+                <p>• 1 ካርድ = 10 ETB።</p>
+                <p>• ካርዶች ከ #1 እስከ #999 ይገኛሉ።</p>
+                <p>• አግድም፣ ቁልቁል ወይም ሰያፍ (Diagonal) ቀድሞ የሞላ ተጫዋች ሙሉ ድራሹን (80%) ይወስዳል።</p>
                 <p>• አነስተኛው የማውጣት መጠን 50 ETB ነው።</p>
             </div>
         </section>
     </main>
 
-    <!-- Bottom Navigation Bar -->
+    <!-- Bottom Navigation -->
     <nav class="fixed bottom-2 left-3 right-3 max-w-md mx-auto bg-slate-900/95 backdrop-blur-2xl border border-blue-500/30 shadow-2xl rounded-2xl flex justify-around p-1.5 z-50">
         <button onclick="switchTab('game')" class="nav-btn text-blue-400 flex flex-col items-center">
             <i class="fa-solid fa-gamepad text-base"></i>
@@ -333,9 +351,39 @@
         </button>
     </nav>
 
-    <!-- Voice Caller Engine -->
+    <!-- ================= FEMALE VOICE CALLER ENGINE ================= -->
     <script>
         let voiceActive = true;
+        let femaleVoice = null;
+
+        function loadFemaleVoice() {
+            if (!('speechSynthesis' in window)) return;
+            const voices = window.speechSynthesis.getVoices();
+            femaleVoice = voices.find(v => 
+                v.lang.startsWith('en') && (
+                    v.name.includes('Female') || 
+                    v.name.includes('Google US English') || 
+                    v.name.includes('Samantha') || 
+                    v.name.includes('Victoria') || 
+                    v.name.includes('Karen') ||
+                    v.name.includes('Natural') ||
+                    v.name.includes('Zira')
+                )
+            ) || voices.find(v => v.lang.startsWith('en'));
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = loadFemaleVoice;
+            loadFemaleVoice();
+        }
+
+        document.body.addEventListener('click', function initAudio() {
+            if ('speechSynthesis' in window && window.speechSynthesis.paused) {
+                window.speechSynthesis.resume();
+            }
+            document.body.removeEventListener('click', initAudio);
+        }, { once: true });
+
         function toggleVoice() {
             voiceActive = !voiceActive;
             const btn = document.getElementById('btnVoiceToggle');
@@ -360,9 +408,13 @@
             if (!voiceActive || !('speechSynthesis' in window)) return;
             const letter = getBingoLetter(num);
             window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(`${letter} ${num}`);
-            utterance.rate = 0.95;
-            utterance.pitch = 1.2;
+
+            const utterance = new SpeechSynthesisUtterance(`${letter} ... ${num}`);
+            if (femaleVoice) utterance.voice = femaleVoice;
+            utterance.pitch = 1.25; // ለስላሳ የሴት ድምጽ
+            utterance.rate = 0.88;  // የተረጋጋ አጠራር
+            utterance.volume = 1.0;
+
             window.speechSynthesis.speak(utterance);
         }
 
@@ -384,7 +436,7 @@
         }
     </script>
 
-    <!-- Main Logic -->
+    <!-- ================= MAIN GAME LOGIC ================= -->
     <script>
         const tg = window.Telegram?.WebApp;
         if(tg) tg.expand();
@@ -394,7 +446,7 @@
 
         const socket = io();
         let myActiveCard = null;
-        let mySelectedCards = new Set(); // Track our purchased cards
+        let mySelectedCards = new Set();
 
         async function syncUser() {
             try {
@@ -414,6 +466,24 @@
             } catch(e) {}
         }
         syncUser();
+
+        async function claimWelcomeBonus() {
+            try {
+                const res = await fetch('/api/user/claim-welcome', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ telegramId: user.id })
+                });
+                const data = await res.json();
+                alert(data.message || data.error);
+                if(data.success) {
+                    document.getElementById('welcomeBonusBanner').classList.add('hidden');
+                    syncUser();
+                }
+            } catch(e) {
+                alert("ስህተት ተፈጥሯል!");
+            }
+        }
 
         function switchTab(tabId) {
             ['game', 'wallet', 'leaderboard', 'profile', 'settings'].forEach(t => {
@@ -446,7 +516,7 @@
             }
         }
 
-        // Render All 60 Cards (Compact, Beautiful, Fits 100% On Screen)
+        // Render Quick Access Cards (1 - 60)
         const cardGrid = document.getElementById('cardGrid');
         for (let i = 1; i <= 60; i++) {
             const btn = document.createElement('button');
@@ -497,22 +567,34 @@
             socket.emit('buy_card', { telegramId: user.id, cardIndex: index });
         }
 
+        function buyCustomCard() {
+            const inputVal = document.getElementById('directCardInput').value;
+            const cardNum = parseInt(inputVal);
+            if (!cardNum || cardNum < 1 || cardNum > 999) {
+                return alert("እባክዎ ከ 1 እስከ 999 ያለ የካርድ ቁጥር ያስገቡ!");
+            }
+            buyCard(cardNum);
+            document.getElementById('directCardInput').value = '';
+        }
+
+        function buyRandomCard() {
+            const rand = Math.floor(Math.random() * 999) + 1;
+            buyCard(rand);
+        }
+
         socket.on('error_msg', (msg) => alert(msg));
 
         socket.on('game_tick', (data) => {
             document.getElementById('timer').innerText = data.countdown;
         });
 
-        // DISTINCT CARD COLORS (Green for US, Grey for OTHERS)
         socket.on('card_taken', (data) => {
             const btn = document.getElementById(`btn-card-${data.cardIndex}`);
             if(btn) {
                 btn.disabled = true;
                 if(mySelectedCards.has(data.cardIndex)) {
-                    // OUR CARD: Vibrant Emerald Green with Glow
                     btn.className = "h-8 rounded-xl text-xs font-black bg-emerald-600 text-white border-2 border-emerald-300 shadow-md shadow-emerald-500/40 flex items-center justify-center";
                 } else {
-                    // OTHER PERSON'S CARD: Muted Dark Grey
                     btn.className = "h-8 rounded-xl text-xs font-bold bg-slate-800/60 text-slate-500 border border-slate-700/50 cursor-not-allowed flex items-center justify-center opacity-70 line-through";
                 }
             }
@@ -523,7 +605,6 @@
             myActiveCard = data.numbers;
             mySelectedCards.add(data.cardIndex);
             
-            // Mark button as Ours (Emerald Green)
             const btn = document.getElementById(`btn-card-${data.cardIndex}`);
             if(btn) {
                 btn.className = "h-8 rounded-xl text-xs font-black bg-emerald-600 text-white border-2 border-emerald-300 shadow-md shadow-emerald-500/40 flex items-center justify-center";
@@ -535,7 +616,6 @@
             syncUser();
         });
 
-        // PLAY TIME: 60 CARDS DISAPPEAR -> CALLING BOARD APPEARS
         socket.on('round_started', () => {
             document.getElementById('cardPickerSection').classList.add('hidden');
             document.getElementById('playingBoardContainer').classList.remove('hidden');
@@ -581,7 +661,6 @@
 
             initMasterBingoBoard();
 
-            // Reset all 60 buttons back to open electric blue
             for (let i = 1; i <= 60; i++) {
                 const btn = document.getElementById(`btn-card-${i}`);
                 if(btn) {
