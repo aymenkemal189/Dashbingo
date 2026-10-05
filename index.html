@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dash Bingo - Protected Admin Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-100 text-slate-800 p-6">
+
+    <!-- Auth Key Dialog -->
+    <div id="authModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full space-y-4 text-center">
+            <i class="fa-solid fa-shield-halved text-4xl text-blue-600"></i>
+            <h2 class="text-lg font-black text-slate-800">የአድሚን መግቢያ ቁልፍ (Secret Key)</h2>
+            <input id="adminKeyInput" type="password" placeholder="Admin Secret Key ያስገቡ..." class="w-full text-xs font-mono p-3 rounded-2xl border border-slate-300 text-center">
+            <button onclick="loginAdmin()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-2xl text-xs">ግባ (Login)</button>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="adminDashboard" class="max-w-6xl mx-auto space-y-6 hidden">
+        <header class="flex justify-between items-center pb-4 border-b border-slate-200">
+            <div>
+                <h1 class="text-2xl font-black text-blue-600 tracking-tight">⚡ DASH BINGO - ADMIN CONTROL</h1>
+                <p class="text-xs text-slate-400">የክፍያ ማረጋገጫዎች፣ ፕሮሞ ኮድ እና የቦነስ መቆጣጠሪያ</p>
+            </div>
+            <button onclick="loadAll()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 shadow-sm"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
+        </header>
+
+        <!-- Analytics -->
+        <div class="grid grid-cols-3 gap-4">
+            <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
+                <p class="text-xs text-slate-400 font-bold uppercase">ጠቅላላ ተጠቃሚዎች</p>
+                <h3 id="statUsers" class="text-2xl font-black text-slate-800 mt-1">0</h3>
+            </div>
+            <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
+                <p class="text-xs text-slate-400 font-bold uppercase">የተደረጉ ዙሮች</p>
+                <h3 id="statRounds" class="text-2xl font-black text-slate-800 mt-1">0</h3>
+            </div>
+            <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
+                <p class="text-xs text-slate-400 font-bold uppercase">የባለቤት የተጣራ ትርፍ (20% Rake)</p>
+                <h3 id="statProfit" class="text-2xl font-black text-green-600 mt-1">0.00 ETB</h3>
+            </div>
+        </div>
+
+        <!-- Action Row: Promo Generator & Weekly Bonus Payout -->
+        <div class="grid grid-cols-2 gap-4">
+            <!-- Promo Code Creator -->
+            <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 space-y-3">
+                <h3 class="font-bold text-sm text-slate-700 flex items-center gap-2"><i class="fa-solid fa-tag text-blue-600"></i> አዲስ ፕሮሞ ኮድ መፍጠሪያ</h3>
+                <div class="grid grid-cols-3 gap-2">
+                    <input id="newPromoCode" type="text" placeholder="ኮድ (ለምሳሌ DASH100)" class="text-xs p-2.5 rounded-xl border border-slate-200 uppercase font-bold">
+                    <input id="newPromoAmount" type="number" placeholder="የብር መጠን" class="text-xs p-2.5 rounded-xl border border-slate-200 font-bold">
+                    <input id="newPromoUses" type="number" placeholder="ለስንት ሰው (Max)" class="text-xs p-2.5 rounded-xl border border-slate-200 font-bold">
+                </div>
+                <button onclick="createPromo()" class="w-full bg-blue-600 text-white font-bold py-2 rounded-xl text-xs">ኮዱን ፍጠር</button>
+            </div>
+
+            <!-- Weekly 10 High Rollers Bonus Dispenser -->
+            <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 space-y-3">
+                <h3 class="font-bold text-sm text-slate-700 flex items-center gap-2"><i class="fa-solid fa-gift text-yellow-500"></i> የሳምንቱ ቦነስ ለ 10 ሰዎች ማከፋፈያ</h3>
+                <p class="text-xs text-slate-500">ይህንን ስትነካው በሳምንቱ ብዙ ካርድ ለቆረጡ 10 ተጫዋቾች (300 - 200 ETB) ቦነስ በራስ-ሰር ይከፋፍላል።</p>
+                <button onclick="distributeBonus()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow-sm">
+                    🚀 ቦነሱን አከፋፍል (Distribute Bonus Now)
+                </button>
+            </div>
+        </div>
+
+        <!-- Transactions Table with Full SMS Viewer -->
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="p-4 border-b border-slate-100">
+                <h3 class="font-bold text-slate-700 text-sm">የቅርብ ጊዜ ክፍያዎች እና ሙሉ SMS ማረጋገጫዎች</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-100 text-slate-400">
+                            <th class="p-3">ተጫዋች</th>
+                            <th class="p-3">ዓይነት</th>
+                            <th class="p-3">ባንክ</th>
+                            <th class="p-3">መጠን</th>
+                            <th class="p-3 w-1/3">ሙሉ SMS / አካውንት መረጃ</th>
+                            <th class="p-3">ሁኔታ</th>
+                            <th class="p-3">ድርጊት</th>
+                        </tr>
+                    </thead>
+                    <tbody id="txBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let adminKey = localStorage.getItem('dash_admin_key') || '';
+        if(adminKey) {
+            checkKey(adminKey);
+        }
+
+        async function loginAdmin() {
+            const input = document.getElementById('adminKeyInput').value.trim();
+            if(!input) return alert("ቁልፍ ያስገቡ!");
+            checkKey(input);
+        }
+
+        async function checkKey(key) {
+            try {
+                const res = await fetch(`/api/admin/analytics?admin_key=${key}`);
+                if(res.ok) {
+                    adminKey = key;
+                    localStorage.setItem('dash_admin_key', key);
+                    document.getElementById('authModal').classList.add('hidden');
+                    document.getElementById('adminDashboard').classList.remove('hidden');
+                    loadAll();
+                } else {
+                    alert("የተሳሳተ Secret Key!");
+                }
+            } catch(e) {
+                alert("መገናኘት አልተቻለም!");
+            }
+        }
+
+        async function loadAll() {
+            // Analytics
+            const aRes = await fetch(`/api/admin/analytics?admin_key=${adminKey}`);
+            const aData = await aRes.json();
+            document.getElementById('statUsers').innerText = aData.totalUsers;
+            document.getElementById('statRounds').innerText = aData.totalRounds;
+            document.getElementById('statProfit').innerText = `${parseFloat(aData.totalProfit).toFixed(2)} ETB`;
+
+            // Transactions
+            const tRes = await fetch(`/api/admin/transactions?admin_key=${adminKey}`);
+            const txs = await tRes.json();
+            const tbody = document.getElementById('txBody');
+            tbody.innerHTML = txs.map(t => `
+                <tr class="border-b border-slate-100 hover:bg-slate-50/50">
+                    <td class="p-3 font-bold">${t.first_name}</td>
+                    <td class="p-3 font-semibold ${t.type === 'DEPOSIT' ? 'text-green-600' : 'text-orange-600'}">${t.type}</td>
+                    <td class="p-3">${t.payment_method}</td>
+                    <td class="p-3 font-bold">${t.amount} ETB</td>
+                    <td class="p-3">
+                        ${t.sms_text ? `<div class="p-2 bg-slate-50 rounded-xl border border-slate-200 text-slate-600 font-mono text-[11px] select-all">${t.sms_text}</div>` : ''}
+                        ${t.account_number ? `<p class="font-mono text-slate-700">${t.account_number} (${t.account_name})</p>` : ''}
+                    </td>
+                    <td class="p-3">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${t.status === 'APPROVED' ? 'bg-green-100 text-green-700' : t.status === 'REJECTED' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}">${t.status}</span>
+                    </td>
+                    <td class="p-3">
+                        ${t.status === 'PENDING' ? `
+                            <button onclick="resolveTx(${t.id}, 'approve')" class="bg-green-600 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold mr-1">Approve</button>
+                            <button onclick="resolveTx(${t.id}, 'reject')" class="bg-red-500 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold">Reject</button>
+                        ` : '--'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function resolveTx(id, action) {
+            const url = action === 'approve' ? '/api/admin/approve' : '/api/admin/reject';
+            await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+                body: JSON.stringify({ txId: id })
+            });
+            loadAll();
+        }
+
+        async function createPromo() {
+            const code = document.getElementById('newPromoCode').value;
+            const amount = document.getElementById('newPromoAmount').value;
+            const maxUses = document.getElementById('newPromoUses').value;
+
+            if(!code || !amount || !maxUses) return alert("ሁሉንም መረጃ ያስገቡ!");
+
+            const res = await fetch('/api/admin/create-promocode', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+                body: JSON.stringify({ code, amount, maxUses })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            if(data.success) {
+                document.getElementById('newPromoCode').value = '';
+                document.getElementById('newPromoAmount').value = '';
+                document.getElementById('newPromoUses').value = '';
+            }
+        }
+
+        async function distributeBonus() {
+            if(!confirm("እርግጠኛ ነዎት ለ 10 ሰዎች ቦነስ እንዲከፋፈል ይፈልጋሉ?")) return;
+            const res = await fetch('/api/admin/distribute-weekly-bonus', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey }
+            });
+            const data = await res.json();
+            if(data.success) {
+                alert(`ተከፍሏል!\n` + data.distributed.map(d => `${d.name}: +${d.bonus} ETB`).join('\n'));
+                loadAll();
+            } else {
+                alert(data.error);
+            }
+        }
+    </script>
+</body>
+</html>
