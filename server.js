@@ -11,7 +11,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
-// Database Connection with Pool Configuration
+// Database Connection with Pool Configuration (Neon Postgres)
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
@@ -21,9 +21,16 @@ const pool = new Pool({
 });
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
-// Admin Secret Key Middleware (ማንም ወደ አድሚን እንዳይገባ መቆጣጠሪያ)
+// ፋይሎቹ ዋናው ገጽ (Root) ላይ ስለሆኑ በቀጥታ እንዲከፈቱ ማድረግ
+app.use(express.static(__dirname));
+
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/index.html', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
+app.get('/admin.html', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
+
+// Admin Secret Key Middleware
 const ADMIN_SECRET = process.env.ADMIN_SECRET || 'super_secret_dash_admin_2026';
 function checkAdminAuth(req, res, next) {
     const key = req.headers['x-admin-key'] || req.query.admin_key;
@@ -33,9 +40,9 @@ function checkAdminAuth(req, res, next) {
     next();
 }
 
-// Telegram Bot Init
+// Telegram Bot Initialization
 const bot = new Telegraf(process.env.BOT_TOKEN);
-const WEBAPP_URL = process.env.WEBAPP_URL;
+const WEBAPP_URL = process.env.WEBAPP_URL || 'https://dashbingo.onrender.com';
 
 bot.start(async (ctx) => {
     const { id, first_name, username } = ctx.from;
@@ -57,8 +64,8 @@ bot.start(async (ctx) => {
 });
 
 // ================= GAME ENGINE ================= //
-const CARD_PRICE = 20; // 20 ETB
-const HOUSE_COMMISSION = 0.20; // 20% House Rake
+const CARD_PRICE = 20; // 20 ETB በካርድ
+const HOUSE_COMMISSION = 0.20; // 20% የባለቤት ድርሻ
 
 let gameState = {
     roundNumber: 1001,
@@ -85,7 +92,7 @@ function generateBingoCard() {
     let n = getCols(31, 45);
     let g = getCols(46, 60);
     let o = getCols(61, 75);
-    n[2] = 0; // Free Center
+    n[2] = 0; // Free Center Star
     return [b, i, n, g, o];
 }
 
@@ -109,7 +116,7 @@ function checkWinner(card, called) {
     return diag1 || diag2;
 }
 
-// Game Loop Timer
+// Game Loop Timer (በየ 2.4 ሰከንዱ)
 setInterval(async () => {
     if (gameState.status === 'SELECTION') {
         gameState.countdown--;
@@ -125,7 +132,7 @@ setInterval(async () => {
                 gameState.totalPrize = totalPot - gameState.ownerProfit;
                 io.emit('round_started', gameState);
             } else {
-                gameState.countdown = 50;
+                gameState.countdown = 50; // ሰው ካልቆረጠ እንደገና ወደ 50 ይመለሳል
             }
         }
     } else if (gameState.status === 'PLAYING') {
@@ -142,7 +149,6 @@ setInterval(async () => {
         gameState.calledNumbers.push(nextNum);
         gameState.currentNumber = nextNum;
 
-        // Check for Winners
         let winners = [];
         for (const [cardIndex, cardData] of Object.entries(gameState.selectedCards)) {
             if (checkWinner(cardData.numbers, gameState.calledNumbers)) {
@@ -222,7 +228,6 @@ app.post('/api/deposit', async (req, res) => {
         return res.status(400).json({ error: 'እባክዎ ትክክለኛ መጠንና ሙሉ የ SMS ጽሁፍ ያስገቡ!' });
     }
 
-    // የSMS Hash ማመንጫ (ተመሳሳይ SMS እንዳይደገም)
     const normalizedSMS = smsText.replace(/\s+/g, '').toLowerCase();
     const smsHash = crypto.createHash('sha256').update(normalizedSMS).digest('hex');
 
@@ -237,14 +242,14 @@ app.post('/api/deposit', async (req, res) => {
         );
         res.json({ success: true, message: 'ማስገቢያ ጥያቄዎ ለአድሚን ተልኳል! ጥቂት ደቂቃ ይጠብቁ።' });
     } catch (err) {
-        if (err.code === '23505') { // Unique constraint violation
+        if (err.code === '23505') {
             return res.status(400).json({ error: 'ይህ SMS ቀደም ሲል ጥቅም ላይ ውሏል! እባክዎ አዲስ የግብይት SMS ያስገቡ።' });
         }
         res.status(500).json({ error: err.message });
     }
 });
 
-// Withdraw Request (Atomic Database Locking)
+// Withdraw Request (Atomic DB Transaction)
 app.post('/api/withdraw', async (req, res) => {
     const { telegramId, method, amount, accountNumber, accountName } = req.body;
     const withdrawAmount = parseFloat(amount);
@@ -288,7 +293,7 @@ app.post('/api/withdraw', async (req, res) => {
     }
 });
 
-// Redeem Promo Code (ሴኪውር የሆነ የፕሮሞ ኮድ መቀበያ)
+// Redeem Promo Code
 app.post('/api/promocode/redeem', async (req, res) => {
     const { telegramId, code } = req.body;
     if (!code) return res.status(400).json({ error: 'እባክዎ ኮድ ያስገቡ!' });
@@ -315,14 +320,12 @@ app.post('/api/promocode/redeem', async (req, res) => {
             return res.status(400).json({ error: 'ይህ ፕሮሞ ኮድ ገደቡ አልቋል!' });
         }
 
-        // Check if already claimed by this user
         const claimCheck = await client.query('SELECT id FROM promo_claims WHERE user_id = $1 AND promo_id = $2', [userId, promo.id]);
         if (claimCheck.rows.length > 0) {
             await client.query('ROLLBACK');
             return res.status(400).json({ error: 'ይህን ፕሮሞ ኮድ ቀደም ሲል ወስደዋል!' });
         }
 
-        // Add claim, update uses, credit user balance
         await client.query('INSERT INTO promo_claims (user_id, promo_id) VALUES ($1, $2)', [userId, promo.id]);
         await client.query('UPDATE promo_codes SET times_used = times_used + 1 WHERE id = $1', [promo.id]);
         await client.query('UPDATE users SET balance = balance + $1 WHERE id = $2', [promo.reward_amount, userId]);
@@ -337,7 +340,7 @@ app.post('/api/promocode/redeem', async (req, res) => {
     }
 });
 
-// Weekly Top 10 High Rollers (በብዛት ካርድ የቆረጡ 10 ሰዎች)
+// Weekly Top 10 High Rollers
 app.get('/api/weekly-top', async (req, res) => {
     try {
         const { rows } = await pool.query(
@@ -378,7 +381,6 @@ app.get('/api/history/:telegramId', async (req, res) => {
 
 // ================= ADMIN APIS (SECURED) ================= //
 
-// Get Transactions
 app.get('/api/admin/transactions', checkAdminAuth, async (req, res) => {
     try {
         const { rows } = await pool.query(
@@ -392,7 +394,6 @@ app.get('/api/admin/transactions', checkAdminAuth, async (req, res) => {
     }
 });
 
-// Approve Transaction
 app.post('/api/admin/approve', checkAdminAuth, async (req, res) => {
     const { txId } = req.body;
     const client = await pool.connect();
@@ -424,7 +425,6 @@ app.post('/api/admin/approve', checkAdminAuth, async (req, res) => {
     }
 });
 
-// Reject Transaction
 app.post('/api/admin/reject', checkAdminAuth, async (req, res) => {
     const { txId } = req.body;
     const client = await pool.connect();
@@ -434,7 +434,6 @@ app.post('/api/admin/reject', checkAdminAuth, async (req, res) => {
         const tx = txRes.rows[0];
 
         if (tx.type === 'WITHDRAW') {
-            // ብሩን ወደ ተጫዋቹ ዋሌት መልስ
             await client.query('UPDATE users SET balance = balance + $1 WHERE id = $2', [tx.amount, tx.user_id]);
         }
 
@@ -449,7 +448,6 @@ app.post('/api/admin/reject', checkAdminAuth, async (req, res) => {
     }
 });
 
-// Create Promo Code
 app.post('/api/admin/create-promocode', checkAdminAuth, async (req, res) => {
     const { code, amount, maxUses } = req.body;
     if (!code || !amount || !maxUses) return res.status(400).json({ error: 'ሁሉንም መረጃ ያስገቡ' });
@@ -465,7 +463,6 @@ app.post('/api/admin/create-promocode', checkAdminAuth, async (req, res) => {
     }
 });
 
-// 1-Click Distribute Weekly Bonus to Top 10 (300 - 200 ETB)
 app.post('/api/admin/distribute-weekly-bonus', checkAdminAuth, async (req, res) => {
     const client = await pool.connect();
     try {
@@ -482,7 +479,6 @@ app.post('/api/admin/distribute-weekly-bonus', checkAdminAuth, async (req, res) 
             return res.status(400).json({ error: 'ምንም ተጫዋች አልተገኘም' });
         }
 
-        // ቦነስ ስሌት: #1 = 300 ETB, #2-5 = 250 ETB, #6-10 = 200 ETB
         let distributed = [];
         for (let i = 0; i < rows.length; i++) {
             let bonus = 200;
@@ -493,9 +489,7 @@ app.post('/api/admin/distribute-weekly-bonus', checkAdminAuth, async (req, res) 
             distributed.push({ name: rows[i].first_name, bonus });
         }
 
-        // Reset weekly counter
         await client.query('UPDATE users SET cards_bought_this_week = 0');
-
         await client.query('COMMIT');
         res.json({ success: true, message: 'የሳምንቱ ቦነስ ለ 10 ሰዎች ተከፋፍሏል!', distributed });
     } catch (err) {
@@ -506,7 +500,6 @@ app.post('/api/admin/distribute-weekly-bonus', checkAdminAuth, async (req, res) 
     }
 });
 
-// Admin Analytics
 app.get('/api/admin/analytics', checkAdminAuth, async (req, res) => {
     try {
         const usersCount = await pool.query('SELECT COUNT(*) FROM users');
@@ -522,7 +515,7 @@ app.get('/api/admin/analytics', checkAdminAuth, async (req, res) => {
     }
 });
 
-// ================= SOCKET.IO SECURE CARD PURCHASE ================= //
+// ================= SOCKET.IO REAL-TIME HANDLING ================= //
 io.on('connection', (socket) => {
     socket.emit('game_init', gameState);
 
@@ -549,7 +542,6 @@ io.on('connection', (socket) => {
                 return;
             }
 
-            // Deduct balance and increment weekly cards count
             await client.query(
                 `UPDATE users 
                  SET balance = balance - $1, cards_bought_this_week = cards_bought_this_week + 1 
