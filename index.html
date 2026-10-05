@@ -9,114 +9,118 @@
     <script src="/socket.io/socket.io.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
-        body { background-color: #06090f; color: #f8fafc; }
-        .gradient-blue { background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #38bdf8 100%); }
-        .gradient-card { background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(10, 15, 29, 0.95) 100%); }
-        .glass-box { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(30, 41, 59, 0.8); }
-        .neon-border { border: 1px solid rgba(56, 189, 248, 0.3); box-shadow: 0 0 15px rgba(37, 99, 235, 0.15); }
+        body { background-color: #070b14; color: #f8fafc; }
+        .gradient-blue { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #38bdf8 100%); }
+        .gradient-header { background: linear-gradient(135deg, #0f172a 0%, #1e40af 60%, #3b82f6 100%); }
+        .glass-box { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(59, 130, 246, 0.2); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="font-sans pb-24 select-none">
+<body class="font-sans pb-20 select-none">
 
-    <!-- Top Fixed Header -->
-    <header class="bg-slate-900/90 backdrop-blur-xl border-b border-slate-800/80 p-3.5 sticky top-0 z-40">
+    <!-- Top Fixed Header (Gradient Blue + White Contrast) -->
+    <header class="gradient-header text-white p-3 sticky top-0 z-40 shadow-xl border-b border-blue-500/30">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2.5">
-                <!-- Dash Bingo Official Logo -->
-                <img src="https://i.postimg.cc/Bv4zLkh5/20261005-200757.jpg" alt="Dash Bingo" class="w-10 h-10 rounded-2xl object-cover border border-blue-500/40 shadow-lg shadow-blue-500/20">
+                <img src="https://i.postimg.cc/Bv4zLkh5/20261005-200757.jpg" alt="Dash Bingo" class="w-9 h-9 rounded-2xl object-cover border-2 border-white/60 shadow-lg shadow-blue-500/40">
                 <div>
-                    <h1 class="text-base font-black tracking-tight leading-tight flex items-center gap-1">
-                        DASH BINGO <span class="text-yellow-400">⚡</span>
+                    <h1 class="text-sm font-black tracking-tight leading-tight flex items-center gap-1 text-white">
+                        DASH BINGO <span class="text-yellow-300">⚡</span>
                     </h1>
-                    <p id="playerName" class="text-[11px] text-blue-400 font-medium">ሰላም, ተጫዋች</p>
+                    <p id="playerName" class="text-[10px] text-blue-200 font-medium">ሰላም, ተጫዋች</p>
                 </div>
             </div>
 
             <!-- Balance Badge -->
-            <div class="flex items-center gap-2">
-                <div class="bg-slate-950/80 px-3 py-1.5 rounded-2xl flex items-center gap-1.5 border border-slate-800">
-                    <i class="fa-solid fa-wallet text-yellow-400 text-xs"></i>
-                    <span id="playerBalance" class="font-black text-sm text-white tracking-wide">0.00</span>
-                    <span class="text-[9px] text-blue-400 font-bold uppercase">ETB</span>
-                </div>
+            <div class="bg-black/30 backdrop-blur-md px-3 py-1 rounded-2xl flex items-center gap-1.5 border border-white/20 shadow-inner">
+                <i class="fa-solid fa-wallet text-yellow-300 text-xs"></i>
+                <span id="playerBalance" class="font-black text-xs text-white tracking-wide">0.00</span>
+                <span class="text-[9px] text-blue-200 font-bold uppercase">ETB</span>
             </div>
         </div>
     </header>
 
-    <main class="max-w-md mx-auto p-4 space-y-4">
+    <main class="max-w-md mx-auto p-3 space-y-2.5">
 
         <!-- ================= TAB 1: BINGO ARENA ================= -->
-        <section id="tab-game" class="space-y-4">
+        <section id="tab-game" class="space-y-2.5">
             
-            <!-- Live Round Pool & 50s Timer -->
-            <div class="grid grid-cols-2 gap-3">
-                <div class="glass-box p-3.5 rounded-3xl text-center relative overflow-hidden neon-border">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">የዙሩ ሽልማት (Pot)</p>
-                    <h2 id="poolPrize" class="text-xl font-black text-blue-400 mt-0.5">0.00 <span class="text-xs font-semibold">ETB</span></h2>
+            <!-- Compact Pot & Timer Bar (No Space Wasted) -->
+            <div class="grid grid-cols-2 gap-2">
+                <div class="glass-box p-2.5 rounded-2xl text-center relative overflow-hidden border border-blue-500/30 shadow-sm">
+                    <p class="text-[9px] font-bold text-slate-300 uppercase tracking-wider">የዙሩ ድራሽ (Pot)</p>
+                    <h2 id="poolPrize" class="text-base font-black text-white mt-0.5"><span class="text-yellow-400">0.00</span> <span class="text-[10px] text-slate-300">ETB</span></h2>
                 </div>
 
-                <div class="glass-box p-3.5 rounded-3xl text-center relative overflow-hidden neon-border">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">የካርድ መቁረጫ ሰዓት</p>
-                    <h2 id="gameStatus" class="text-xl font-black text-white mt-0.5"><span id="timer" class="text-yellow-400">50</span>s</h2>
-                </div>
-            </div>
-
-            <!-- Current Ball Sphere (During Play) -->
-            <div id="callingSphereBox" class="glass-box p-4 rounded-3xl text-center shadow-lg relative overflow-hidden border border-blue-500/30">
-                <div class="flex justify-around items-center">
-                    <div class="text-center">
-                        <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">የወጣው ቁጥር</span>
-                        <div id="activeBall" class="w-16 h-16 gradient-blue text-white rounded-2xl flex items-center justify-center text-2xl font-black shadow-lg shadow-blue-500/40 mx-auto mt-1 border border-white/20">
-                            --
-                        </div>
-                    </div>
-                    <div class="w-2/3 pl-3">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase">የወጡ ቁጥሮች</span>
-                            <span class="text-xs font-black text-blue-400"><span id="calledCount">0</span>/75</span>
-                        </div>
-                        <div id="recentBalls" class="flex gap-1.5 flex-wrap max-h-14 overflow-y-auto no-scrollbar justify-start">
-                            <!-- Balls list -->
-                        </div>
-                    </div>
+                <div class="glass-box p-2.5 rounded-2xl text-center relative overflow-hidden border border-blue-500/30 shadow-sm">
+                    <p class="text-[9px] font-bold text-slate-300 uppercase tracking-wider">የካርድ መቁረጫ</p>
+                    <h2 id="gameStatus" class="text-base font-black text-white mt-0.5"><span id="timer" class="text-yellow-400">50</span>s</h2>
                 </div>
             </div>
 
-            <!-- 1. SELECTION STAGE: ALL 60 CARDS VISIBLE IN FRONT -->
-            <div id="cardPickerSection" class="space-y-2">
+            <!-- 1. SELECTION STAGE: ALL 60 CARDS VISIBLE DIRECTLY WITHOUT SCROLLING -->
+            <div id="cardPickerSection" class="space-y-1.5">
                 <div class="flex justify-between items-center px-1">
-                    <h3 class="font-extrabold text-sm text-slate-200">ካርድ ይቁረጡ (20 ETB)</h3>
-                    <span class="text-[11px] text-yellow-400 font-bold bg-yellow-500/10 border border-yellow-500/20 px-2.5 py-0.5 rounded-full">60 ካርዶች ክፍት ናቸው</span>
+                    <h3 class="font-black text-xs text-white flex items-center gap-1">
+                        <i class="fa-solid fa-layer-group text-blue-400"></i> ካርድ ይምረጡ (20 ETB)
+                    </h3>
+                    <div class="flex gap-2 text-[9px] font-bold">
+                        <span class="flex items-center gap-1 text-blue-300"><span class="w-2 h-2 rounded-full bg-blue-500"></span> ክፍት</span>
+                        <span class="flex items-center gap-1 text-emerald-300"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> የእኛ</span>
+                        <span class="flex items-center gap-1 text-slate-400"><span class="w-2 h-2 rounded-full bg-slate-700"></span> የተያዘ</span>
+                    </div>
                 </div>
-                <div id="cardGrid" class="grid grid-cols-6 gap-2 bg-slate-900/90 p-3.5 rounded-3xl border border-slate-800 max-h-72 overflow-y-auto no-scrollbar shadow-inner">
+
+                <!-- 60 Card Tight Grid (6 Columns x 10 Rows - Fits Entirely on Screen) -->
+                <div id="cardGrid" class="grid grid-cols-6 gap-1.5 bg-slate-900/90 p-2.5 rounded-2xl border border-blue-500/20 shadow-md">
                     <!-- Cards 1-60 injected here -->
                 </div>
             </div>
 
-            <!-- 2. PLAYING STAGE: 60 CARDS DISAPPEAR -> FULL B-I-N-G-O BOARD APPEARS -->
-            <div id="playingBoardContainer" class="hidden space-y-4">
+            <!-- 2. PLAYING STAGE: 60 CARDS DISAPPEAR -> LIVE CALLING & BINGO BOARD -->
+            <div id="playingBoardContainer" class="hidden space-y-2.5">
                 
-                <!-- B-I-N-G-O Vertical Rows (1-75) Master Board -->
-                <div class="glass-box p-3 rounded-3xl border border-slate-800 shadow-md">
-                    <div class="text-center text-xs font-bold text-slate-400 mb-2">የጥሪ ሰሌዳ (B I N G O Board)</div>
-                    <div class="space-y-1.5 text-xs font-bold" id="masterBingoBoard">
-                        <!-- Rows for B, I, N, G, O dynamically populated -->
+                <!-- Current Ball Sphere -->
+                <div class="glass-box p-3 rounded-2xl text-center shadow-lg border border-blue-500/40 relative overflow-hidden">
+                    <div class="flex justify-around items-center">
+                        <div class="text-center">
+                            <span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider">የወጣው ቁጥር</span>
+                            <div id="activeBall" class="w-14 h-14 gradient-blue text-white rounded-2xl flex items-center justify-center text-2xl font-black shadow-lg shadow-blue-500/50 mx-auto mt-1 border-2 border-white/40">
+                                --
+                            </div>
+                        </div>
+                        <div class="w-2/3 pl-3">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase">የወጡ ቁጥሮች</span>
+                                <span class="text-xs font-black text-blue-400"><span id="calledCount">0</span>/75</span>
+                            </div>
+                            <div id="recentBalls" class="flex gap-1 flex-wrap max-h-12 overflow-y-auto no-scrollbar justify-start">
+                                <!-- Balls pills -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- B-I-N-G-O 1-75 Master Board -->
+                <div class="glass-box p-2.5 rounded-2xl border border-slate-800 shadow-md">
+                    <div class="text-center text-[10px] font-bold text-slate-400 mb-1.5">የጥሪ ሰሌዳ (B I N G O)</div>
+                    <div class="space-y-1 text-xs font-bold" id="masterBingoBoard">
+                        <!-- Rows for B, I, N, G, O -->
                     </div>
                 </div>
 
                 <!-- User's Active 5x5 Card -->
                 <div id="myCardSection" class="hidden">
-                    <div class="flex justify-between items-center mb-1.5 px-1">
-                        <h3 class="font-extrabold text-sm text-slate-200">የእርስዎ ካርድ (<span id="myCardNumber" class="text-blue-400 font-black">#0</span>)</h3>
-                        <span class="text-[11px] bg-green-500/20 text-green-400 border border-green-500/30 font-black px-2.5 py-0.5 rounded-full">በጨዋታ ላይ ⚡</span>
+                    <div class="flex justify-between items-center mb-1 px-1">
+                        <h3 class="font-extrabold text-xs text-white">የእርስዎ ካርድ (<span id="myCardNumber" class="text-yellow-400 font-black">#0</span>)</h3>
+                        <span class="text-[10px] bg-green-500/20 text-green-400 border border-green-500/40 font-black px-2 py-0.5 rounded-full">በጨዋታ ላይ ⚡</span>
                     </div>
-                    <div class="bg-slate-900 p-3.5 rounded-3xl shadow-2xl border-2 border-blue-500/80">
-                        <div class="grid grid-cols-5 text-center font-black text-blue-400 text-sm mb-2">
+                    <div class="bg-slate-900 p-2.5 rounded-2xl shadow-xl border-2 border-blue-500/70">
+                        <div class="grid grid-cols-5 text-center font-black text-blue-400 text-xs mb-1">
                             <div>B</div><div>I</div><div>N</div><div>G</div><div>O</div>
                         </div>
-                        <div id="bingoBoard" class="grid grid-cols-5 gap-1.5 text-center font-black">
+                        <div id="bingoBoard" class="grid grid-cols-5 gap-1 text-center font-black">
                             <!-- 5x5 Grid Cells -->
                         </div>
                     </div>
@@ -125,95 +129,94 @@
         </section>
 
         <!-- ================= TAB 2: WALLET ================= -->
-        <section id="tab-wallet" class="hidden space-y-4">
+        <section id="tab-wallet" class="hidden space-y-3">
             
             <!-- Side-by-Side Top Switch: DEPOSIT vs WITHDRAW -->
-            <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-900 rounded-3xl border border-slate-800">
-                <button onclick="switchWalletView('deposit')" id="btnWalletDep" class="py-2.5 rounded-2xl font-black text-xs gradient-blue text-white shadow-md transition">
-                    <i class="fa-solid fa-arrow-down mr-1"></i> ገንዘብ ማስገቢያ (Deposit)
+            <div class="grid grid-cols-2 gap-2 p-1 bg-slate-900 rounded-2xl border border-slate-800">
+                <button onclick="switchWalletView('deposit')" id="btnWalletDep" class="py-2 rounded-xl font-black text-xs gradient-blue text-white shadow-md transition">
+                    <i class="fa-solid fa-arrow-down mr-1"></i> ማስገቢያ (Deposit)
                 </button>
-                <button onclick="switchWalletView('withdraw')" id="btnWalletWith" class="py-2.5 rounded-2xl font-black text-xs text-slate-400 hover:text-white transition">
-                    <i class="fa-solid fa-arrow-up mr-1"></i> ገንዘብ ማውጫ (Withdraw)
+                <button onclick="switchWalletView('withdraw')" id="btnWalletWith" class="py-2 rounded-xl font-black text-xs text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-arrow-up mr-1"></i> ማውጫ (Withdraw)
                 </button>
             </div>
 
-            <!-- VIEW A: DEPOSIT SECTION -->
-            <div id="walletDepositView" class="space-y-4">
-                <!-- Bank Accounts -->
-                <div class="glass-box p-4 rounded-3xl space-y-3">
+            <!-- VIEW A: DEPOSIT -->
+            <div id="walletDepositView" class="space-y-3">
+                <div class="glass-box p-3 rounded-2xl space-y-2 border border-blue-500/20">
                     <div class="flex items-center gap-2">
                         <i class="fa-solid fa-building-columns text-blue-400"></i>
-                        <h3 class="font-black text-xs text-slate-200 uppercase tracking-wide">የክፍያ አካውንቶች (Deposit Accounts)</h3>
+                        <h3 class="font-black text-xs text-white">የክፍያ አካውንቶች</h3>
                     </div>
 
                     <!-- CBE -->
-                    <div class="p-3 bg-slate-950/80 rounded-2xl border border-slate-800 flex justify-between items-center">
+                    <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
                         <div>
-                            <span class="font-black text-xs text-slate-200">CBE (ንግድ ባንክ)</span>
+                            <span class="font-black text-xs text-white">CBE (ንግድ ባንክ)</span>
                             <p class="text-xs font-mono font-bold text-blue-400">1000562339427</p>
                             <p class="text-[10px] text-slate-400">Aymen Kemal</p>
                         </div>
-                        <button onclick="copyToClipboard('1000562339427')" class="text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-xl transition">
+                        <button onclick="copyToClipboard('1000562339427')" class="text-xs gradient-blue text-white font-bold px-3 py-1.5 rounded-lg active:scale-95 transition">
                             ኮፒ
                         </button>
                     </div>
 
                     <!-- Telebirr -->
-                    <div class="p-3 bg-slate-950/80 rounded-2xl border border-slate-800 flex justify-between items-center">
+                    <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
                         <div>
-                            <span class="font-black text-xs text-slate-200">Telebirr (ቴሌብር)</span>
+                            <span class="font-black text-xs text-white">Telebirr (ቴሌብር)</span>
                             <p class="text-xs font-mono font-bold text-blue-400">0996910607</p>
                             <p class="text-[10px] text-slate-400">Aymen</p>
                         </div>
-                        <button onclick="copyToClipboard('0996910607')" class="text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-xl transition">
+                        <button onclick="copyToClipboard('0996910607')" class="text-xs gradient-blue text-white font-bold px-3 py-1.5 rounded-lg active:scale-95 transition">
                             ኮፒ
                         </button>
                     </div>
                 </div>
 
                 <!-- Deposit SMS Form -->
-                <div class="glass-box p-4 rounded-3xl space-y-3">
-                    <h4 class="font-black text-xs text-slate-200 flex items-center gap-1.5">
+                <div class="glass-box p-3 rounded-2xl space-y-2.5 border border-blue-500/20">
+                    <h4 class="font-black text-xs text-white flex items-center gap-1.5">
                         <i class="fa-solid fa-comment-sms text-green-400"></i> የ SMS ማረጋገጫ ማስገቢያ
                     </h4>
-                    <select id="depMethod" class="w-full text-xs font-bold p-3 rounded-2xl bg-slate-950 border border-slate-800 text-slate-200">
+                    <select id="depMethod" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200">
                         <option value="TELEBIRR">Telebirr (ቴሌብር)</option>
                         <option value="CBE">CBE (ንግድ ባንክ)</option>
                     </select>
-                    <input id="depAmount" type="number" placeholder="ያስገቡት መጠን (ETB)" class="w-full text-xs font-bold p-3 rounded-2xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500 outline-none">
-                    <textarea id="depSms" rows="3" placeholder="ከባንክ ወይም ከቴሌብር የደረሶትን ሙሉ የ SMS ጽሁፍ እዚህ ጋር Paste ያድርጉ..." class="w-full text-xs p-3 rounded-2xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500 outline-none"></textarea>
-                    <button onclick="submitDeposit()" class="w-full gradient-blue text-white py-3 rounded-2xl font-black text-xs shadow-lg shadow-blue-500/20 active:scale-95 transition">
+                    <input id="depAmount" type="number" placeholder="ያስገቡት መጠን (ETB)" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-blue-500">
+                    <textarea id="depSms" rows="3" placeholder="ከባንክ ወይም ከቴሌብር የደረሶትን ሙሉ የ SMS ጽሁፍ እዚህ ጋር Paste ያድርጉ..." class="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-blue-500"></textarea>
+                    <button onclick="submitDeposit()" class="w-full gradient-blue text-white py-2.5 rounded-xl font-black text-xs shadow-lg shadow-blue-500/20 active:scale-95 transition">
                         ማረጋገጫ ላክ
                     </button>
                 </div>
             </div>
 
-            <!-- VIEW B: WITHDRAW SECTION -->
-            <div id="walletWithdrawView" class="hidden glass-box p-4 rounded-3xl space-y-3">
-                <h4 class="font-black text-xs text-slate-200 flex items-center gap-1.5">
+            <!-- VIEW B: WITHDRAW -->
+            <div id="walletWithdrawView" class="hidden glass-box p-3 rounded-2xl space-y-2.5 border border-blue-500/20">
+                <h4 class="font-black text-xs text-white flex items-center gap-1.5">
                     <i class="fa-solid fa-money-bill-transfer text-orange-400"></i> ገንዘብ ማውጫ ቅጽ
                 </h4>
-                <select id="withMethod" class="w-full text-xs font-bold p-3 rounded-2xl bg-slate-950 border border-slate-800 text-slate-200">
+                <select id="withMethod" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200">
                     <option value="TELEBIRR">Telebirr (ቴሌብር)</option>
                     <option value="CBE">CBE (ንግድ ባንክ)</option>
                 </select>
-                <input id="withAmount" type="number" placeholder="የሚያወጡት መጠን (ዝቅተኛው 50 ETB)" class="w-full text-xs font-bold p-3 rounded-2xl bg-slate-950 border border-slate-800 text-white outline-none">
-                <input id="withAccount" type="text" placeholder="የአካውንት ወይም የስልክ ቁጥር" class="w-full text-xs font-bold p-3 rounded-2xl bg-slate-950 border border-slate-800 text-white outline-none">
-                <input id="withName" type="text" placeholder="ሙሉ ስም" class="w-full text-xs font-bold p-3 rounded-2xl bg-slate-950 border border-slate-800 text-white outline-none">
-                <button onclick="submitWithdraw()" class="w-full bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-2xl font-black text-xs shadow-md transition">
+                <input id="withAmount" type="number" placeholder="የሚያወጡት መጠን (ዝቅተኛው 50 ETB)" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
+                <input id="withAccount" type="text" placeholder="የአካውንት ወይም የስልክ ቁጥር" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
+                <input id="withName" type="text" placeholder="ሙሉ ስም" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
+                <button onclick="submitWithdraw()" class="w-full bg-slate-800 hover:bg-slate-700 text-white py-2.5 rounded-xl font-black text-xs shadow-md transition">
                     ገንዘብ አውጣ
                 </button>
             </div>
 
-            <!-- PROMO CODE BOX (ALWAYS VISIBLE AT BOTTOM OF WALLET) -->
-            <div class="glass-box p-4 rounded-3xl border-2 border-dashed border-blue-500/40 space-y-2">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-gift text-yellow-400 text-base"></i>
-                    <h4 class="font-black text-xs text-slate-200">ፕሮሞ ኮድ አለዎት? (Promo Code)</h4>
+            <!-- PROMO CODE BOX (AT BOTTOM) -->
+            <div class="glass-box p-3 rounded-2xl border-2 border-dashed border-blue-500/40 space-y-2">
+                <div class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-gift text-yellow-400 text-sm"></i>
+                    <h4 class="font-black text-xs text-white">ፕሮሞ ኮድ አለዎት? (Promo Code)</h4>
                 </div>
                 <div class="flex gap-2">
-                    <input id="promoInput" type="text" placeholder="ኮድ እዚህ ያስገቡ..." class="w-full text-xs font-bold uppercase p-3 rounded-2xl bg-slate-950 border border-slate-800 text-white outline-none">
-                    <button onclick="redeemPromo()" class="gradient-blue text-white px-5 rounded-2xl font-black text-xs shadow-md active:scale-95 transition">
+                    <input id="promoInput" type="text" placeholder="ኮድ እዚህ ያስገቡ..." class="w-full text-xs font-bold uppercase p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
+                    <button onclick="redeemPromo()" class="gradient-blue text-white px-4 rounded-xl font-black text-xs shadow-md active:scale-95 transition">
                         ውሰድ
                     </button>
                 </div>
@@ -221,97 +224,93 @@
         </section>
 
         <!-- ================= TAB 3: LEADERBOARD ================= -->
-        <section id="tab-leaderboard" class="hidden space-y-4">
-            <div class="gradient-blue text-white p-4 rounded-3xl shadow-lg">
+        <section id="tab-leaderboard" class="hidden space-y-3">
+            <div class="gradient-blue text-white p-3.5 rounded-2xl shadow-lg">
                 <div class="flex items-center gap-2 mb-1">
-                    <i class="fa-solid fa-fire text-yellow-300 text-lg"></i>
-                    <h3 class="font-black text-sm">የሳምንቱ ከፍተኛ ተጫዋቾች ሽልማት 🔥</h3>
+                    <i class="fa-solid fa-fire text-yellow-300 text-base"></i>
+                    <h3 class="font-black text-xs">የሳምንቱ ከፍተኛ ተጫዋቾች ሽልማት 🔥</h3>
                 </div>
-                <p class="text-xs text-blue-100">በየሳምንቱ ብዙ ካርድ ለቆረጡ 10 ምርጥ ተጫዋቾች ከ 200 - 300 ብር ቦነስ ይሰጣቸዋል!</p>
+                <p class="text-[10px] text-blue-100 leading-relaxed">በየሳምንቱ ብዙ ካርድ ለቆረጡ 10 ምርጥ ተጫዋቾች ከ 200 - 300 ብር ቦነስ ይሰጣቸዋል!</p>
             </div>
 
-            <div class="glass-box p-4 rounded-3xl space-y-2">
-                <h4 class="font-black text-xs text-slate-300 uppercase">የሳምንቱ 10 ምርጥ ተጫዋቾች</h4>
+            <div class="glass-box p-3 rounded-2xl space-y-2 border border-slate-800">
+                <h4 class="font-black text-[11px] text-slate-300 uppercase">የሳምንቱ 10 ምርጥ ተጫዋቾች</h4>
                 <div id="weeklyTopList" class="space-y-1.5"></div>
             </div>
 
-            <div class="glass-box p-4 rounded-3xl space-y-2">
-                <h4 class="font-black text-xs text-slate-300 uppercase">ከፍተኛ አሸናፊዎች (All-Time)</h4>
+            <div class="glass-box p-3 rounded-2xl space-y-2 border border-slate-800">
+                <h4 class="font-black text-[11px] text-slate-300 uppercase">ከፍተኛ አሸናፊዎች (All-Time)</h4>
                 <div id="leaderboardList" class="space-y-1.5"></div>
             </div>
         </section>
 
         <!-- ================= TAB 4: PROFILE & HISTORY ================= -->
-        <section id="tab-profile" class="hidden space-y-3">
-            <h3 class="font-black text-sm text-slate-200 px-1">የግብይት ታሪክ (Transaction History)</h3>
+        <section id="tab-profile" class="hidden space-y-2.5">
+            <h3 class="font-black text-xs text-white px-1">የግብይት ታሪክ (Transaction History)</h3>
             <div id="historyList" class="space-y-2"></div>
         </section>
 
         <!-- ================= TAB 5: SETTINGS (ቅንብሮች ⚙️) ================= -->
-        <section id="tab-settings" class="hidden space-y-4">
-            <div class="glass-box p-4 rounded-3xl space-y-3">
-                <h3 class="font-black text-sm text-slate-200 flex items-center gap-2">
+        <section id="tab-settings" class="hidden space-y-3">
+            <div class="glass-box p-3 rounded-2xl space-y-2.5 border border-slate-800">
+                <h3 class="font-black text-xs text-white flex items-center gap-2">
                     <i class="fa-solid fa-sliders text-blue-400"></i> የድምጽና የጨዋታ ቅንብሮች
                 </h3>
                 
-                <!-- Voice Announcer Toggle -->
-                <div class="flex justify-between items-center p-3 bg-slate-950/80 rounded-2xl border border-slate-800">
+                <div class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800">
                     <div>
-                        <p class="font-bold text-xs text-white">የድምጽ ጥሪ (B12 Voice Caller)</p>
-                        <p class="text-[10px] text-slate-400">ቁጥሮች ሲወጡ ጮክ ብላ እንድትናገር</p>
+                        <p class="font-bold text-xs text-white">የድምጽ ጥሪ (Voice Caller)</p>
+                        <p class="text-[9px] text-slate-400">ቁጥሮች ሲወጡ "B 12" እያለች ትጣራለች</p>
                     </div>
-                    <button onclick="toggleVoice()" id="btnVoiceToggle" class="px-3 py-1.5 rounded-xl font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30">
+                    <button onclick="toggleVoice()" id="btnVoiceToggle" class="px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30">
                         በርቷል (ON)
                     </button>
                 </div>
             </div>
 
-            <!-- Telegram Links (Channel & Group) -->
-            <div class="glass-box p-4 rounded-3xl space-y-3">
-                <h3 class="font-black text-sm text-slate-200 flex items-center gap-2">
+            <!-- Telegram Links -->
+            <div class="glass-box p-3 rounded-2xl space-y-2.5 border border-slate-800">
+                <h3 class="font-black text-xs text-white flex items-center gap-2">
                     <i class="fa-brands fa-telegram text-blue-400"></i> ማህበራዊ ትስስር (Social Links)
                 </h3>
                 
-                <!-- Telegram Channel Link -->
-                <a href="https://t.me/your_channel_link" target="_blank" class="flex justify-between items-center p-3 bg-slate-950/80 rounded-2xl border border-slate-800 hover:border-blue-500 transition">
-                    <div class="flex items-center gap-2.5">
-                        <i class="fa-solid fa-bullhorn text-blue-400"></i>
+                <a href="https://t.me/your_channel_link" target="_blank" class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800 hover:border-blue-500 transition">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-bullhorn text-blue-400 text-xs"></i>
                         <span class="font-bold text-xs text-white">የቴሌግራም ቻናላችን</span>
                     </div>
-                    <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-500"></i>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
                 </a>
 
-                <!-- Telegram Group Link -->
-                <a href="https://t.me/your_group_link" target="_blank" class="flex justify-between items-center p-3 bg-slate-950/80 rounded-2xl border border-slate-800 hover:border-blue-500 transition">
-                    <div class="flex items-center gap-2.5">
-                        <i class="fa-solid fa-users text-green-400"></i>
+                <a href="https://t.me/your_group_link" target="_blank" class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800 hover:border-blue-500 transition">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-users text-green-400 text-xs"></i>
                         <span class="font-bold text-xs text-white">የቴሌግራም ግሩፓችን</span>
                     </div>
-                    <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-500"></i>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
                 </a>
 
-                <!-- Customer Support Link -->
-                <a href="https://t.me/your_support_account" target="_blank" class="flex justify-between items-center p-3 bg-slate-950/80 rounded-2xl border border-slate-800 hover:border-blue-500 transition">
-                    <div class="flex items-center gap-2.5">
-                        <i class="fa-solid fa-headset text-yellow-400"></i>
+                <a href="https://t.me/your_support_account" target="_blank" class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800 hover:border-blue-500 transition">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-headset text-yellow-400 text-xs"></i>
                         <span class="font-bold text-xs text-white">የደንበኞች አገልግሎት (Support)</span>
                     </div>
-                    <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-500"></i>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
                 </a>
             </div>
 
-            <!-- Rules & Info -->
-            <div class="glass-box p-4 rounded-3xl space-y-2 text-xs text-slate-400">
-                <h4 class="font-black text-slate-200">የ Dash Bingo ህጎች</h4>
+            <!-- Rules -->
+            <div class="glass-box p-3 rounded-2xl space-y-1.5 text-[10px] text-slate-400 border border-slate-800">
+                <h4 class="font-black text-white text-xs">የ Dash Bingo ህጎች</h4>
                 <p>• 1 ካርድ = 20 ETB።</p>
-                <p>• አግድም፣ ቁልቁል ወይም ሰያፍ (Diagonal) ቀድሞ የሞላ ተጫዋች ሙሉ ድራሹን (80%) ይወስዳል።</p>
+                <p>• አግድም፣ ቁልቁል ወይም ሰያፍ (Diagonal) ቀድሞ የሞላ ተጫዋች ሙሉ ድራሹን ይወስዳል።</p>
                 <p>• አነስተኛው የማውጣት መጠን 50 ETB ነው።</p>
             </div>
         </section>
     </main>
 
     <!-- Bottom Navigation Bar -->
-    <nav class="fixed bottom-3 left-4 right-4 max-w-md mx-auto bg-slate-900/95 backdrop-blur-2xl border border-slate-800 shadow-2xl rounded-3xl flex justify-around p-2 z-50">
+    <nav class="fixed bottom-2 left-3 right-3 max-w-md mx-auto bg-slate-900/95 backdrop-blur-2xl border border-blue-500/30 shadow-2xl rounded-2xl flex justify-around p-1.5 z-50">
         <button onclick="switchTab('game')" class="nav-btn text-blue-400 flex flex-col items-center">
             <i class="fa-solid fa-gamepad text-base"></i>
             <span class="text-[9px] font-black mt-0.5">ቢንጎ</span>
@@ -334,17 +333,17 @@
         </button>
     </nav>
 
-    <!-- Voice & Sound Engine -->
+    <!-- Voice Caller Engine -->
     <script>
         let voiceActive = true;
         function toggleVoice() {
             voiceActive = !voiceActive;
             const btn = document.getElementById('btnVoiceToggle');
             if(voiceActive) {
-                btn.className = "px-3 py-1.5 rounded-xl font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30";
+                btn.className = "px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30";
                 btn.innerText = "በርቷል (ON)";
             } else {
-                btn.className = "px-3 py-1.5 rounded-xl font-black text-xs bg-red-500/20 text-red-400 border border-red-500/30";
+                btn.className = "px-3 py-1 rounded-lg font-black text-xs bg-red-500/20 text-red-400 border border-red-500/30";
                 btn.innerText = "ጠፍቷል (OFF)";
             }
         }
@@ -357,7 +356,6 @@
             return 'O';
         }
 
-        // Female/Natural speech synthesis
         function announceNumber(num) {
             if (!voiceActive || !('speechSynthesis' in window)) return;
             const letter = getBingoLetter(num);
@@ -368,7 +366,6 @@
             window.speechSynthesis.speak(utterance);
         }
 
-        // Sound effect
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playBeep(freq, type = 'sine', duration = 0.15) {
             try {
@@ -387,7 +384,7 @@
         }
     </script>
 
-    <!-- Client Core Scripts -->
+    <!-- Main Logic -->
     <script>
         const tg = window.Telegram?.WebApp;
         if(tg) tg.expand();
@@ -397,8 +394,8 @@
 
         const socket = io();
         let myActiveCard = null;
+        let mySelectedCards = new Set(); // Track our purchased cards
 
-        // Auto-Register user immediately on app load
         async function syncUser() {
             try {
                 const res = await fetch('/api/user/sync', {
@@ -418,7 +415,6 @@
         }
         syncUser();
 
-        // Navigation between main tabs
         function switchTab(tabId) {
             ['game', 'wallet', 'leaderboard', 'profile', 'settings'].forEach(t => {
                 document.getElementById(`tab-${t}`).classList.add('hidden');
@@ -436,33 +432,31 @@
             if(tabId === 'profile') loadHistory();
         }
 
-        // Wallet view toggle (Deposit vs Withdraw)
         function switchWalletView(view) {
             if(view === 'deposit') {
                 document.getElementById('walletDepositView').classList.remove('hidden');
                 document.getElementById('walletWithdrawView').classList.add('hidden');
-                document.getElementById('btnWalletDep').className = "py-2.5 rounded-2xl font-black text-xs gradient-blue text-white shadow-md transition";
-                document.getElementById('btnWalletWith').className = "py-2.5 rounded-2xl font-black text-xs text-slate-400 hover:text-white transition";
+                document.getElementById('btnWalletDep').className = "py-2 rounded-xl font-black text-xs gradient-blue text-white shadow-md transition";
+                document.getElementById('btnWalletWith').className = "py-2 rounded-xl font-black text-xs text-slate-400 hover:text-white transition";
             } else {
                 document.getElementById('walletDepositView').classList.add('hidden');
                 document.getElementById('walletWithdrawView').classList.remove('hidden');
-                document.getElementById('btnWalletWith').className = "py-2.5 rounded-2xl font-black text-xs gradient-blue text-white shadow-md transition";
-                document.getElementById('btnWalletDep').className = "py-2.5 rounded-2xl font-black text-xs text-slate-400 hover:text-white transition";
+                document.getElementById('btnWalletWith').className = "py-2 rounded-xl font-black text-xs gradient-blue text-white shadow-md transition";
+                document.getElementById('btnWalletDep').className = "py-2 rounded-xl font-black text-xs text-slate-400 hover:text-white transition";
             }
         }
 
-        // Render All 60 Cards for Selection
+        // Render All 60 Cards (Compact, Beautiful, Fits 100% On Screen)
         const cardGrid = document.getElementById('cardGrid');
         for (let i = 1; i <= 60; i++) {
             const btn = document.createElement('button');
             btn.id = `btn-card-${i}`;
-            btn.className = "p-2 rounded-2xl text-xs font-black bg-slate-950 text-slate-300 border border-slate-800 hover:border-blue-500 active:scale-95 transition";
+            btn.className = "h-8 rounded-xl text-xs font-black bg-slate-950 text-white border border-blue-500/40 hover:border-blue-400 active:scale-95 transition shadow-sm flex items-center justify-center";
             btn.innerText = i;
             btn.onclick = () => buyCard(i);
             cardGrid.appendChild(btn);
         }
 
-        // Render Master B-I-N-G-O (1-75) Rows
         function initMasterBingoBoard() {
             const board = document.getElementById('masterBingoBoard');
             board.innerHTML = '';
@@ -479,7 +473,7 @@
                 row.className = "flex items-center gap-1";
                 
                 const letterBox = document.createElement('div');
-                letterBox.className = "w-6 h-6 rounded-lg bg-blue-600/30 text-blue-400 flex items-center justify-center font-black text-[11px] border border-blue-500/40";
+                letterBox.className = "w-5 h-5 rounded-md bg-blue-600/30 text-blue-400 flex items-center justify-center font-black text-[10px] border border-blue-500/40";
                 letterBox.innerText = group.l;
                 row.appendChild(letterBox);
 
@@ -488,7 +482,7 @@
                 for(let n = group.min; n <= group.max; n++) {
                     const span = document.createElement('span');
                     span.id = `master-num-${n}`;
-                    span.className = "w-5 h-5 rounded-md bg-slate-950 text-slate-400 flex items-center justify-center text-[10px] border border-slate-800 transition";
+                    span.className = "w-4 h-4 rounded-md bg-slate-950 text-slate-400 flex items-center justify-center text-[9px] border border-slate-800 transition";
                     span.innerText = n;
                     numsContainer.appendChild(span);
                 }
@@ -509,51 +503,61 @@
             document.getElementById('timer').innerText = data.countdown;
         });
 
+        // DISTINCT CARD COLORS (Green for US, Grey for OTHERS)
         socket.on('card_taken', (data) => {
             const btn = document.getElementById(`btn-card-${data.cardIndex}`);
             if(btn) {
                 btn.disabled = true;
-                btn.className = "p-2 rounded-2xl text-xs font-black bg-slate-900 text-slate-600 border border-slate-800 cursor-not-allowed";
+                if(mySelectedCards.has(data.cardIndex)) {
+                    // OUR CARD: Vibrant Emerald Green with Glow
+                    btn.className = "h-8 rounded-xl text-xs font-black bg-emerald-600 text-white border-2 border-emerald-300 shadow-md shadow-emerald-500/40 flex items-center justify-center";
+                } else {
+                    // OTHER PERSON'S CARD: Muted Dark Grey
+                    btn.className = "h-8 rounded-xl text-xs font-bold bg-slate-800/60 text-slate-500 border border-slate-700/50 cursor-not-allowed flex items-center justify-center opacity-70 line-through";
+                }
             }
-            document.getElementById('poolPrize').innerText = `${data.poolPrize.toFixed(2)} ETB`;
+            document.getElementById('poolPrize').innerHTML = `<span class="text-yellow-400">${data.poolPrize.toFixed(2)}</span> <span class="text-[10px] text-slate-300">ETB</span>`;
         });
 
         socket.on('my_card', (data) => {
             myActiveCard = data.numbers;
+            mySelectedCards.add(data.cardIndex);
+            
+            // Mark button as Ours (Emerald Green)
+            const btn = document.getElementById(`btn-card-${data.cardIndex}`);
+            if(btn) {
+                btn.className = "h-8 rounded-xl text-xs font-black bg-emerald-600 text-white border-2 border-emerald-300 shadow-md shadow-emerald-500/40 flex items-center justify-center";
+            }
+
             document.getElementById('myCardNumber').innerText = `#${data.cardIndex}`;
             document.getElementById('myCardSection').classList.remove('hidden');
             renderBingoCard(data.numbers);
             syncUser();
         });
 
-        // ROUND STARTED: HIDE 60 CARDS -> SHOW B-I-N-G-O BOARD
+        // PLAY TIME: 60 CARDS DISAPPEAR -> CALLING BOARD APPEARS
         socket.on('round_started', () => {
             document.getElementById('cardPickerSection').classList.add('hidden');
             document.getElementById('playingBoardContainer').classList.remove('hidden');
         });
 
-        // NUMBER CALLED
         socket.on('number_called', (data) => {
             const letter = getBingoLetter(data.number);
             document.getElementById('activeBall').innerText = `${letter}${data.number}`;
             document.getElementById('calledCount').innerText = data.called.length;
 
-            // Voice announcement ("B 12", etc.)
             announceNumber(data.number);
 
-            // Highlight on Master Board
             const masterCell = document.getElementById(`master-num-${data.number}`);
             if(masterCell) {
-                masterCell.className = "w-5 h-5 rounded-md bg-yellow-400 text-black font-black flex items-center justify-center text-[10px] shadow-md shadow-yellow-400/50 scale-105 transition";
+                masterCell.className = "w-4 h-4 rounded-md bg-yellow-400 text-black font-black flex items-center justify-center text-[9px] shadow-md shadow-yellow-400/50 scale-105 transition";
             }
 
-            // Recents pill
             const pill = document.createElement('span');
-            pill.className = "px-2 py-0.5 rounded-lg text-[10px] font-black bg-blue-500/20 text-blue-400 border border-blue-500/30";
+            pill.className = "px-1.5 py-0.5 rounded text-[9px] font-black bg-blue-500/20 text-blue-400 border border-blue-500/30";
             pill.innerText = `${letter}${data.number}`;
             document.getElementById('recentBalls').prepend(pill);
 
-            // Highlight on User Card
             const el = document.getElementById(`cell-${data.number}`);
             if(el) {
                 el.classList.remove('bg-slate-950');
@@ -567,23 +571,22 @@
             syncUser();
         });
 
-        // GAME RESET: 60 CARDS REAPPEAR
         socket.on('game_reset', () => {
+            mySelectedCards.clear();
             document.getElementById('playingBoardContainer').classList.add('hidden');
             document.getElementById('cardPickerSection').classList.remove('hidden');
             document.getElementById('myCardSection').classList.add('hidden');
             document.getElementById('activeBall').innerText = '--';
             document.getElementById('recentBalls').innerHTML = '';
 
-            // Reset master board highlights
             initMasterBingoBoard();
 
-            // Reset 60 buttons
+            // Reset all 60 buttons back to open electric blue
             for (let i = 1; i <= 60; i++) {
                 const btn = document.getElementById(`btn-card-${i}`);
                 if(btn) {
                     btn.disabled = false;
-                    btn.className = "p-2 rounded-2xl text-xs font-black bg-slate-950 text-slate-300 border border-slate-800 hover:border-blue-500 active:scale-95 transition";
+                    btn.className = "h-8 rounded-xl text-xs font-black bg-slate-950 text-white border border-blue-500/40 hover:border-blue-400 active:scale-95 transition shadow-sm flex items-center justify-center";
                 }
             }
         });
@@ -596,7 +599,7 @@
                     const val = card[c][r];
                     const div = document.createElement('div');
                     div.id = `cell-${val}`;
-                    div.className = "p-3 bg-slate-950 text-slate-200 border border-slate-800 rounded-2xl flex items-center justify-center text-sm font-black";
+                    div.className = "p-2 bg-slate-950 text-white border border-slate-800 rounded-xl flex items-center justify-center text-xs font-black";
                     div.innerText = val === 0 ? "★" : val;
                     if(val === 0) div.classList.add('bg-yellow-400', 'text-slate-950');
                     board.appendChild(div);
@@ -664,10 +667,10 @@
             const data = await res.json();
             const list = document.getElementById('weeklyTopList');
             list.innerHTML = data.map((u, i) => `
-                <div class="flex justify-between items-center p-2.5 bg-slate-950 rounded-2xl border border-slate-800 text-xs">
+                <div class="flex justify-between items-center p-2 bg-slate-950 rounded-xl border border-slate-800 text-xs">
                     <div class="flex items-center gap-2">
                         <span class="font-black text-blue-400">#${i+1}</span>
-                        <p class="font-bold text-slate-200">${u.first_name || u.username}</p>
+                        <p class="font-bold text-white">${u.first_name || u.username}</p>
                     </div>
                     <span class="font-black text-yellow-400">${u.cards_bought_this_week} ካርዶች</span>
                 </div>
@@ -679,10 +682,10 @@
             const data = await res.json();
             const list = document.getElementById('leaderboardList');
             list.innerHTML = data.map((u, i) => `
-                <div class="flex justify-between items-center p-2.5 bg-slate-950 rounded-2xl border border-slate-800 text-xs">
+                <div class="flex justify-between items-center p-2 bg-slate-950 rounded-xl border border-slate-800 text-xs">
                     <div class="flex items-center gap-2">
                         <span class="font-black text-blue-400">#${i+1}</span>
-                        <p class="font-bold text-slate-200">${u.first_name || u.username}</p>
+                        <p class="font-bold text-white">${u.first_name || u.username}</p>
                     </div>
                     <span class="font-black text-green-400">${parseFloat(u.total_won).toFixed(2)} ETB</span>
                 </div>
@@ -694,14 +697,14 @@
             const data = await res.json();
             const list = document.getElementById('historyList');
             list.innerHTML = data.map(t => `
-                <div class="p-3 bg-slate-950 rounded-2xl border border-slate-800 flex justify-between items-center text-xs">
+                <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
                     <div>
                         <span class="font-black ${t.type === 'DEPOSIT' ? 'text-green-400' : 'text-orange-400'}">${t.type}</span>
-                        <p class="text-[10px] text-slate-500">${new Date(t.created_at).toLocaleDateString()}</p>
+                        <p class="text-[9px] text-slate-500">${new Date(t.created_at).toLocaleDateString()}</p>
                     </div>
                     <div class="text-right">
-                        <p class="font-black">${t.amount} ETB</p>
-                        <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${t.status === 'APPROVED' ? 'bg-green-500/20 text-green-400' : t.status === 'REJECTED' ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400'}">${t.status}</span>
+                        <p class="font-black text-white">${t.amount} ETB</p>
+                        <span class="text-[9px] px-2 py-0.5 rounded-full font-bold ${t.status === 'APPROVED' ? 'bg-green-500/20 text-green-400' : t.status === 'REJECTED' ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400'}">${t.status}</span>
                     </div>
                 </div>
             `).join('');
