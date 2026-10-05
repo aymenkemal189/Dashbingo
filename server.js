@@ -39,6 +39,11 @@ function checkAdminAuth(req, res, next) {
     next();
 }
 
+// ================= SIMULATED BOTS CONTROLLER ================= //
+// 🤖 ቦቶች እንዲቆርጡ ከፈለግክ true፤ ማጥፋት ስትፈልግ false አድርገው
+const ENABLE_SIMULATED_PLAYERS = true; 
+
+const BOT_NAMES = ["Almush 🌱 SEED 🐾", "Girmay", "Rui costa", "Abuker", "Daniel", "🐐 MARCY 🇪🇷 👻", "JERMIAH", "Hkedi Yeseya", "Alst 🙋 costey", "Meli 🌸", "Roky", "Haymi 🦋", "ዛ Life", "Mastewal", "Alemyehu", "Mohammed", "Alste", "Saha", "Nihaan", "Abel", "Mati", "TAMJA", "Teshome", "toma", "Eyerus", "tamex 💜"];
 // Telegram Bot
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const WEBAPP_URL = process.env.WEBAPP_URL || 'https://dashbingo.onrender.com';
@@ -63,14 +68,14 @@ bot.start(async (ctx) => {
 });
 
 // ================= GAME ENGINE ================= //
-const CARD_PRICE = 10; // 10 ETB በካርድ
-const HOUSE_COMMISSION = 0.20; // 20% የባለቤት ድርሻ
+const CARD_PRICE = 10; // 10 ETB
+const HOUSE_COMMISSION = 0.20; // 20% House Rake
 
 let gameState = {
     roundNumber: 1001,
     status: 'SELECTION',
-    countdown: 50, // 50 ሰከንድ የካርድ መቁረጫ
-    selectedCards: {}, // { cardIndex: { userId, userName, numbers } }
+    countdown: 50,
+    selectedCards: {},
     calledNumbers: [],
     currentNumber: null,
     totalPrize: 0,
@@ -115,7 +120,51 @@ function checkWinner(card, called) {
     return diag1 || diag2;
 }
 
-// Real-Time Game Loop
+// 🤖 የኮምፒውተር ቆራጮች (Simulated Bots) ተግባር
+function simulateBotPurchases() {
+    if (!ENABLE_SIMULATED_PLAYERS || gameState.status !== 'SELECTION') return;
+
+    // በየዙሩ ከ 3 እስከ 6 ቦቶች በተለያየ ሰከንድ ይቆርጣሉ
+    const botCount = Math.floor(Math.random() * 4) + 3;
+
+    for (let i = 0; i < botCount; i++) {
+        setTimeout(() => {
+            if (gameState.status !== 'SELECTION') return;
+
+            let randomCardIndex;
+            let attempts = 0;
+            do {
+                randomCardIndex = Math.floor(Math.random() * 60) + 1;
+                attempts++;
+            } while (gameState.selectedCards[randomCardIndex] && attempts < 100);
+
+            if (gameState.selectedCards[randomCardIndex]) return;
+
+            const botName = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
+            const generatedCard = generateBingoCard();
+
+            gameState.selectedCards[randomCardIndex] = {
+                userId: null,
+                userName: botName,
+                numbers: generatedCard,
+                isBot: true
+            };
+
+            const cardCount = Object.keys(gameState.selectedCards).length;
+            const totalPot = cardCount * CARD_PRICE;
+            gameState.totalPrize = totalPot * (1 - HOUSE_COMMISSION);
+
+            io.emit('card_taken', {
+                cardIndex: randomCardIndex,
+                userName: botName,
+                totalCards: cardCount,
+                poolPrize: gameState.totalPrize
+            });
+        }, (i + 1) * 4500); // በየ 4.5 ሰከንዱ ረጋ ብለው ይቆርጣሉ
+    }
+}
+
+// Game Loop Timer
 setInterval(async () => {
     if (gameState.status === 'SELECTION') {
         gameState.countdown--;
@@ -163,15 +212,22 @@ setInterval(async () => {
             try {
                 await client.query('BEGIN');
                 for (const win of winners) {
-                    await client.query(
-                        `UPDATE users SET balance = balance + $1, total_won = total_won + $1 WHERE id = $2`,
-                        [splitPrize, win.userId]
-                    );
+                    // እውነተኛ ተጫዋች ከሆነ ብቻ ሒሳቡን ጨምር
+                    if (!win.isBot && win.userId) {
+                        await client.query(
+                            `UPDATE users SET balance = balance + $1, total_won = total_won + $1 WHERE id = $2`,
+                            [splitPrize, win.userId]
+                        );
+                    }
                 }
+
+                // ቦት ካሸነፈ winner_id NULL እንዲሆን በማድረግ የዳታቤዝ ስህተትን መከላከል
+                const realWinnerId = winners[0].isBot ? null : winners[0].userId;
+
                 await client.query(
                     `INSERT INTO bingo_rounds (round_number, card_price, total_cards, pool_prize, owner_rake, winner_id, winning_card_number)
                      VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-                    [gameState.roundNumber, CARD_PRICE, Object.keys(gameState.selectedCards).length, gameState.totalPrize, gameState.ownerProfit, winners[0].userId, winners[0].cardIndex]
+                    [gameState.roundNumber, CARD_PRICE, Object.keys(gameState.selectedCards).length, gameState.totalPrize, gameState.ownerProfit, realWinnerId, winners[0].cardIndex]
                 );
                 await client.query('COMMIT');
             } catch (err) {
@@ -205,11 +261,18 @@ function resetGame() {
     gameState.totalPrize = 0;
     gameState.ownerProfit = 0;
     io.emit('game_reset', gameState);
+
+    // 🤖 አዲሱ ዙር እንደጀመረ ቦቶች ካርድ እንዲቆርጡ መጥራት
+    simulateBotPurchases();
 }
+
+// ሰርቨሩ ልክ ሲነሳ የመጀመሪያው ዙር ላይ ቦቶችን ማስጀመር
+setTimeout(() => {
+    simulateBotPurchases();
+}, 2000);
 
 // ================= REST APIS ================= //
 
-// User Sync (አፑ እንደተከፈተ መመዝገቢያ)
 app.post('/api/user/sync', async (req, res) => {
     const { telegramId, firstName, username } = req.body;
     if (!telegramId) return res.status(400).json({ error: 'telegramId is required' });
@@ -229,7 +292,6 @@ app.post('/api/user/sync', async (req, res) => {
     }
 });
 
-// 🎁 20 ETB Welcome Bonus (አንድ ጊዜ ብቻ የሚወሰድ)
 app.post('/api/user/claim-welcome', async (req, res) => {
     const { telegramId } = req.body;
     const client = await pool.connect();
@@ -269,7 +331,6 @@ app.post('/api/user/claim-welcome', async (req, res) => {
     }
 });
 
-// Deposit Request (Duplicate SMS መከላከያ Hash አለው)
 app.post('/api/deposit', async (req, res) => {
     const { telegramId, firstName, username, method, amount, smsText } = req.body;
     if (!amount || amount <= 0 || !smsText || smsText.trim().length < 15) {
@@ -303,7 +364,6 @@ app.post('/api/deposit', async (req, res) => {
     }
 });
 
-// Withdraw Request (አነስተኛ መጠን 50 ETB)
 app.post('/api/withdraw', async (req, res) => {
     const { telegramId, method, amount, accountNumber, accountName } = req.body;
     const withdrawAmount = parseFloat(amount);
@@ -347,7 +407,6 @@ app.post('/api/withdraw', async (req, res) => {
     }
 });
 
-// Promo Code Redeem
 app.post('/api/promocode/redeem', async (req, res) => {
     const { telegramId, code } = req.body;
     if (!code) return res.status(400).json({ error: 'እባክዎ ኮድ ያስገቡ!' });
@@ -394,7 +453,6 @@ app.post('/api/promocode/redeem', async (req, res) => {
     }
 });
 
-// Weekly Top & History
 app.get('/api/weekly-top', async (req, res) => {
     try {
         const { rows } = await pool.query(
@@ -432,8 +490,7 @@ app.get('/api/history/:telegramId', async (req, res) => {
     }
 });
 
-// ================= ADMIN APIS ================= //
-
+// Admin APIs
 app.get('/api/admin/transactions', checkAdminAuth, async (req, res) => {
     try {
         const { rows } = await pool.query(
@@ -568,7 +625,7 @@ app.get('/api/admin/analytics', checkAdminAuth, async (req, res) => {
     }
 });
 
-// ================= SOCKET.IO: CARDS UP TO 999 ================= //
+// Socket.io Buy Card
 io.on('connection', (socket) => {
     socket.emit('game_init', gameState);
 
@@ -615,7 +672,8 @@ io.on('connection', (socket) => {
             gameState.selectedCards[cIndex] = {
                 userId: user.id,
                 userName: user.first_name,
-                numbers: generatedCard
+                numbers: generatedCard,
+                isBot: false
             };
 
             await client.query('COMMIT');
