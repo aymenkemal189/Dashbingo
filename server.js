@@ -11,7 +11,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
-// Database Connection with Pool Configuration (Neon Postgres)
+// Database Connection (Neon Postgres)
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
@@ -21,16 +21,15 @@ const pool = new Pool({
 });
 
 app.use(express.json());
-
-// ፋይሎቹ ዋናው ገጽ (Root) ላይ ስላሉ በቀጥታ ማስተናገድ
 app.use(express.static(__dirname));
 
+// Static Routes
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/index.html', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
 app.get('/admin.html', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
 
-// Admin Secret Key Middleware
+// Admin Security Middleware
 const ADMIN_SECRET = process.env.ADMIN_SECRET || 'super_secret_dash_admin_2026';
 function checkAdminAuth(req, res, next) {
     const key = req.headers['x-admin-key'] || req.query.admin_key;
@@ -53,7 +52,7 @@ bot.start(async (ctx) => {
              ON CONFLICT (telegram_id) DO UPDATE SET first_name = $2, username = $3`,
             [id, first_name || 'ተጫዋች', username || '']
         );
-        ctx.reply(`እንኳን ወደ Dash Bingo ⚡ በደህና መጡ! ጨዋታውን ለመጀመር ከታች ያለውን ይጫኑ፦`, 
+        ctx.reply(`እንኳን ወደ Dash Bingo ⚡ በደህና መጡ! ጨዋታውን ለመጀመር እና የ 20 ብር ቦነስዎን ለመውሰድ ከታች ያለውን ይጫኑ፦`, 
             Markup.inlineKeyboard([
                 [Markup.button.webApp("🎮 Play Dash Bingo", WEBAPP_URL)]
             ])
@@ -64,14 +63,14 @@ bot.start(async (ctx) => {
 });
 
 // ================= GAME ENGINE ================= //
-const CARD_PRICE = 20; // 20 ETB
+const CARD_PRICE = 10; // 10 ETB በካርድ
 const HOUSE_COMMISSION = 0.20; // 20% የባለቤት ድርሻ
 
 let gameState = {
     roundNumber: 1001,
     status: 'SELECTION',
     countdown: 50, // 50 ሰከንድ የካርድ መቁረጫ
-    selectedCards: {},
+    selectedCards: {}, // { cardIndex: { userId, userName, numbers } }
     calledNumbers: [],
     currentNumber: null,
     totalPrize: 0,
@@ -92,7 +91,7 @@ function generateBingoCard() {
     let n = getCols(31, 45);
     let g = getCols(46, 60);
     let o = getCols(61, 75);
-    n[2] = 0; // Free Center
+    n[2] = 0; // Free Center Star
     return [b, i, n, g, o];
 }
 
@@ -116,7 +115,7 @@ function checkWinner(card, called) {
     return diag1 || diag2;
 }
 
-// Game Loop
+// Real-Time Game Loop
 setInterval(async () => {
     if (gameState.status === 'SELECTION') {
         gameState.countdown--;
@@ -149,7 +148,6 @@ setInterval(async () => {
         gameState.calledNumbers.push(nextNum);
         gameState.currentNumber = nextNum;
 
-        // አሸናፊዎችን ማጣራት
         let winners = [];
         for (const [cardIndex, cardData] of Object.entries(gameState.selectedCards)) {
             if (checkWinner(cardData.numbers, gameState.calledNumbers)) {
@@ -211,7 +209,7 @@ function resetGame() {
 
 // ================= REST APIS ================= //
 
-// 🚀 ሚኒ አፑ ሲከፈት ተጠቃሚውን በቀጥታ መመዝገቢያ (Auto-Register / Sync User)
+// User Sync (አፑ እንደተከፈተ መመዝገቢያ)
 app.post('/api/user/sync', async (req, res) => {
     const { telegramId, firstName, username } = req.body;
     if (!telegramId) return res.status(400).json({ error: 'telegramId is required' });
@@ -231,28 +229,47 @@ app.post('/api/user/sync', async (req, res) => {
     }
 });
 
-// Profile & Balance (ተጠቃሚው ከሌለ ራሱ ወዲያው ይመዘግበዋል)
-app.get('/api/user/:telegramId', async (req, res) => {
-    const { telegramId } = req.params;
-    const firstName = req.query.first_name || 'ተጫዋች';
-    const username = req.query.username || '';
-
+// 🎁 20 ETB Welcome Bonus (አንድ ጊዜ ብቻ የሚወሰድ)
+app.post('/api/user/claim-welcome', async (req, res) => {
+    const { telegramId } = req.body;
+    const client = await pool.connect();
     try {
-        const { rows } = await pool.query(
-            `INSERT INTO users (telegram_id, first_name, username) 
-             VALUES ($1, $2, $3) 
-             ON CONFLICT (telegram_id) DO UPDATE 
-             SET first_name = EXCLUDED.first_name 
-             RETURNING *`,
-            [telegramId, firstName, username]
+        await client.query('BEGIN');
+        const userRes = await client.query('SELECT id, balance FROM users WHERE telegram_id = $1 FOR UPDATE', [telegramId]);
+        if (userRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'ተጠቃሚው አልተገኘም' });
+        }
+        const user = userRes.rows[0];
+
+        const checkBonus = await client.query(
+            "SELECT id FROM transactions WHERE user_id = $1 AND type = 'WELCOME_BONUS'", 
+            [user.id]
         );
-        res.json(rows[0]);
+
+        if (checkBonus.rows.length > 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'ይቅርታ! የእንኳን ደህና መጡ ቦነስዎን ቀደም ሲል ወስደዋል!' });
+        }
+
+        await client.query('UPDATE users SET balance = balance + 20 WHERE id = $1', [user.id]);
+        await client.query(
+            `INSERT INTO transactions (user_id, type, payment_method, amount, status) 
+             VALUES ($1, 'WELCOME_BONUS', 'BONUS', 20.00, 'APPROVED')`,
+            [user.id]
+        );
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: '🎉 እንኳን ደስ አለዎት! የ 20 ብር ቦነስ ወደ ዋሌትዎ ገቢ ሆኗል!' });
     } catch (err) {
+        await client.query('ROLLBACK');
         res.status(500).json({ error: err.message });
+    } finally {
+        client.release();
     }
 });
 
-// Deposit Request (Duplicate SMS መከላከያ Hash አለው፤ ተጠቃሚውንም ያረጋግጣል)
+// Deposit Request (Duplicate SMS መከላከያ Hash አለው)
 app.post('/api/deposit', async (req, res) => {
     const { telegramId, firstName, username, method, amount, smsText } = req.body;
     if (!amount || amount <= 0 || !smsText || smsText.trim().length < 15) {
@@ -263,7 +280,6 @@ app.post('/api/deposit', async (req, res) => {
     const smsHash = crypto.createHash('sha256').update(normalizedSMS).digest('hex');
 
     try {
-        // ተጠቃሚውን መመዝገቡን ማረጋገጥ
         const userRes = await pool.query(
             `INSERT INTO users (telegram_id, first_name, username) 
              VALUES ($1, $2, $3) 
@@ -281,13 +297,13 @@ app.post('/api/deposit', async (req, res) => {
         res.json({ success: true, message: 'ማስገቢያ ጥያቄዎ ለአድሚን ተልኳል! ጥቂት ደቂቃ ይጠብቁ።' });
     } catch (err) {
         if (err.code === '23505') {
-            return res.status(400).json({ error: 'ይህ SMS ቀደም ሲል ጥቅም ላይ ውሏል! እባክዎ አዲስ የግብይት SMS ያስገቡ።' });
+            return res.status(400).json({ error: 'ይህ SMS ቀደም ሲል ጥቅም ላይ ውሏል! አዲስ SMS ያስገቡ።' });
         }
         res.status(500).json({ error: err.message });
     }
 });
 
-// Withdraw Request (Atomic Locking)
+// Withdraw Request (አነስተኛ መጠን 50 ETB)
 app.post('/api/withdraw', async (req, res) => {
     const { telegramId, method, amount, accountNumber, accountName } = req.body;
     const withdrawAmount = parseFloat(amount);
@@ -378,7 +394,7 @@ app.post('/api/promocode/redeem', async (req, res) => {
     }
 });
 
-// Weekly Top 10
+// Weekly Top & History
 app.get('/api/weekly-top', async (req, res) => {
     try {
         const { rows } = await pool.query(
@@ -393,7 +409,6 @@ app.get('/api/weekly-top', async (req, res) => {
     }
 });
 
-// Leaderboard & History
 app.get('/api/leaderboard', async (req, res) => {
     try {
         const { rows } = await pool.query('SELECT first_name, username, total_won FROM users ORDER BY total_won DESC LIMIT 10');
@@ -417,7 +432,7 @@ app.get('/api/history/:telegramId', async (req, res) => {
     }
 });
 
-// ================= ADMIN APIS (SECURED) ================= //
+// ================= ADMIN APIS ================= //
 
 app.get('/api/admin/transactions', checkAdminAuth, async (req, res) => {
     try {
@@ -553,14 +568,23 @@ app.get('/api/admin/analytics', checkAdminAuth, async (req, res) => {
     }
 });
 
-// ================= SOCKET.IO HANDLING ================= //
+// ================= SOCKET.IO: CARDS UP TO 999 ================= //
 io.on('connection', (socket) => {
     socket.emit('game_init', gameState);
 
     socket.on('buy_card', async ({ telegramId, cardIndex }) => {
-        if (gameState.status !== 'SELECTION') return;
-        if (gameState.selectedCards[cardIndex]) {
-            socket.emit('error_msg', 'ይህ ካርድ ቀደም ሲል ተይዟል!');
+        const cIndex = parseInt(cardIndex);
+        if (isNaN(cIndex) || cIndex < 1 || cIndex > 999) {
+            socket.emit('error_msg', 'የተሳሳተ የካርድ ቁጥር! (ከ 1 እስከ 999 ይምረጡ)');
+            return;
+        }
+
+        if (gameState.status !== 'SELECTION') {
+            socket.emit('error_msg', 'የካርድ መቁረጫ ሰዓቱ አልቋል!');
+            return;
+        }
+        if (gameState.selectedCards[cIndex]) {
+            socket.emit('error_msg', `ካርድ #${cIndex} ቀደም ሲል ተይዟል! እባክዎ ሌላ ይምረጡ።`);
             return;
         }
 
@@ -576,7 +600,7 @@ io.on('connection', (socket) => {
 
             if (parseFloat(user.balance) < CARD_PRICE) {
                 await client.query('ROLLBACK');
-                socket.emit('error_msg', 'ሒሳብዎ በቂ አይደለም! እባክዎ ዴፖዚት ያድርጉ።');
+                socket.emit('error_msg', `ሒሳብዎ በቂ አይደለም! ካርድ ለመቁረጥ ቢያንስ ${CARD_PRICE} ETB ያስፈልጋል።`);
                 return;
             }
 
@@ -588,7 +612,7 @@ io.on('connection', (socket) => {
             );
 
             const generatedCard = generateBingoCard();
-            gameState.selectedCards[cardIndex] = {
+            gameState.selectedCards[cIndex] = {
                 userId: user.id,
                 userName: user.first_name,
                 numbers: generatedCard
@@ -601,13 +625,13 @@ io.on('connection', (socket) => {
             gameState.totalPrize = totalPot * (1 - HOUSE_COMMISSION);
 
             io.emit('card_taken', {
-                cardIndex,
+                cardIndex: cIndex,
                 userName: user.first_name,
                 totalCards: cardCount,
                 poolPrize: gameState.totalPrize
             });
 
-            socket.emit('my_card', { cardIndex, numbers: generatedCard });
+            socket.emit('my_card', { cardIndex: cIndex, numbers: generatedCard });
         } catch (e) {
             await client.query('ROLLBACK');
             console.error("Card purchase error:", e);
