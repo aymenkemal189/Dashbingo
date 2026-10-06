@@ -17,7 +17,6 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* 1-Away Waiting Glow Animation */
         @keyframes oneAwayPulse {
             0%, 100% { box-shadow: 0 0 15px rgba(234, 179, 8, 0.4); border-color: rgba(234, 179, 8, 0.9); }
             50% { box-shadow: 0 0 30px rgba(234, 179, 8, 0.9); border-color: rgba(250, 204, 21, 1); }
@@ -27,10 +26,10 @@
 </head>
 <body class="pb-24 select-none">
 
-    <!-- FLOATING TOAST NOTIFICATION -->
+    <!-- FLOATING TOAST CONTAINER -->
     <div id="toastContainer" class="fixed top-4 left-4 right-4 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
 
-    <!-- WINNER CELEBRATION MODAL OVERLAY -->
+    <!-- WINNER CELEBRATION MODAL -->
     <div id="winnerModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-xl z-50 flex items-center justify-center p-4 hidden">
         <div class="glass-box p-6 rounded-3xl max-w-sm w-full text-center space-y-4 border-2 border-yellow-400 shadow-2xl relative overflow-hidden">
             <div class="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-tr from-yellow-500 to-amber-300 flex items-center justify-center text-4xl shadow-xl shadow-yellow-500/50 animate-bounce">
@@ -74,7 +73,7 @@
 
     <main class="max-w-md mx-auto p-3 space-y-2.5">
 
-        <!-- 🎁 20 ETB WELCOME BONUS BANNER -->
+        <!-- 🎁 20 ETB WELCOME BONUS BANNER (ከተወሰደ በኋላ ይጠፋል) -->
         <div id="welcomeBonusBanner" class="p-3 bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-500/20 rounded-2xl border border-yellow-500/40 flex justify-between items-center shadow-md">
             <div class="flex items-center gap-2.5">
                 <span class="text-2xl animate-bounce">🎁</span>
@@ -91,23 +90,24 @@
         <!-- ================= TAB 1: BINGO ARENA ================= -->
         <section id="tab-game" class="space-y-2.5">
             
-            <!-- Compact Pot & Countdown Bar -->
+            <!-- FLASH BINGO STYLE HEADER (ድራሹ & የተያዙ ካርዶች ብዛት በግልጽ) -->
             <div class="grid grid-cols-2 gap-2">
                 <div class="glass-box p-2.5 rounded-2xl text-center relative overflow-hidden border border-blue-500/30 shadow-sm">
-                    <p class="text-[9px] font-bold text-slate-300 uppercase tracking-wider">የዙሩ ድራሽ (Pot)</p>
+                    <p class="text-[9px] font-bold text-slate-300 uppercase tracking-wider">ድራሹ (Pot Prize)</p>
                     <h2 id="poolPrize" class="text-base font-black text-white mt-0.5"><span class="text-yellow-400">0.00</span> <span class="text-[10px] text-slate-300">ETB</span></h2>
+                    <p class="text-[9px] text-blue-300 mt-0.5">የተያዙ ካርዶች: <b id="takenCardsCount" class="text-white">0</b></p>
                 </div>
 
                 <div class="glass-box p-2.5 rounded-2xl text-center relative overflow-hidden border border-blue-500/30 shadow-sm">
-                    <p class="text-[9px] font-bold text-slate-300 uppercase tracking-wider">የካርድ መቁረጫ</p>
+                    <p class="text-[9px] font-bold text-slate-300 uppercase tracking-wider">የካርድ መቁረጫ ሰዓት</p>
                     <h2 id="gameStatus" class="text-base font-black text-white mt-0.5"><span id="timer" class="text-yellow-400">30</span>s</h2>
+                    <p class="text-[9px] text-slate-400 mt-0.5">ዙር #<span id="roundNumberDisplay">1001</span></p>
                 </div>
             </div>
 
             <!-- 1. SELECTION STAGE: 999 CARDS (FRONT SHOWS ~80, SCROLLS TO 999) -->
             <div id="cardPickerSection" class="space-y-2">
                 
-                <!-- Direct Number Search & Random Pick -->
                 <div class="glass-box p-2.5 rounded-2xl border border-blue-500/30 space-y-1.5 shadow-sm">
                     <div class="flex justify-between items-center text-[11px] font-bold">
                         <span class="text-white flex items-center gap-1"><i class="fa-solid fa-ticket text-yellow-400"></i> ካርድ ቁጥር (1 - 999)</span>
@@ -124,7 +124,6 @@
                     </div>
                 </div>
 
-                <!-- 999 Cards Header -->
                 <div class="flex justify-between items-center px-1">
                     <span class="text-[10px] text-slate-300 font-bold">የካርዶች ዝርዝር (እስከ 999 ወደ ታች)</span>
                     <div class="flex gap-2 text-[9px] font-bold">
@@ -134,16 +133,15 @@
                     </div>
                 </div>
 
-                <!-- High Capacity 999 Grid Container (Clean Height) -->
                 <div id="cardGrid" class="grid grid-cols-6 gap-1.5 bg-slate-900/90 p-2.5 rounded-2xl border border-blue-500/20 shadow-md max-h-80 overflow-y-auto">
-                    <!-- Cards injected here -->
+                    <!-- Cards 1 to 999 injected here -->
                 </div>
             </div>
 
             <!-- 2. PLAYING STAGE: BINGO CALLING & MULTI-CARD SWIPER -->
             <div id="playingBoardContainer" class="hidden space-y-2.5">
                 
-                <!-- Current Ball Sphere -->
+                <!-- Active Ball Sphere -->
                 <div class="glass-box p-3 rounded-2xl text-center shadow-lg border border-blue-500/40 relative overflow-hidden">
                     <div class="flex justify-around items-center">
                         <div class="text-center">
@@ -168,10 +166,8 @@
                     <div class="space-y-1 text-xs font-bold" id="masterBingoBoard"></div>
                 </div>
 
-                <!-- MULTI-CARD SECTION (SWIPE / SWITCH MULTIPLE CARDS) -->
+                <!-- MULTI-CARD SECTION -->
                 <div id="myMultiCardSection" class="hidden space-y-1.5">
-                    
-                    <!-- Multi-Card Navigation Header -->
                     <div class="flex justify-between items-center px-1">
                         <div class="flex items-center gap-1.5">
                             <h3 class="font-extrabold text-xs text-white">የእርስዎ ካርድ (<span id="activeCardBadge" class="text-yellow-400 font-black">#0</span>)</h3>
@@ -179,7 +175,6 @@
                                 🔥 1 ቁጥር ብቻ ቀረዎት!
                             </span>
                         </div>
-                        <!-- Next/Prev Buttons for Multiple Cards -->
                         <div id="cardNavControls" class="flex items-center gap-1 hidden">
                             <button onclick="prevCard()" class="w-6 h-6 rounded-lg bg-slate-800 text-white text-xs flex items-center justify-center border border-slate-700 active:scale-95">
                                 <i class="fa-solid fa-chevron-left"></i>
@@ -191,7 +186,6 @@
                         </div>
                     </div>
 
-                    <!-- 5x5 Grid Card Container -->
                     <div id="activeCardContainer" class="bg-slate-900 p-2.5 rounded-2xl shadow-xl border-2 border-blue-500/70 transition-all duration-300">
                         <div class="grid grid-cols-5 text-center font-black text-blue-400 text-xs mb-1">
                             <div>B</div><div>I</div><div>N</div><div>G</div><div>O</div>
@@ -204,21 +198,6 @@
 
         <!-- ================= TAB 2: WALLET ================= -->
         <section id="tab-wallet" class="hidden space-y-3">
-            
-            <!-- Referral Card (1 ሰው ሲጋብዙ = 10 ETB) -->
-            <div class="p-3 bg-gradient-to-r from-blue-900/40 via-indigo-900/40 to-blue-900/40 rounded-2xl border border-blue-500/40 flex justify-between items-center shadow-md">
-                <div class="flex items-center gap-2">
-                    <span class="text-xl">👥</span>
-                    <div>
-                        <h4 class="font-black text-xs text-white">ሰው ጋብዘው 10 ETB ያግኙ!</h4>
-                        <p class="text-[10px] text-blue-300">ጓደኛዎ 1 ዙር ሲጫወት 10 ብር ይሰጥዎታል</p>
-                    </div>
-                </div>
-                <button onclick="copyReferralLink()" class="gradient-blue text-white px-3 py-1.5 rounded-xl font-black text-xs shadow-md active:scale-95 transition">
-                    ሊንክ ኮፒ
-                </button>
-            </div>
-
             <div class="grid grid-cols-2 gap-2 p-1 bg-slate-900 rounded-2xl border border-slate-800">
                 <button onclick="switchWalletView('deposit')" id="btnWalletDep" class="py-2 rounded-xl font-black text-xs gradient-blue text-white shadow-md transition">
                     <i class="fa-solid fa-arrow-down mr-1"></i> ማስገቢያ (Deposit)
@@ -228,7 +207,7 @@
                 </button>
             </div>
 
-            <!-- VIEW A: DEPOSIT (CBE ON TOP, ORIGINAL LOGOS) -->
+            <!-- VIEW A: DEPOSIT -->
             <div id="walletDepositView" class="space-y-3">
                 <div class="glass-box p-3 rounded-2xl space-y-2 border border-blue-500/20">
                     <div class="flex items-center gap-2">
@@ -236,7 +215,7 @@
                         <h3 class="font-black text-xs text-white">የክፍያ አካውንቶች</h3>
                     </div>
 
-                    <!-- 1. CBE (ON TOP: 1000562339427 Aymen Kemal) -->
+                    <!-- 1. CBE (ON TOP) -->
                     <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
                         <div class="flex items-center gap-2.5">
                             <img src="https://i.postimg.cc/Hk1pN2VS/20260805-174301.png" alt="CBE" class="w-8 h-8 rounded-lg object-contain">
@@ -251,7 +230,7 @@
                         </button>
                     </div>
 
-                    <!-- 2. Telebirr (0968260447 Nebyu) -->
+                    <!-- 2. Telebirr -->
                     <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
                         <div class="flex items-center gap-2.5">
                             <img src="https://i.postimg.cc/1zH5wqRj/20260805-174415.png" alt="Telebirr" class="w-8 h-8 rounded-lg object-contain">
@@ -267,7 +246,7 @@
                     </div>
                 </div>
 
-                <!-- Deposit SMS Form with Clean Method Selector -->
+                <!-- Deposit SMS Form -->
                 <div class="glass-box p-3 rounded-2xl space-y-2.5 border border-blue-500/20">
                     <div class="flex justify-between items-center">
                         <h4 class="font-black text-xs text-white flex items-center gap-1.5">
@@ -278,7 +257,6 @@
                         </span>
                     </div>
 
-                    <!-- Clean Pill Selector: CBE vs Telebirr -->
                     <div class="grid grid-cols-2 gap-2 p-1 bg-slate-950 rounded-xl border border-slate-800 text-xs font-bold">
                         <button type="button" onclick="selectDepositMethod('CBE')" id="pill-cbe" class="py-1.5 rounded-lg gradient-blue text-white transition">
                             CBE (ንግድ ባንክ)
@@ -313,20 +291,6 @@
                     ገንዘብ አውጣ
                 </button>
             </div>
-
-            <!-- PROMO CODE -->
-            <div class="glass-box p-3 rounded-2xl border-2 border-dashed border-blue-500/40 space-y-2">
-                <div class="flex items-center gap-1.5">
-                    <i class="fa-solid fa-gift text-yellow-400 text-sm"></i>
-                    <h4 class="font-black text-xs text-white">ፕሮሞ ኮድ አለዎት? (Promo Code)</h4>
-                </div>
-                <div class="flex gap-2">
-                    <input id="promoInput" type="text" placeholder="ኮድ እዚህ ያስገቡ..." class="w-full text-xs font-bold uppercase p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
-                    <button onclick="redeemPromo()" class="gradient-blue text-white px-4 rounded-xl font-black text-xs shadow-md active:scale-95 transition">
-                        ውሰድ
-                    </button>
-                </div>
-            </div>
         </section>
 
         <!-- ================= TAB 3: LEADERBOARD ================= -->
@@ -356,30 +320,102 @@
             <div id="historyList" class="space-y-2"></div>
         </section>
 
-        <!-- ================= TAB 5: SETTINGS ================= -->
+        <!-- ================= TAB 5: SETTINGS & FULL PROFILE SUMMARY ================= -->
         <section id="tab-settings" class="hidden space-y-3">
-            <div class="glass-box p-3 rounded-2xl space-y-2.5 border border-slate-800">
+            
+            <!-- Complete Profile & Balance Breakdown Card -->
+            <div class="glass-box p-4 rounded-3xl space-y-3 border border-blue-500/30">
+                <div class="flex items-center gap-3 pb-3 border-b border-slate-800">
+                    <div class="w-12 h-12 rounded-2xl gradient-blue flex items-center justify-center text-xl font-black text-white shadow-md">
+                        👤
+                    </div>
+                    <div>
+                        <h3 id="settingsProfileName" class="font-black text-sm text-white">ተጫዋች</h3>
+                        <p id="settingsProfileUsername" class="text-[10px] text-blue-400">@username</p>
+                    </div>
+                </div>
+
+                <!-- 3 Balances: Current, Win, and Bonus -->
+                <div class="grid grid-cols-3 gap-1.5 text-center">
+                    <div class="p-2 bg-slate-950 rounded-xl border border-slate-800">
+                        <span class="text-[8px] text-slate-400 font-bold uppercase">ዋና ሒሳብ</span>
+                        <h4 id="profileCurrentBal" class="text-xs font-black text-white mt-0.5">0.00</h4>
+                    </div>
+                    <div class="p-2 bg-slate-950 rounded-xl border border-slate-800">
+                        <span class="text-[8px] text-emerald-400 font-bold uppercase">ያሸነፉት</span>
+                        <h4 id="profileWinBal" class="text-xs font-black text-emerald-400 mt-0.5">0.00</h4>
+                    </div>
+                    <div class="p-2 bg-slate-950 rounded-xl border border-slate-800">
+                        <span class="text-[8px] text-yellow-400 font-bold uppercase">ቦነስ ሒሳብ</span>
+                        <h4 id="profileBonusBal" class="text-xs font-black text-yellow-400 mt-0.5">20.00</h4>
+                    </div>
+                </div>
+
+                <!-- Referral Section with 1-Click Share to Telegram -->
+                <div class="pt-2 border-t border-slate-800 space-y-2">
+                    <span class="text-[10px] font-bold text-slate-300">የሪፈራል ሊንክዎ (1 ሰው ሲጋብዙ = 10 ETB)፦</span>
+                    <div class="flex gap-1.5">
+                        <input id="refLinkInput" type="text" readonly class="w-full text-[10px] font-mono p-2 rounded-xl bg-slate-950 border border-slate-800 text-blue-300 outline-none">
+                        <button onclick="shareReferralToTelegram()" class="px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1 active:scale-95 transition">
+                            <i class="fa-solid fa-paper-plane"></i> አጋራ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Promo Code Box inside Settings -->
+                <div class="pt-2 border-t border-slate-800 space-y-1.5">
+                    <span class="text-[10px] font-bold text-slate-300">ፕሮሞ ኮድ ማስገቢያ፦</span>
+                    <div class="flex gap-1.5">
+                        <input id="promoInput" type="text" placeholder="ኮድ ያስገቡ..." class="w-full text-xs uppercase font-bold p-2 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
+                        <button onclick="redeemPromo()" class="gradient-blue text-white px-4 py-2 rounded-xl font-black text-xs active:scale-95 transition">
+                            ውሰድ
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3 Audio Toggles: Background Music, Touch Sound, Voice Caller -->
+            <div class="glass-box p-3.5 rounded-3xl space-y-2.5 border border-slate-800">
                 <h3 class="font-black text-xs text-white flex items-center gap-2">
-                    <i class="fa-solid fa-sliders text-blue-400"></i> የድምጽ ቅንብሮች
+                    <i class="fa-solid fa-sliders text-blue-400"></i> የድምጽ ቅንብሮች (Audio Toggles)
                 </h3>
                 
+                <!-- 1. Background Music Toggle -->
                 <div class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800">
                     <div>
-                        <p class="font-bold text-xs text-white">የሴት ድምጽ ጥሪ (Voice Caller)</p>
-                        <p class="text-[9px] text-slate-400">ቁጥሮች ሲወጡ "B 12" እያለች ትጣራለች</p>
+                        <p class="font-bold text-xs text-white">የጀርባ ሙዚቃ (Lobby BG Music)</p>
+                        <p class="text-[9px] text-slate-400">ካርድ በሚቆረጥበት ሰዓት የሚጫወት ድምፅ</p>
                     </div>
-                    <button onclick="toggleVoice()" id="btnVoiceToggle" class="px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30">
+                    <button onclick="toggleBgMusic()" id="btnBgMusicToggle" class="px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30">
+                        በርቷል (ON)
+                    </button>
+                </div>
+
+                <!-- 2. Touch Sound Toggle -->
+                <div class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800">
+                    <div>
+                        <p class="font-bold text-xs text-white">የስክሪን ንክኪ ድምጽ (Touch Sounds)</p>
+                        <p class="text-[9px] text-slate-400">አዝራሮችን ሲጫኑ የሚሰማ ድምጽ</p>
+                    </div>
+                    <button onclick="toggleTouchSound()" id="btnTouchToggle" class="px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30">
+                        በርቷል (ON)
+                    </button>
+                </div>
+
+                <!-- 3. Voice Caller Toggle -->
+                <div class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800">
+                    <div>
+                        <p class="font-bold text-xs text-white">የቁጥር ጥሪ ድምጽ (Amharic Caller)</p>
+                        <p class="text-[9px] text-slate-400">ቁጥሮች ሲወጡ "ቢ... አስራ ሁለት" እያለች ትጣራለች</p>
+                    </div>
+                    <button onclick="toggleVoiceCaller()" id="btnVoiceToggle" class="px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30">
                         በርቷል (ON)
                     </button>
                 </div>
             </div>
 
-            <!-- Official Channels & Support Links -->
-            <div class="glass-box p-3 rounded-2xl space-y-2.5 border border-slate-800">
-                <h3 class="font-black text-xs text-white flex items-center gap-2">
-                    <i class="fa-brands fa-telegram text-blue-400"></i> ማህበራዊ ትስስር (Official Links)
-                </h3>
-                
+            <!-- Official Links -->
+            <div class="glass-box p-3 rounded-2xl space-y-2 border border-slate-800">
                 <a href="https://t.me/DashBingo" target="_blank" class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800 hover:border-blue-500 transition">
                     <div class="flex items-center gap-2">
                         <i class="fa-solid fa-bullhorn text-blue-400 text-xs"></i>
@@ -395,14 +431,6 @@
                     </div>
                     <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
                 </a>
-            </div>
-
-            <div class="glass-box p-3 rounded-2xl space-y-1.5 text-[10px] text-slate-400 border border-slate-800">
-                <h4 class="font-black text-white text-xs">የ Dash Bingo ህጎች</h4>
-                <p>• 1 ካርድ = 10 ETB።</p>
-                <p>• ካርዶች ከ #1 እስከ #999 ይገኛሉ።</p>
-                <p>• አግድም፣ ቁልቁል ወይም ሰያፍ (Diagonal) ቀድሞ የሞላ ተጫዋች ሙሉ ድራሹን (80%) ይወስዳል።</p>
-                <p>• አነስተኛው የማውጣት መጠን 50 ETB ነው።</p>
             </div>
         </section>
     </main>
@@ -431,7 +459,7 @@
         </button>
     </nav>
 
-    <!-- FLOATING TOAST ENGINE -->
+    <!-- ================= FLOATING TOAST ENGINE ================= -->
     <script>
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
@@ -466,75 +494,85 @@
         }
     </script>
 
-    <!-- 100% RELIABLE SOUND & VOICE ENGINE (WEB AUDIO API + TELEGRAM UNLOCK) -->
+    <!-- ================= AUDIO ENGINE: 2 BACKGROUND TRACKS & AMHARIC CALLER ================= -->
     <script>
-        let voiceActive = true;
-        let audioCtx = null;
+        // Audio Toggles
+        let bgMusicEnabled = true;
+        let touchSoundEnabled = true;
+        let voiceCallerEnabled = true;
 
-        function getAudioContext() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // 🎵 Background Audio 1: 30sec Selection Lobby Music (Low Volume 0.15)
+        const bgSelectionAudio = new Audio('/audio/30sec_first.mp3');
+        bgSelectionAudio.loop = true;
+        bgSelectionAudio.volume = 0.15;
+
+        // 🎵 Background Audio 2: 150sec Playing Outcome Music (Low Volume 0.15)
+        const bgPlayingAudio = new Audio('/audio/150sec_second.mp3');
+        bgPlayingAudio.loop = true;
+        bgPlayingAudio.volume = 0.15;
+
+        // Unlock audio playback on first interaction
+        function unlockAudio() {
+            if (bgMusicEnabled && bgSelectionAudio.paused) {
+                bgSelectionAudio.play().catch(() => {});
             }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            return audioCtx;
+            document.removeEventListener('touchstart', unlockAudio);
+            document.removeEventListener('click', unlockAudio);
         }
+        document.addEventListener('touchstart', unlockAudio, { passive: true });
+        document.addEventListener('click', unlockAudio, { passive: true });
 
-        // 🔊 Crystal Clear Chime
-        function playChime() {
-            try {
-                const ctx = getAudioContext();
-                const now = ctx.currentTime;
-
-                const osc1 = ctx.createOscillator();
-                const gain1 = ctx.createGain();
-                osc1.type = 'sine';
-                osc1.frequency.setValueAtTime(587.33, now); // D5
-                gain1.gain.setValueAtTime(0.15, now);
-                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-                osc1.connect(gain1);
-                gain1.connect(ctx.destination);
-                osc1.start(now);
-                osc1.stop(now + 0.35);
-
-                const osc2 = ctx.createOscillator();
-                const gain2 = ctx.createGain();
-                osc2.type = 'sine';
-                osc2.frequency.setValueAtTime(880, now + 0.15); // A5
-                gain2.gain.setValueAtTime(0.15, now + 0.15);
-                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
-                osc2.connect(gain2);
-                gain2.connect(ctx.destination);
-                osc2.start(now + 0.15);
-                osc2.stop(now + 0.55);
-            } catch (e) {}
-        }
-
-        // 🔊 Audio Unlock on any Touch or Click
-        function unlockAudioEngine() {
-            getAudioContext();
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.resume();
-            }
-            document.removeEventListener('touchstart', unlockAudioEngine);
-            document.removeEventListener('click', unlockAudioEngine);
-        }
-        document.addEventListener('touchstart', unlockAudioEngine, { passive: true });
-        document.addEventListener('click', unlockAudioEngine, { passive: true });
-
-        function toggleVoice() {
-            voiceActive = !voiceActive;
-            const btn = document.getElementById('btnVoiceToggle');
-            if (voiceActive) {
+        function toggleBgMusic() {
+            bgMusicEnabled = !bgMusicEnabled;
+            const btn = document.getElementById('btnBgMusicToggle');
+            if (bgMusicEnabled) {
                 btn.className = "px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30";
                 btn.innerText = "በርቷል (ON)";
-                showToast("የድምጽ ጥሪ በርቷል", "success");
+                showToast("የጀርባ ሙዚቃ በርቷል", "success");
             } else {
+                bgSelectionAudio.pause();
+                bgPlayingAudio.pause();
                 btn.className = "px-3 py-1 rounded-lg font-black text-xs bg-red-500/20 text-red-400 border border-red-500/30";
                 btn.innerText = "ጠፍቷል (OFF)";
-                showToast("የድምጽ ጥሪ ጠፍቷል", "info");
+                showToast("የጀርባ ሙዚቃ ጠፍቷል", "info");
             }
+        }
+
+        function toggleTouchSound() {
+            touchSoundEnabled = !touchSoundEnabled;
+            const btn = document.getElementById('btnTouchToggle');
+            btn.className = touchSoundEnabled 
+                ? "px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30"
+                : "px-3 py-1 rounded-lg font-black text-xs bg-red-500/20 text-red-400 border border-red-500/30";
+            btn.innerText = touchSoundEnabled ? "በርቷል (ON)" : "ጠፍቷል (OFF)";
+            showToast(`የንክኪ ድምጽ ${touchSoundEnabled ? 'በርቷል' : 'ጠፍቷል'}`, "info");
+        }
+
+        function toggleVoiceCaller() {
+            voiceCallerEnabled = !voiceCallerEnabled;
+            const btn = document.getElementById('btnVoiceToggle');
+            btn.className = voiceCallerEnabled 
+                ? "px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30"
+                : "px-3 py-1 rounded-lg font-black text-xs bg-red-500/20 text-red-400 border border-red-500/30";
+            btn.innerText = voiceCallerEnabled ? "በርቷል (ON)" : "ጠፍቷል (OFF)";
+            showToast(`የቁጥር ጥሪ ድምጽ ${voiceCallerEnabled ? 'በርቷል' : 'ጠፍቷል'}`, "info");
+        }
+
+        function playTouchBeep() {
+            if (!touchSoundEnabled) return;
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, ctx.currentTime);
+                gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.08);
+            } catch (e) {}
         }
 
         function getBingoLetter(num) {
@@ -545,36 +583,20 @@
             return 'O';
         }
 
-        // 🔊 Natural Voice Calling (With Web Speech API Fallback)
+        // 🎙️ Amharic MP3 Voice Caller (Supports 01_B.mp3 to 75_O.mp3)
         function announceNumber(num) {
-            if (!voiceActive) return;
-            playChime();
+            if (!voiceCallerEnabled) return;
 
             const letter = getBingoLetter(num);
+            const formattedNum = num < 10 ? `0${num}` : `${num}`;
+            const audioFileName = `${formattedNum}_${letter}.mp3`;
 
-            if ('speechSynthesis' in window) {
-                try {
-                    window.speechSynthesis.cancel();
-                    const voices = window.speechSynthesis.getVoices();
-                    const female = voices.find(v => 
-                        v.lang.startsWith('en') && (
-                            v.name.includes('Female') || v.name.includes('Samantha') || 
-                            v.name.includes('Victoria') || v.name.includes('Google US English') ||
-                            v.name.includes('Natural') || v.name.includes('Zira')
-                        )
-                    ) || voices.find(v => v.lang.startsWith('en'));
-
-                    const utterance = new SpeechSynthesisUtterance(`${letter} ... ${num}`);
-                    if (female) utterance.voice = female;
-                    utterance.pitch = 1.25;
-                    utterance.rate = 0.88;
-                    utterance.volume = 1.0;
-
-                    setTimeout(() => {
-                        window.speechSynthesis.speak(utterance);
-                    }, 200);
-                } catch (e) {}
-            }
+            // Try playing local audio file
+            const audio = new Audio(`/audio/${audioFileName}`);
+            audio.volume = 1.0;
+            audio.play().catch(() => {
+                // If MP3 file is not yet uploaded, fallback gracefully without error
+            });
         }
     </script>
 
@@ -585,14 +607,22 @@
 
         const user = tg?.initDataUnsafe?.user || { id: 9876543, first_name: "ሙከራ ተጫዋች", username: "" };
         document.getElementById('playerName').innerText = user.first_name;
+        document.getElementById('settingsProfileName').innerText = user.first_name;
+        document.getElementById('settingsProfileUsername').innerText = user.username ? `@${user.username}` : `ID: ${user.id}`;
 
-        // Get Referral payload from Telegram WebApp URL
+        const refLink = `https://t.me/dashbingobot/eth?startapp=ref_${user.id}`;
+        document.getElementById('refLinkInput').value = refLink;
+
+        function shareReferralToTelegram() {
+            const shareText = encodeURIComponent(`⚡ Dash Bingo ላይ አሁኑኑ ተቀላቀሉኝና 20 ETB ነፃ ቦነስ ይውሰዱ! 👇\n${refLink}`);
+            window.open(`https://t.me/share/url?url=${refLink}&text=${shareText}`, '_blank');
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
         const refPayload = urlParams.get('tgWebAppStartParam') || urlParams.get('startapp') || urlParams.get('ref') || '';
 
         const socket = io();
 
-        // Multi-Card Storage: Array of { cardIndex, numbers }
         let myCards = [];
         let currentCardViewIndex = 0;
         let selectedDepMethod = 'CBE';
@@ -612,13 +642,18 @@
                 });
                 const data = await res.json();
                 if (data.balance !== undefined) {
-                    document.getElementById('playerBalance').innerText = parseFloat(data.balance).toFixed(2);
+                    const bal = parseFloat(data.balance).toFixed(2);
+                    document.getElementById('playerBalance').innerText = bal;
+                    document.getElementById('profileCurrentBal').innerText = bal;
+                    document.getElementById('profileWinBal').innerText = parseFloat(data.total_won || 0).toFixed(2);
                 }
             } catch (e) {}
         }
         syncUser();
 
+        // 🎁 Welcome Bonus: Banner hides completely once claimed
         async function claimWelcomeBonus() {
+            playTouchBeep();
             try {
                 const res = await fetch('/api/user/claim-welcome', {
                     method: 'POST',
@@ -633,24 +668,24 @@
                 if (data.success) {
                     showToast(data.message, "success");
                     document.getElementById('welcomeBonusBanner').classList.add('hidden');
-                    if (data.balance !== undefined) {
-                        document.getElementById('playerBalance').innerText = parseFloat(data.balance).toFixed(2);
-                    }
+                    localStorage.setItem(`claimed_welcome_${user.id}`, 'true');
+                    syncUser();
                 } else {
                     showToast(data.error || "ቦነስ መውሰድ አልተቻለም", "error");
+                    document.getElementById('welcomeBonusBanner').classList.add('hidden');
                 }
             } catch (e) {
                 showToast("ስህተት ተፈጥሯል!", "error");
             }
         }
 
-        function copyReferralLink() {
-            const link = `https://t.me/dashbingobot/eth?startapp=ref_${user.id}`;
-            navigator.clipboard.writeText(link);
-            showToast("የሪፈራል ሊንክዎ ኮፒ ተደርጓል! ለጓደኞችዎ ያጋሩ።", "success");
+        // Hide banner if already claimed locally
+        if (localStorage.getItem(`claimed_welcome_${user.id}`) === 'true') {
+            document.getElementById('welcomeBonusBanner').classList.add('hidden');
         }
 
         function switchTab(tabId) {
+            playTouchBeep();
             ['game', 'wallet', 'leaderboard', 'profile', 'settings'].forEach(t => {
                 document.getElementById(`tab-${t}`).classList.add('hidden');
             });
@@ -668,6 +703,7 @@
         }
 
         function switchWalletView(view) {
+            playTouchBeep();
             if (view === 'deposit') {
                 document.getElementById('walletDepositView').classList.remove('hidden');
                 document.getElementById('walletWithdrawView').classList.add('hidden');
@@ -682,6 +718,7 @@
         }
 
         function selectDepositMethod(method) {
+            playTouchBeep();
             selectedDepMethod = method;
             if (method === 'CBE') {
                 document.getElementById('pill-cbe').className = "py-1.5 rounded-lg gradient-blue text-white transition";
@@ -692,7 +729,7 @@
             }
         }
 
-        // 999 Cards Downwards (Front displays ~80 directly, smoothly scrolls to 999)
+        // Render 999 Cards
         const cardGrid = document.getElementById('cardGrid');
         for (let i = 1; i <= 999; i++) {
             const btn = document.createElement('button');
@@ -739,10 +776,12 @@
         initMasterBingoBoard();
 
         function buyCard(index) {
+            playTouchBeep();
             socket.emit('buy_card', { telegramId: user.id, cardIndex: index });
         }
 
         function buyCustomCard() {
+            playTouchBeep();
             const inputVal = document.getElementById('directCardInput').value;
             const cardNum = parseInt(inputVal);
             if (!cardNum || cardNum < 1 || cardNum > 999) {
@@ -753,14 +792,17 @@
         }
 
         function buyRandomCard() {
+            playTouchBeep();
             const rand = Math.floor(Math.random() * 999) + 1;
             buyCard(rand);
         }
 
-        // ================= SOCKET.IO LIVE SYNC ================= //
+        // ================= SOCKET.IO LIVE STATE SYNC ================= //
         socket.on('game_init', (data) => {
             document.getElementById('poolPrize').innerHTML = `<span class="text-yellow-400">${data.totalPrize.toFixed(2)}</span> <span class="text-[10px] text-slate-300">ETB</span>`;
-            
+            document.getElementById('takenCardsCount').innerText = data.totalCards || 0;
+            document.getElementById('roundNumberDisplay').innerText = data.roundNumber || 1001;
+
             if (data.selectedCards && Array.isArray(data.selectedCards)) {
                 data.selectedCards.forEach(cIdx => {
                     const btn = document.getElementById(`btn-card-${cIdx}`);
@@ -775,6 +817,13 @@
                 document.getElementById('cardPickerSection').classList.remove('hidden');
                 document.getElementById('playingBoardContainer').classList.add('hidden');
                 document.getElementById('timer').innerText = data.countdown;
+
+                // Play 30sec BG Music
+                if (bgMusicEnabled) {
+                    bgPlayingAudio.pause();
+                    bgSelectionAudio.currentTime = 0;
+                    bgSelectionAudio.play().catch(() => {});
+                }
             } else if (data.status === 'PLAYING') {
                 document.getElementById('cardPickerSection').classList.add('hidden');
                 document.getElementById('playingBoardContainer').classList.remove('hidden');
@@ -793,6 +842,12 @@
                     }
                 });
                 renderCurrentActiveCard();
+
+                // Play 150sec BG Music
+                if (bgMusicEnabled) {
+                    bgSelectionAudio.pause();
+                    bgPlayingAudio.play().catch(() => {});
+                }
             }
         });
 
@@ -807,16 +862,15 @@
             if (btn) {
                 btn.disabled = true;
                 const isMine = myCards.some(c => c.cardIndex === data.cardIndex);
-                if (isMine) {
-                    btn.className = "h-8 rounded-xl text-xs font-black bg-emerald-600 text-white border-2 border-emerald-300 shadow-md shadow-emerald-500/40 flex items-center justify-center";
-                } else {
-                    btn.className = "h-8 rounded-xl text-xs font-bold bg-slate-800/60 text-slate-500 border border-slate-700/50 cursor-not-allowed flex items-center justify-center opacity-70 line-through";
-                }
+                btn.className = isMine
+                    ? "h-8 rounded-xl text-xs font-black bg-emerald-600 text-white border-2 border-emerald-300 shadow-md shadow-emerald-500/40 flex items-center justify-center"
+                    : "h-8 rounded-xl text-xs font-bold bg-slate-800/60 text-slate-500 border border-slate-700/50 cursor-not-allowed flex items-center justify-center opacity-70 line-through";
             }
             document.getElementById('poolPrize').innerHTML = `<span class="text-yellow-400">${data.poolPrize.toFixed(2)}</span> <span class="text-[10px] text-slate-300">ETB</span>`;
+            document.getElementById('takenCardsCount').innerText = data.totalCards;
         });
 
-        // 🎟 MULTI-CARD SUPPORT (BUY MULTIPLE CARDS PER ROUND)
+        // 🎟 Multi-Card Purchase
         socket.on('my_card', (data) => {
             myCards.push({ cardIndex: data.cardIndex, numbers: data.numbers });
             
@@ -830,7 +884,7 @@
             if (myCards.length > 1) {
                 document.getElementById('cardNavControls').classList.remove('hidden');
             }
-            currentCardViewIndex = myCards.length - 1; // Show newly bought card
+            currentCardViewIndex = myCards.length - 1;
             renderCurrentActiveCard();
 
             showToast(`ካርድ #${data.cardIndex} በተሳካ ሁኔታ ተቆርጧል!`, "success");
@@ -838,12 +892,14 @@
         });
 
         function prevCard() {
+            playTouchBeep();
             if (myCards.length <= 1) return;
             currentCardViewIndex = (currentCardViewIndex - 1 + myCards.length) % myCards.length;
             renderCurrentActiveCard();
         }
 
         function nextCard() {
+            playTouchBeep();
             if (myCards.length <= 1) return;
             currentCardViewIndex = (currentCardViewIndex + 1) % myCards.length;
             renderCurrentActiveCard();
@@ -878,7 +934,7 @@
             }
             minNeeded = Math.min(minNeeded, d1, d2);
 
-            return minNeeded === 1; // 1 ብቻ የቀረው ከሆነ TRUE
+            return minNeeded === 1;
         }
 
         function renderCurrentActiveCard() {
@@ -887,7 +943,6 @@
             document.getElementById('activeCardBadge').innerText = `#${current.cardIndex}`;
             document.getElementById('cardCounterText').innerText = `${currentCardViewIndex + 1}/${myCards.length}`;
 
-            // Check 1-Away Status
             const isOneAway = checkOneAway(current.numbers, currentCalledNumbers);
             const container = document.getElementById('activeCardContainer');
             const oneBadge = document.getElementById('oneAwayBadge');
@@ -895,13 +950,12 @@
             if (isOneAway) {
                 container.classList.add('one-away-glow');
                 oneBadge.classList.remove('hidden');
-                if (navigator.vibrate) navigator.vibrate([100, 50, 100]); // Haptic alert
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
             } else {
                 container.classList.remove('one-away-glow');
                 oneBadge.classList.add('hidden');
             }
 
-            // Render 5x5 Grid
             const board = document.getElementById('bingoBoard');
             board.innerHTML = '';
             for (let r = 0; r < 5; r++) {
@@ -910,6 +964,7 @@
                     const div = document.createElement('div');
                     div.id = `cell-${val}`;
 
+                    // Center Free Star (★)
                     if (r === 2 && c === 2) {
                         div.className = "p-2 bg-yellow-400 text-slate-950 rounded-xl flex items-center justify-center text-sm font-black shadow-md shadow-yellow-400/40";
                         div.innerText = "★";
@@ -932,6 +987,13 @@
             document.getElementById('cardPickerSection').classList.add('hidden');
             document.getElementById('playingBoardContainer').classList.remove('hidden');
             showToast("ጨዋታው ተጀምሯል! መልካም እድል!", "info");
+
+            // Transition from 30sec BG music to 150sec BG music
+            if (bgMusicEnabled) {
+                bgSelectionAudio.pause();
+                bgPlayingAudio.currentTime = 0;
+                bgPlayingAudio.play().catch(() => {});
+            }
         });
 
         socket.on('number_called', (data) => {
@@ -940,6 +1002,7 @@
             document.getElementById('calledCount').innerText = data.called.length;
             currentCalledNumbers = data.called;
 
+            // Announce voice call
             announceNumber(data.number);
 
             const masterCell = document.getElementById(`master-num-${data.number}`);
@@ -957,6 +1020,8 @@
 
         // CELEBRATION MODAL & CONFETTI
         socket.on('round_won', (data) => {
+            bgPlayingAudio.pause();
+
             document.getElementById('winnerNamesDisplay').innerText = data.winners.map(w => `${w.userName} (#${w.cardIndex})`).join(', ');
             document.getElementById('winnerPrizeDisplay').innerText = `${data.prize.toFixed(2)} ETB`;
             document.getElementById('winnerModal').classList.remove('hidden');
@@ -990,6 +1055,13 @@
 
             initMasterBingoBoard();
 
+            // Restart 30sec Selection BG Music
+            if (bgMusicEnabled) {
+                bgPlayingAudio.pause();
+                bgSelectionAudio.currentTime = 0;
+                bgSelectionAudio.play().catch(() => {});
+            }
+
             for (let i = 1; i <= 999; i++) {
                 const btn = document.getElementById(`btn-card-${i}`);
                 if (btn) {
@@ -1000,6 +1072,7 @@
         });
 
         async function submitDeposit() {
+            playTouchBeep();
             const amount = document.getElementById('depAmount').value;
             const smsText = document.getElementById('depSms').value;
 
@@ -1028,6 +1101,7 @@
         }
 
         async function submitWithdraw() {
+            playTouchBeep();
             const method = document.getElementById('withMethod').value;
             const amount = document.getElementById('withAmount').value;
             const accountNumber = document.getElementById('withAccount').value;
@@ -1050,6 +1124,7 @@
         }
 
         async function redeemPromo() {
+            playTouchBeep();
             const code = document.getElementById('promoInput').value;
             if (!code) return showToast("ኮድ ያስገቡ!", "error");
 
