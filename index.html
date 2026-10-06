@@ -10,21 +10,28 @@
     <script src="/socket.io/socket.io.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
-        body { background-color: #070b14; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+        body { background-color: #060911; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
         .gradient-blue { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #38bdf8 100%); }
-        .gradient-header { background: linear-gradient(135deg, #0f172a 0%, #1e40af 60%, #3b82f6 100%); }
-        .glass-box { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(59, 130, 246, 0.2); }
+        .gradient-header { background: linear-gradient(135deg, #090d16 0%, #1e40af 60%, #3b82f6 100%); }
+        .glass-box { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(59, 130, 246, 0.25); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* 1-Away Waiting Glow Animation */
+        @keyframes oneAwayPulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(234, 179, 8, 0.4); border-color: rgba(234, 179, 8, 0.9); }
+            50% { box-shadow: 0 0 30px rgba(234, 179, 8, 0.9); border-color: rgba(250, 204, 21, 1); }
+        }
+        .one-away-glow { animation: oneAwayPulse 1s infinite alternate; }
     </style>
 </head>
 <body class="pb-24 select-none">
 
-    <!-- FLOATING TOAST NOTIFICATION CONTAINER -->
+    <!-- FLOATING TOAST NOTIFICATION -->
     <div id="toastContainer" class="fixed top-4 left-4 right-4 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
 
     <!-- WINNER CELEBRATION MODAL OVERLAY -->
-    <div id="winnerModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-50 flex items-center justify-center p-4 hidden">
+    <div id="winnerModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-xl z-50 flex items-center justify-center p-4 hidden">
         <div class="glass-box p-6 rounded-3xl max-w-sm w-full text-center space-y-4 border-2 border-yellow-400 shadow-2xl relative overflow-hidden">
             <div class="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-tr from-yellow-500 to-amber-300 flex items-center justify-center text-4xl shadow-xl shadow-yellow-500/50 animate-bounce">
                 🏆
@@ -57,7 +64,7 @@
             </div>
 
             <!-- Balance Badge -->
-            <div class="bg-black/30 backdrop-blur-md px-3 py-1 rounded-2xl flex items-center gap-1.5 border border-white/20 shadow-inner">
+            <div class="bg-black/40 backdrop-blur-md px-3 py-1 rounded-2xl flex items-center gap-1.5 border border-white/20 shadow-inner">
                 <i class="fa-solid fa-wallet text-yellow-300 text-xs"></i>
                 <span id="playerBalance" class="font-black text-xs text-white tracking-wide">0.00</span>
                 <span class="text-[9px] text-blue-200 font-bold uppercase">ETB</span>
@@ -93,14 +100,14 @@
 
                 <div class="glass-box p-2.5 rounded-2xl text-center relative overflow-hidden border border-blue-500/30 shadow-sm">
                     <p class="text-[9px] font-bold text-slate-300 uppercase tracking-wider">የካርድ መቁረጫ</p>
-                    <h2 id="gameStatus" class="text-base font-black text-white mt-0.5"><span id="timer" class="text-yellow-400">50</span>s</h2>
+                    <h2 id="gameStatus" class="text-base font-black text-white mt-0.5"><span id="timer" class="text-yellow-400">30</span>s</h2>
                 </div>
             </div>
 
-            <!-- 1. SELECTION STAGE: 999 CARDS SCROLLABLE DOWNWARDS -->
+            <!-- 1. SELECTION STAGE: 999 CARDS (FRONT SHOWS ~80, SCROLLS TO 999) -->
             <div id="cardPickerSection" class="space-y-2">
                 
-                <!-- Direct Search & Random Pick Bar -->
+                <!-- Direct Number Search & Random Pick -->
                 <div class="glass-box p-2.5 rounded-2xl border border-blue-500/30 space-y-1.5 shadow-sm">
                     <div class="flex justify-between items-center text-[11px] font-bold">
                         <span class="text-white flex items-center gap-1"><i class="fa-solid fa-ticket text-yellow-400"></i> ካርድ ቁጥር (1 - 999)</span>
@@ -117,9 +124,9 @@
                     </div>
                 </div>
 
-                <!-- 999 Cards Header & Legends -->
+                <!-- 999 Cards Header -->
                 <div class="flex justify-between items-center px-1">
-                    <span class="text-[10px] text-slate-300 font-bold">የካርዶች ዝርዝር (#1 - #999 ወደ ታች)</span>
+                    <span class="text-[10px] text-slate-300 font-bold">የካርዶች ዝርዝር (እስከ 999 ወደ ታች)</span>
                     <div class="flex gap-2 text-[9px] font-bold">
                         <span class="flex items-center gap-1 text-blue-300"><span class="w-2 h-2 rounded-full bg-blue-500"></span> ክፍት</span>
                         <span class="flex items-center gap-1 text-emerald-300"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> የእኛ</span>
@@ -127,13 +134,13 @@
                     </div>
                 </div>
 
-                <!-- 999 Cards Smooth Scrollable Container -->
+                <!-- High Capacity 999 Grid Container (Clean Height) -->
                 <div id="cardGrid" class="grid grid-cols-6 gap-1.5 bg-slate-900/90 p-2.5 rounded-2xl border border-blue-500/20 shadow-md max-h-80 overflow-y-auto">
-                    <!-- Cards 1 to 999 loaded here -->
+                    <!-- Cards injected here -->
                 </div>
             </div>
 
-            <!-- 2. PLAYING STAGE: BINGO CALLING & MASTER BOARD -->
+            <!-- 2. PLAYING STAGE: BINGO CALLING & MULTI-CARD SWIPER -->
             <div id="playingBoardContainer" class="hidden space-y-2.5">
                 
                 <!-- Current Ball Sphere -->
@@ -161,13 +168,31 @@
                     <div class="space-y-1 text-xs font-bold" id="masterBingoBoard"></div>
                 </div>
 
-                <!-- User's Active 5x5 Card (With Free Center Star ★) -->
-                <div id="myCardSection" class="hidden">
-                    <div class="flex justify-between items-center mb-1 px-1">
-                        <h3 class="font-extrabold text-xs text-white">የእርስዎ ካርድ (<span id="myCardNumber" class="text-yellow-400 font-black">#0</span>)</h3>
-                        <span class="text-[10px] bg-green-500/20 text-green-400 border border-green-500/40 font-black px-2 py-0.5 rounded-full">በጨዋታ ላይ ⚡</span>
+                <!-- MULTI-CARD SECTION (SWIPE / SWITCH MULTIPLE CARDS) -->
+                <div id="myMultiCardSection" class="hidden space-y-1.5">
+                    
+                    <!-- Multi-Card Navigation Header -->
+                    <div class="flex justify-between items-center px-1">
+                        <div class="flex items-center gap-1.5">
+                            <h3 class="font-extrabold text-xs text-white">የእርስዎ ካርድ (<span id="activeCardBadge" class="text-yellow-400 font-black">#0</span>)</h3>
+                            <span id="oneAwayBadge" class="text-[9px] bg-yellow-500 text-black font-black px-2 py-0.5 rounded-full hidden animate-bounce">
+                                🔥 1 ቁጥር ብቻ ቀረዎት!
+                            </span>
+                        </div>
+                        <!-- Next/Prev Buttons for Multiple Cards -->
+                        <div id="cardNavControls" class="flex items-center gap-1 hidden">
+                            <button onclick="prevCard()" class="w-6 h-6 rounded-lg bg-slate-800 text-white text-xs flex items-center justify-center border border-slate-700 active:scale-95">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <span id="cardCounterText" class="text-[10px] font-bold text-slate-300 px-1">1/1</span>
+                            <button onclick="nextCard()" class="w-6 h-6 rounded-lg bg-slate-800 text-white text-xs flex items-center justify-center border border-slate-700 active:scale-95">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
                     </div>
-                    <div class="bg-slate-900 p-2.5 rounded-2xl shadow-xl border-2 border-blue-500/70">
+
+                    <!-- 5x5 Grid Card Container -->
+                    <div id="activeCardContainer" class="bg-slate-900 p-2.5 rounded-2xl shadow-xl border-2 border-blue-500/70 transition-all duration-300">
                         <div class="grid grid-cols-5 text-center font-black text-blue-400 text-xs mb-1">
                             <div>B</div><div>I</div><div>N</div><div>G</div><div>O</div>
                         </div>
@@ -179,6 +204,21 @@
 
         <!-- ================= TAB 2: WALLET ================= -->
         <section id="tab-wallet" class="hidden space-y-3">
+            
+            <!-- Referral Card (1 ሰው ሲጋብዙ = 10 ETB) -->
+            <div class="p-3 bg-gradient-to-r from-blue-900/40 via-indigo-900/40 to-blue-900/40 rounded-2xl border border-blue-500/40 flex justify-between items-center shadow-md">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">👥</span>
+                    <div>
+                        <h4 class="font-black text-xs text-white">ሰው ጋብዘው 10 ETB ያግኙ!</h4>
+                        <p class="text-[10px] text-blue-300">ጓደኛዎ 1 ዙር ሲጫወት 10 ብር ይሰጥዎታል</p>
+                    </div>
+                </div>
+                <button onclick="copyReferralLink()" class="gradient-blue text-white px-3 py-1.5 rounded-xl font-black text-xs shadow-md active:scale-95 transition">
+                    ሊንክ ኮፒ
+                </button>
+            </div>
+
             <div class="grid grid-cols-2 gap-2 p-1 bg-slate-900 rounded-2xl border border-slate-800">
                 <button onclick="switchWalletView('deposit')" id="btnWalletDep" class="py-2 rounded-xl font-black text-xs gradient-blue text-white shadow-md transition">
                     <i class="fa-solid fa-arrow-down mr-1"></i> ማስገቢያ (Deposit)
@@ -188,7 +228,7 @@
                 </button>
             </div>
 
-            <!-- VIEW A: DEPOSIT -->
+            <!-- VIEW A: DEPOSIT (CBE ON TOP, ORIGINAL LOGOS) -->
             <div id="walletDepositView" class="space-y-3">
                 <div class="glass-box p-3 rounded-2xl space-y-2 border border-blue-500/20">
                     <div class="flex items-center gap-2">
@@ -196,22 +236,7 @@
                         <h3 class="font-black text-xs text-white">የክፍያ አካውንቶች</h3>
                     </div>
 
-                    <!-- Telebirr (Updated: 0968260447 Nebyu) -->
-                    <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
-                        <div class="flex items-center gap-2.5">
-                            <img src="https://i.postimg.cc/1zH5wqRj/20260805-174415.png" alt="Telebirr" class="w-8 h-8 rounded-lg object-contain">
-                            <div>
-                                <span class="font-black text-xs text-white">Telebirr (ቴሌብር)</span>
-                                <p class="text-xs font-mono font-bold text-blue-400">0968260447</p>
-                                <p class="text-[10px] text-slate-400">Nebyu</p>
-                            </div>
-                        </div>
-                        <button onclick="copyToClipboard('0968260447')" class="text-xs gradient-blue text-white font-bold px-3 py-1.5 rounded-lg active:scale-95 transition">
-                            ኮፒ
-                        </button>
-                    </div>
-
-                    <!-- CBE (1000562339427 Aymen Kemal) -->
+                    <!-- 1. CBE (ON TOP: 1000562339427 Aymen Kemal) -->
                     <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
                         <div class="flex items-center gap-2.5">
                             <img src="https://i.postimg.cc/Hk1pN2VS/20260805-174301.png" alt="CBE" class="w-8 h-8 rounded-lg object-contain">
@@ -225,18 +250,47 @@
                             ኮፒ
                         </button>
                     </div>
+
+                    <!-- 2. Telebirr (0968260447 Nebyu) -->
+                    <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
+                        <div class="flex items-center gap-2.5">
+                            <img src="https://i.postimg.cc/1zH5wqRj/20260805-174415.png" alt="Telebirr" class="w-8 h-8 rounded-lg object-contain">
+                            <div>
+                                <span class="font-black text-xs text-white">Telebirr (ቴሌብር)</span>
+                                <p class="text-xs font-mono font-bold text-blue-400">0968260447</p>
+                                <p class="text-[10px] text-slate-400">Nebyu</p>
+                            </div>
+                        </div>
+                        <button onclick="copyToClipboard('0968260447')" class="text-xs gradient-blue text-white font-bold px-3 py-1.5 rounded-lg active:scale-95 transition">
+                            ኮፒ
+                        </button>
+                    </div>
                 </div>
 
+                <!-- Deposit SMS Form with Clean Method Selector -->
                 <div class="glass-box p-3 rounded-2xl space-y-2.5 border border-blue-500/20">
-                    <h4 class="font-black text-xs text-white flex items-center gap-1.5">
-                        <i class="fa-solid fa-comment-sms text-green-400"></i> የ SMS ማረጋገጫ ማስገቢያ
-                    </h4>
-                    <select id="depMethod" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200">
-                        <option value="TELEBIRR">Telebirr (ቴሌብር)</option>
-                        <option value="CBE">CBE (ንግድ ባንክ)</option>
-                    </select>
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-black text-xs text-white flex items-center gap-1.5">
+                            <i class="fa-solid fa-comment-sms text-green-400"></i> የ SMS ማረጋገጫ ማስገቢያ
+                        </h4>
+                        <span class="text-[9px] text-amber-300 font-bold bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                            ⏱ በ 5 ደቂቃ ውስጥ ይላኩ
+                        </span>
+                    </div>
+
+                    <!-- Clean Pill Selector: CBE vs Telebirr -->
+                    <div class="grid grid-cols-2 gap-2 p-1 bg-slate-950 rounded-xl border border-slate-800 text-xs font-bold">
+                        <button type="button" onclick="selectDepositMethod('CBE')" id="pill-cbe" class="py-1.5 rounded-lg gradient-blue text-white transition">
+                            CBE (ንግድ ባንክ)
+                        </button>
+                        <button type="button" onclick="selectDepositMethod('TELEBIRR')" id="pill-telebirr" class="py-1.5 rounded-lg text-slate-400 hover:text-white transition">
+                            Telebirr (ቴሌብር)
+                        </button>
+                    </div>
+
                     <input id="depAmount" type="number" placeholder="ያስገቡት መጠን (ETB)" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-blue-500">
                     <textarea id="depSms" rows="3" placeholder="ከባንክ ወይም ከቴሌብር የደረሶትን ሙሉ የ SMS ጽሁፍ እዚህ ጋር Paste ያድርጉ..." class="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-blue-500"></textarea>
+                    
                     <button onclick="submitDeposit()" class="w-full gradient-blue text-white py-2.5 rounded-xl font-black text-xs shadow-lg shadow-blue-500/20 active:scale-95 transition">
                         ማረጋገጫ ላክ
                     </button>
@@ -249,8 +303,8 @@
                     <i class="fa-solid fa-money-bill-transfer text-orange-400"></i> ገንዘብ ማውጫ ቅጽ
                 </h4>
                 <select id="withMethod" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200">
-                    <option value="TELEBIRR">Telebirr (ቴሌብር)</option>
                     <option value="CBE">CBE (ንግድ ባንክ)</option>
+                    <option value="TELEBIRR">Telebirr (ቴሌብር)</option>
                 </select>
                 <input id="withAmount" type="number" placeholder="የሚያወጡት መጠን (ዝቅተኛው 50 ETB)" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
                 <input id="withAccount" type="text" placeholder="የአካውንት ወይም የስልክ ቁጥር" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
@@ -302,7 +356,7 @@
             <div id="historyList" class="space-y-2"></div>
         </section>
 
-        <!-- ================= TAB 5: SETTINGS & LINKS (#10) ================= -->
+        <!-- ================= TAB 5: SETTINGS ================= -->
         <section id="tab-settings" class="hidden space-y-3">
             <div class="glass-box p-3 rounded-2xl space-y-2.5 border border-slate-800">
                 <h3 class="font-black text-xs text-white flex items-center gap-2">
@@ -320,7 +374,7 @@
                 </div>
             </div>
 
-            <!-- Verified Links: Channel & Support (No Group) -->
+            <!-- Official Channels & Support Links -->
             <div class="glass-box p-3 rounded-2xl space-y-2.5 border border-slate-800">
                 <h3 class="font-black text-xs text-white flex items-center gap-2">
                     <i class="fa-brands fa-telegram text-blue-400"></i> ማህበራዊ ትስስር (Official Links)
@@ -377,7 +431,7 @@
         </button>
     </nav>
 
-    <!-- ================= FLOATING TOAST ENGINE (#5) ================= -->
+    <!-- FLOATING TOAST ENGINE -->
     <script>
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
@@ -412,10 +466,9 @@
         }
     </script>
 
-    <!-- ================= VOICE & AIRPORT DING-DONG ENGINE (#8) ================= -->
+    <!-- 100% RELIABLE SOUND & VOICE ENGINE (WEB AUDIO API + TELEGRAM UNLOCK) -->
     <script>
         let voiceActive = true;
-        let femaleVoice = null;
         let audioCtx = null;
 
         function getAudioContext() {
@@ -428,7 +481,7 @@
             return audioCtx;
         }
 
-        // Airport-style Dual Tone Chime (High quality Ding-Dong)
+        // 🔊 Crystal Clear Chime
         function playChime() {
             try {
                 const ctx = getAudioContext();
@@ -438,53 +491,37 @@
                 const gain1 = ctx.createGain();
                 osc1.type = 'sine';
                 osc1.frequency.setValueAtTime(587.33, now); // D5
-                gain1.gain.setValueAtTime(0.12, now);
-                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                gain1.gain.setValueAtTime(0.15, now);
+                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
                 osc1.connect(gain1);
                 gain1.connect(ctx.destination);
                 osc1.start(now);
-                osc1.stop(now + 0.3);
+                osc1.stop(now + 0.35);
 
                 const osc2 = ctx.createOscillator();
                 const gain2 = ctx.createGain();
                 osc2.type = 'sine';
                 osc2.frequency.setValueAtTime(880, now + 0.15); // A5
-                gain2.gain.setValueAtTime(0.12, now + 0.15);
-                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                gain2.gain.setValueAtTime(0.15, now + 0.15);
+                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
                 osc2.connect(gain2);
                 gain2.connect(ctx.destination);
                 osc2.start(now + 0.15);
-                osc2.stop(now + 0.5);
+                osc2.stop(now + 0.55);
             } catch (e) {}
         }
 
-        function loadFemaleVoice() {
-            if (!('speechSynthesis' in window)) return;
-            const voices = window.speechSynthesis.getVoices();
-            femaleVoice = voices.find(v => 
-                v.lang.startsWith('en') && (
-                    v.name.includes('Female') || 
-                    v.name.includes('Google US English') || 
-                    v.name.includes('Samantha') || 
-                    v.name.includes('Victoria') || 
-                    v.name.includes('Zira') ||
-                    v.name.includes('Natural')
-                )
-            ) || voices.find(v => v.lang.startsWith('en'));
-        }
-
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = loadFemaleVoice;
-            loadFemaleVoice();
-        }
-
-        // Audio unlocker on mobile
-        document.addEventListener('touchstart', function unlockAudio() {
+        // 🔊 Audio Unlock on any Touch or Click
+        function unlockAudioEngine() {
             getAudioContext();
-            if ('speechSynthesis' in window && window.speechSynthesis.paused) {
+            if ('speechSynthesis' in window) {
                 window.speechSynthesis.resume();
             }
-        }, { once: true });
+            document.removeEventListener('touchstart', unlockAudioEngine);
+            document.removeEventListener('click', unlockAudioEngine);
+        }
+        document.addEventListener('touchstart', unlockAudioEngine, { passive: true });
+        document.addEventListener('click', unlockAudioEngine, { passive: true });
 
         function toggleVoice() {
             voiceActive = !voiceActive;
@@ -508,21 +545,36 @@
             return 'O';
         }
 
+        // 🔊 Natural Voice Calling (With Web Speech API Fallback)
         function announceNumber(num) {
+            if (!voiceActive) return;
             playChime();
 
-            if (!voiceActive || !('speechSynthesis' in window)) return;
             const letter = getBingoLetter(num);
-            window.speechSynthesis.cancel();
 
-            setTimeout(() => {
-                const utterance = new SpeechSynthesisUtterance(`${letter} ... ${num}`);
-                if (femaleVoice) utterance.voice = femaleVoice;
-                utterance.pitch = 1.25;
-                utterance.rate = 0.88;
-                utterance.volume = 1.0;
-                window.speechSynthesis.speak(utterance);
-            }, 180);
+            if ('speechSynthesis' in window) {
+                try {
+                    window.speechSynthesis.cancel();
+                    const voices = window.speechSynthesis.getVoices();
+                    const female = voices.find(v => 
+                        v.lang.startsWith('en') && (
+                            v.name.includes('Female') || v.name.includes('Samantha') || 
+                            v.name.includes('Victoria') || v.name.includes('Google US English') ||
+                            v.name.includes('Natural') || v.name.includes('Zira')
+                        )
+                    ) || voices.find(v => v.lang.startsWith('en'));
+
+                    const utterance = new SpeechSynthesisUtterance(`${letter} ... ${num}`);
+                    if (female) utterance.voice = female;
+                    utterance.pitch = 1.25;
+                    utterance.rate = 0.88;
+                    utterance.volume = 1.0;
+
+                    setTimeout(() => {
+                        window.speechSynthesis.speak(utterance);
+                    }, 200);
+                } catch (e) {}
+            }
         }
     </script>
 
@@ -534,9 +586,17 @@
         const user = tg?.initDataUnsafe?.user || { id: 9876543, first_name: "ሙከራ ተጫዋች", username: "" };
         document.getElementById('playerName').innerText = user.first_name;
 
+        // Get Referral payload from Telegram WebApp URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const refPayload = urlParams.get('tgWebAppStartParam') || urlParams.get('startapp') || urlParams.get('ref') || '';
+
         const socket = io();
-        let myActiveCard = null;
-        let mySelectedCards = new Set();
+
+        // Multi-Card Storage: Array of { cardIndex, numbers }
+        let myCards = [];
+        let currentCardViewIndex = 0;
+        let selectedDepMethod = 'CBE';
+        let currentCalledNumbers = [];
 
         async function syncUser() {
             try {
@@ -546,7 +606,8 @@
                     body: JSON.stringify({
                         telegramId: user.id,
                         firstName: user.first_name,
-                        username: user.username
+                        username: user.username,
+                        ref: refPayload
                     })
                 });
                 const data = await res.json();
@@ -562,19 +623,31 @@
                 const res = await fetch('/api/user/claim-welcome', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ telegramId: user.id })
+                    body: JSON.stringify({ 
+                        telegramId: user.id,
+                        firstName: user.first_name,
+                        username: user.username
+                    })
                 });
                 const data = await res.json();
                 if (data.success) {
                     showToast(data.message, "success");
                     document.getElementById('welcomeBonusBanner').classList.add('hidden');
-                    syncUser();
+                    if (data.balance !== undefined) {
+                        document.getElementById('playerBalance').innerText = parseFloat(data.balance).toFixed(2);
+                    }
                 } else {
                     showToast(data.error || "ቦነስ መውሰድ አልተቻለም", "error");
                 }
             } catch (e) {
                 showToast("ስህተት ተፈጥሯል!", "error");
             }
+        }
+
+        function copyReferralLink() {
+            const link = `https://t.me/dashbingobot/eth?startapp=ref_${user.id}`;
+            navigator.clipboard.writeText(link);
+            showToast("የሪፈራል ሊንክዎ ኮፒ ተደርጓል! ለጓደኞችዎ ያጋሩ።", "success");
         }
 
         function switchTab(tabId) {
@@ -608,7 +681,18 @@
             }
         }
 
-        // Render 999 Cards Downwards
+        function selectDepositMethod(method) {
+            selectedDepMethod = method;
+            if (method === 'CBE') {
+                document.getElementById('pill-cbe').className = "py-1.5 rounded-lg gradient-blue text-white transition";
+                document.getElementById('pill-telebirr').className = "py-1.5 rounded-lg text-slate-400 hover:text-white transition";
+            } else {
+                document.getElementById('pill-telebirr').className = "py-1.5 rounded-lg gradient-blue text-white transition";
+                document.getElementById('pill-cbe').className = "py-1.5 rounded-lg text-slate-400 hover:text-white transition";
+            }
+        }
+
+        // 999 Cards Downwards (Front displays ~80 directly, smoothly scrolls to 999)
         const cardGrid = document.getElementById('cardGrid');
         for (let i = 1; i <= 999; i++) {
             const btn = document.createElement('button');
@@ -673,11 +757,10 @@
             buyCard(rand);
         }
 
-        // ================= SOCKET.IO LIVE STATE SYNC (#9) ================= //
+        // ================= SOCKET.IO LIVE SYNC ================= //
         socket.on('game_init', (data) => {
             document.getElementById('poolPrize').innerHTML = `<span class="text-yellow-400">${data.totalPrize.toFixed(2)}</span> <span class="text-[10px] text-slate-300">ETB</span>`;
             
-            // Mark all already-taken cards
             if (data.selectedCards && Array.isArray(data.selectedCards)) {
                 data.selectedCards.forEach(cIdx => {
                     const btn = document.getElementById(`btn-card-${cIdx}`);
@@ -695,20 +778,21 @@
             } else if (data.status === 'PLAYING') {
                 document.getElementById('cardPickerSection').classList.add('hidden');
                 document.getElementById('playingBoardContainer').classList.remove('hidden');
-                document.getElementById('calledCount').innerText = data.calledNumbers.length;
+                currentCalledNumbers = data.calledNumbers || [];
+                document.getElementById('calledCount').innerText = currentCalledNumbers.length;
 
                 if (data.currentNumber) {
                     const letter = getBingoLetter(data.currentNumber);
                     document.getElementById('activeBall').innerText = `${letter}${data.currentNumber}`;
                 }
 
-                // Highlight already called numbers
-                data.calledNumbers.forEach(num => {
+                currentCalledNumbers.forEach(num => {
                     const masterCell = document.getElementById(`master-num-${num}`);
                     if (masterCell) {
                         masterCell.className = "w-4 h-4 rounded-md bg-yellow-400 text-black font-black flex items-center justify-center text-[9px] scale-105";
                     }
                 });
+                renderCurrentActiveCard();
             }
         });
 
@@ -722,7 +806,8 @@
             const btn = document.getElementById(`btn-card-${data.cardIndex}`);
             if (btn) {
                 btn.disabled = true;
-                if (mySelectedCards.has(data.cardIndex)) {
+                const isMine = myCards.some(c => c.cardIndex === data.cardIndex);
+                if (isMine) {
                     btn.className = "h-8 rounded-xl text-xs font-black bg-emerald-600 text-white border-2 border-emerald-300 shadow-md shadow-emerald-500/40 flex items-center justify-center";
                 } else {
                     btn.className = "h-8 rounded-xl text-xs font-bold bg-slate-800/60 text-slate-500 border border-slate-700/50 cursor-not-allowed flex items-center justify-center opacity-70 line-through";
@@ -731,21 +816,117 @@
             document.getElementById('poolPrize').innerHTML = `<span class="text-yellow-400">${data.poolPrize.toFixed(2)}</span> <span class="text-[10px] text-slate-300">ETB</span>`;
         });
 
+        // 🎟 MULTI-CARD SUPPORT (BUY MULTIPLE CARDS PER ROUND)
         socket.on('my_card', (data) => {
-            myActiveCard = data.numbers;
-            mySelectedCards.add(data.cardIndex);
+            myCards.push({ cardIndex: data.cardIndex, numbers: data.numbers });
             
             const btn = document.getElementById(`btn-card-${data.cardIndex}`);
             if (btn) {
                 btn.className = "h-8 rounded-xl text-xs font-black bg-emerald-600 text-white border-2 border-emerald-300 shadow-md shadow-emerald-500/40 flex items-center justify-center";
             }
 
-            document.getElementById('myCardNumber').innerText = `#${data.cardIndex}`;
-            document.getElementById('myCardSection').classList.remove('hidden');
-            renderBingoCard(data.numbers);
+            document.getElementById('myMultiCardSection').classList.remove('hidden');
+
+            if (myCards.length > 1) {
+                document.getElementById('cardNavControls').classList.remove('hidden');
+            }
+            currentCardViewIndex = myCards.length - 1; // Show newly bought card
+            renderCurrentActiveCard();
+
             showToast(`ካርድ #${data.cardIndex} በተሳካ ሁኔታ ተቆርጧል!`, "success");
             syncUser();
         });
+
+        function prevCard() {
+            if (myCards.length <= 1) return;
+            currentCardViewIndex = (currentCardViewIndex - 1 + myCards.length) % myCards.length;
+            renderCurrentActiveCard();
+        }
+
+        function nextCard() {
+            if (myCards.length <= 1) return;
+            currentCardViewIndex = (currentCardViewIndex + 1) % myCards.length;
+            renderCurrentActiveCard();
+        }
+
+        // ================= 1-AWAY CHECK & RENDER ================= //
+        function checkOneAway(card, called) {
+            const isM = (v) => v === 0 || called.includes(v);
+            let minNeeded = 5;
+
+            // Columns
+            for (let c = 0; c < 5; c++) {
+                let missing = 0;
+                for (let r = 0; r < 5; r++) {
+                    if (!isM(card[c][r])) missing++;
+                }
+                minNeeded = Math.min(minNeeded, missing);
+            }
+            // Rows
+            for (let r = 0; r < 5; r++) {
+                let missing = 0;
+                for (let c = 0; c < 5; c++) {
+                    if (!isM(card[c][r])) missing++;
+                }
+                minNeeded = Math.min(minNeeded, missing);
+            }
+            // Diagonals
+            let d1 = 0, d2 = 0;
+            for (let i = 0; i < 5; i++) {
+                if (!isM(card[i][i])) d1++;
+                if (!isM(card[i][4 - i])) d2++;
+            }
+            minNeeded = Math.min(minNeeded, d1, d2);
+
+            return minNeeded === 1; // 1 ብቻ የቀረው ከሆነ TRUE
+        }
+
+        function renderCurrentActiveCard() {
+            if (myCards.length === 0) return;
+            const current = myCards[currentCardViewIndex];
+            document.getElementById('activeCardBadge').innerText = `#${current.cardIndex}`;
+            document.getElementById('cardCounterText').innerText = `${currentCardViewIndex + 1}/${myCards.length}`;
+
+            // Check 1-Away Status
+            const isOneAway = checkOneAway(current.numbers, currentCalledNumbers);
+            const container = document.getElementById('activeCardContainer');
+            const oneBadge = document.getElementById('oneAwayBadge');
+
+            if (isOneAway) {
+                container.classList.add('one-away-glow');
+                oneBadge.classList.remove('hidden');
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100]); // Haptic alert
+            } else {
+                container.classList.remove('one-away-glow');
+                oneBadge.classList.add('hidden');
+            }
+
+            // Render 5x5 Grid
+            const board = document.getElementById('bingoBoard');
+            board.innerHTML = '';
+            for (let r = 0; r < 5; r++) {
+                for (let c = 0; c < 5; c++) {
+                    const val = current.numbers[c][r];
+                    const div = document.createElement('div');
+                    div.id = `cell-${val}`;
+
+                    if (r === 2 && c === 2) {
+                        div.className = "p-2 bg-yellow-400 text-slate-950 rounded-xl flex items-center justify-center text-sm font-black shadow-md shadow-yellow-400/40";
+                        div.innerText = "★";
+                    } else {
+                        const isCalled = currentCalledNumbers.includes(val);
+                        div.className = `p-2 rounded-xl flex items-center justify-center text-xs font-black transition-all ${
+                            isCalled 
+                                ? 'gradient-blue text-white shadow-md scale-105 border border-white/40' 
+                                : 'bg-slate-950 text-white border border-slate-800'
+                        }`;
+                        div.innerText = val;
+                    }
+
+                    board.appendChild(div);
+                }
+            }
+        }
 
         socket.on('round_started', () => {
             document.getElementById('cardPickerSection').classList.add('hidden');
@@ -757,6 +938,7 @@
             const letter = getBingoLetter(data.number);
             document.getElementById('activeBall').innerText = `${letter}${data.number}`;
             document.getElementById('calledCount').innerText = data.called.length;
+            currentCalledNumbers = data.called;
 
             announceNumber(data.number);
 
@@ -770,14 +952,10 @@
             pill.innerText = `${letter}${data.number}`;
             document.getElementById('recentBalls').prepend(pill);
 
-            const el = document.getElementById(`cell-${data.number}`);
-            if (el) {
-                el.classList.remove('bg-slate-950');
-                el.classList.add('gradient-blue', 'text-white', 'shadow-lg', 'scale-105');
-            }
+            renderCurrentActiveCard();
         });
 
-        // CELEBRATION MODAL & CONFETTI (#4)
+        // CELEBRATION MODAL & CONFETTI
         socket.on('round_won', (data) => {
             document.getElementById('winnerNamesDisplay').innerText = data.winners.map(w => `${w.userName} (#${w.cardIndex})`).join(', ');
             document.getElementById('winnerPrizeDisplay').innerText = `${data.prize.toFixed(2)} ETB`;
@@ -799,11 +977,14 @@
         }
 
         socket.on('game_reset', () => {
-            mySelectedCards.clear();
+            myCards = [];
+            currentCardViewIndex = 0;
+            currentCalledNumbers = [];
             document.getElementById('winnerModal').classList.add('hidden');
             document.getElementById('playingBoardContainer').classList.add('hidden');
             document.getElementById('cardPickerSection').classList.remove('hidden');
-            document.getElementById('myCardSection').classList.add('hidden');
+            document.getElementById('myMultiCardSection').classList.add('hidden');
+            document.getElementById('cardNavControls').classList.add('hidden');
             document.getElementById('activeBall').innerText = '--';
             document.getElementById('recentBalls').innerHTML = '';
 
@@ -818,32 +999,7 @@
             }
         });
 
-        // 5x5 Grid with Center Star (★ FREE Center Permanent Fix - #7)
-        function renderBingoCard(card) {
-            const board = document.getElementById('bingoBoard');
-            board.innerHTML = '';
-            for (let r = 0; r < 5; r++) {
-                for (let c = 0; c < 5; c++) {
-                    const val = card[c][r];
-                    const div = document.createElement('div');
-                    div.id = `cell-${val}`;
-                    div.className = "p-2 bg-slate-950 text-white border border-slate-800 rounded-xl flex items-center justify-center text-xs font-black";
-
-                    // Center Cell is ★ FREE
-                    if (r === 2 && c === 2) {
-                        div.className = "p-2 bg-yellow-400 text-slate-950 rounded-xl flex items-center justify-center text-sm font-black shadow-md shadow-yellow-400/40";
-                        div.innerText = "★";
-                    } else {
-                        div.innerText = val;
-                    }
-
-                    board.appendChild(div);
-                }
-            }
-        }
-
         async function submitDeposit() {
-            const method = document.getElementById('depMethod').value;
             const amount = document.getElementById('depAmount').value;
             const smsText = document.getElementById('depSms').value;
 
@@ -852,7 +1008,14 @@
             const res = await fetch('/api/deposit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ telegramId: user.id, firstName: user.first_name, username: user.username, method, amount, smsText })
+                body: JSON.stringify({ 
+                    telegramId: user.id, 
+                    firstName: user.first_name, 
+                    username: user.username, 
+                    method: selectedDepMethod, 
+                    amount, 
+                    smsText 
+                })
             });
             const data = await res.json();
             if (data.success) {
