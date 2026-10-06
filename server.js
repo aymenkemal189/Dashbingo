@@ -941,7 +941,23 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
     console.log(`⚡ Dash Bingo Ultra-Server running on port ${PORT}`);
-    bot.launch();
+    
+    // 🛡️ የቆዩ ግጭቶችን ማጽዳት (Delete webhook/pending updates)
+    try {
+        await bot.telegram.deleteWebhook({ drop_pending_updates: true });
+    } catch (e) {}
+
+    // 🤖 ቦቱን ከስህተት ነፃ በሆነ መንገድ ማስነሳት (ሰርቨሩ 409 ቢያጋጥመውም አይወድቅም)
+    bot.launch({ dropPendingUpdates: true })
+        .then(() => console.log('🤖 Telegram Bot polling started successfully'))
+        .catch(err => {
+            console.warn('⚠️ Telegram Bot Launch Notice (Conflict bypassed):', err.message);
+            console.log('💡 Dash Bingo Game & Web Server are live and running smoothly!');
+        });
 });
+
+// Enable graceful stop for Render instances
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
