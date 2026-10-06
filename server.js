@@ -11,19 +11,23 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
-// Database Connection (Neon Postgres)
+// Database Connection (Neon Postgres) with Auto-Reconnect Pool
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
-    max: 20,
+    max: 25,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000
+    connectionTimeoutMillis: 10000
+});
+
+pool.on('error', (err) => {
+    console.error('Unexpected Neon DB error on idle client:', err);
 });
 
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// Static Routes
+// Static Web Routes
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/index.html', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
@@ -39,14 +43,19 @@ function checkAdminAuth(req, res, next) {
     next();
 }
 
-// ================= SIMULATED BOTS CONTROLLER ================= //
-// 🤖 ቦቶች እንዲቆርጡ ከፈለግክ true፤ ማጥፋት ስትፈልግ false አድርገው
-const ENABLE_SIMULATED_PLAYERS = true; 
-
-const BOT_NAMES = ["Almush 🌱 SEED 🐾", "Girmay", "Rui costa", "Abuker", "Daniel", "🐐 MARCY 🇪🇷 👻", "JERMIAH", "Hkedi Yeseya", "Alst 🙋 costey", "Meli 🌸", "Roky", "Haymi 🦋", "ዛ Life", "Mastewal", "Alemyehu", "Mohammed", "Alste", "Saha", "Nihaan", "Abel", "Mati", "TAMJA", "Teshome", "toma", "Eyerus", "tamex 💜"];
-// Telegram Bot
+// Telegram Bot Init
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const WEBAPP_URL = process.env.WEBAPP_URL || 'https://dashbingo.onrender.com';
+
+// 📩 አስተማማኝ የቴሌግራም መልእክት መላኪያ (ተጠቃሚው ቦቱን ቢዘጋውም ሰርቨሩ እንዳይቋረጥ ይጠብቃል)
+async function sendTelegramNotification(telegramId, message) {
+    try {
+        if (!telegramId) return;
+        await bot.telegram.sendMessage(telegramId, message, { parse_mode: 'HTML' });
+    } catch (err) {
+        console.warn(`Could not send notification to ${telegramId}:`, err.message);
+    }
+}
 
 bot.start(async (ctx) => {
     const { id, first_name, username } = ctx.from;
@@ -57,15 +66,30 @@ bot.start(async (ctx) => {
              ON CONFLICT (telegram_id) DO UPDATE SET first_name = $2, username = $3`,
             [id, first_name || 'ተጫዋች', username || '']
         );
-        ctx.reply(`እንኳን ወደ Dash Bingo ⚡ በደህና መጡ! ጨዋታውን ለመጀመር እና የ 20 ብር ቦነስዎን ለመውሰድ ከታች ያለውን ይጫኑ፦`, 
-            Markup.inlineKeyboard([
-                [Markup.button.webApp("🎮 Play Dash Bingo", WEBAPP_URL)]
-            ])
+        ctx.reply(
+            `እንኳን ወደ <b>Dash Bingo ⚡</b> በደህና መጡ!\n\n🎁 <b>የ 20 ETB ነፃ ቦነስ</b> ተዘጋጅቶልዎታል። አሁኑኑ ከታች ያለውን ይጫኑና ይጀምሩ፦`, 
+            {
+                parse_mode: 'HTML',
+                ...Markup.inlineKeyboard([
+                    [Markup.button.webApp("🎮 Play Dash Bingo", WEBAPP_URL)]
+                ])
+            }
         );
     } catch (err) {
         console.error("Bot start error:", err);
     }
 });
+
+// ================= 25 DEMO BOT PLAYERS (30-50 CARDS) ================= //
+const ENABLE_SIMULATED_PLAYERS = true; // ስራ ሲጀምር ማጥፋት ከፈለግክ false ማድረግ ትችላለህ
+
+const BOT_NAMES = [
+    "Almush 🌱 SEED 🐾", "Girmay", "Rui costa", "Abuker", "Daniel", 
+    "🐐 MARCY 🇪🇷 👻", "JERMIAH", "Hkedi Yeseya", "Alst 🙋 costey", "Meli 🌸", 
+    "Roky", "Haymi 🦋", "ዛ Life", "Mastewal", "Alemyehu", 
+    "Mohammed", "Alste", "Saha", "Nihaan", "Abel", 
+    "Mati", "TAMJA", "Teshome", "toma", "Eyerus", "tamex 💜"
+];
 
 // ================= GAME ENGINE ================= //
 const CARD_PRICE = 10; // 10 ETB
@@ -73,15 +97,16 @@ const HOUSE_COMMISSION = 0.20; // 20% House Rake
 
 let gameState = {
     roundNumber: 1001,
-    status: 'SELECTION',
+    status: 'SELECTION', // 'SELECTION' or 'PLAYING' or 'GAME_OVER'
     countdown: 50,
-    selectedCards: {},
+    selectedCards: {}, // { cardIndex: { userId, userName, numbers, isBot } }
     calledNumbers: [],
     currentNumber: null,
     totalPrize: 0,
     ownerProfit: 0
 };
 
+// 5x5 Bingo Card Generator with Center Star (0)
 function generateBingoCard() {
     const getCols = (min, max) => {
         let nums = [];
@@ -120,23 +145,25 @@ function checkWinner(card, called) {
     return diag1 || diag2;
 }
 
-// 🤖 የኮምፒውተር ቆራጮች (Simulated Bots) ተግባር
+// 🤖 ከ 30 እስከ 50 ካርዶች በ 50 ሰከንድ ውስጥ የሚቆርጥ የተረጋጋ የቦት ሲስተም
 function simulateBotPurchases() {
     if (!ENABLE_SIMULATED_PLAYERS || gameState.status !== 'SELECTION') return;
 
-    // በየዙሩ ከ 3 እስከ 6 ቦቶች በተለያየ ሰከንድ ይቆርጣሉ
-    const botCount = Math.floor(Math.random() * 4) + 3;
+    // በየዙሩ ከ 30 እስከ 50 ካርዶች ይቆረጣሉ
+    const targetCards = Math.floor(Math.random() * 21) + 30; // 30 - 50 cards
+    const intervalMs = Math.floor(45000 / targetCards); // 50 ሰከንድ ሳያልቅ ተከፋፍለው ይገባሉ
 
-    for (let i = 0; i < botCount; i++) {
+    for (let i = 0; i < targetCards; i++) {
         setTimeout(() => {
             if (gameState.status !== 'SELECTION') return;
 
+            // ከ 1 እስከ 999 ያልተያዘ ካርድ መምረጥ
             let randomCardIndex;
             let attempts = 0;
             do {
-                randomCardIndex = Math.floor(Math.random() * 60) + 1;
+                randomCardIndex = Math.floor(Math.random() * 999) + 1;
                 attempts++;
-            } while (gameState.selectedCards[randomCardIndex] && attempts < 100);
+            } while (gameState.selectedCards[randomCardIndex] && attempts < 200);
 
             if (gameState.selectedCards[randomCardIndex]) return;
 
@@ -153,6 +180,7 @@ function simulateBotPurchases() {
             const cardCount = Object.keys(gameState.selectedCards).length;
             const totalPot = cardCount * CARD_PRICE;
             gameState.totalPrize = totalPot * (1 - HOUSE_COMMISSION);
+            gameState.ownerProfit = totalPot * HOUSE_COMMISSION;
 
             io.emit('card_taken', {
                 cardIndex: randomCardIndex,
@@ -160,11 +188,11 @@ function simulateBotPurchases() {
                 totalCards: cardCount,
                 poolPrize: gameState.totalPrize
             });
-        }, (i + 1) * 4500); // በየ 4.5 ሰከንዱ ረጋ ብለው ይቆርጣሉ
+        }, (i + 1) * intervalMs);
     }
 }
 
-// Game Loop Timer
+// Rock-Solid Master Game Loop
 setInterval(async () => {
     if (gameState.status === 'SELECTION') {
         gameState.countdown--;
@@ -178,9 +206,13 @@ setInterval(async () => {
                 const totalPot = cardCount * CARD_PRICE;
                 gameState.ownerProfit = totalPot * HOUSE_COMMISSION;
                 gameState.totalPrize = totalPot - gameState.ownerProfit;
-                io.emit('round_started', gameState);
+                io.emit('round_started', {
+                    roundNumber: gameState.roundNumber,
+                    totalPrize: gameState.totalPrize,
+                    totalCards: cardCount
+                });
             } else {
-                gameState.countdown = 50;
+                gameState.countdown = 50; // ካርድ ካልተቆረጠ ሰዓቱን እንደገና ማስጀመር
             }
         }
     } else if (gameState.status === 'PLAYING') {
@@ -189,6 +221,7 @@ setInterval(async () => {
             return;
         }
 
+        // ከዚህ ቀደም ያልወጣ ቁጥር በዘፈቀደ ማውጣት
         let nextNum;
         do {
             nextNum = Math.floor(Math.random() * 75) + 1;
@@ -197,10 +230,11 @@ setInterval(async () => {
         gameState.calledNumbers.push(nextNum);
         gameState.currentNumber = nextNum;
 
+        // አሸናፊዎችን ማጣራት
         let winners = [];
         for (const [cardIndex, cardData] of Object.entries(gameState.selectedCards)) {
             if (checkWinner(cardData.numbers, gameState.calledNumbers)) {
-                winners.push({ cardIndex, ...cardData });
+                winners.push({ cardIndex: parseInt(cardIndex), ...cardData });
             }
         }
 
@@ -212,16 +246,22 @@ setInterval(async () => {
             try {
                 await client.query('BEGIN');
                 for (const win of winners) {
-                    // እውነተኛ ተጫዋች ከሆነ ብቻ ሒሳቡን ጨምር
                     if (!win.isBot && win.userId) {
                         await client.query(
                             `UPDATE users SET balance = balance + $1, total_won = total_won + $1 WHERE id = $2`,
                             [splitPrize, win.userId]
                         );
+                        // አሸናፊው እውነተኛ ሰው ከሆነ በቴሌግራም ደስ የሚል መልእክት ላክለት!
+                        const uRes = await client.query('SELECT telegram_id FROM users WHERE id = $1', [win.userId]);
+                        if (uRes.rows.length > 0) {
+                            sendTelegramNotification(
+                                uRes.rows[0].telegram_id,
+                                `🎉 <b>BINGO WINNER! እንኳን ደስ አለዎት!</b>\n\nበካርድ #${win.cardIndex} <b>${splitPrize.toFixed(2)} ETB</b> አሸንፈዋል! ገንዘቡ ወደ ዋሌትዎ ገቢ ሆኗል።`
+                            );
+                        }
                     }
                 }
 
-                // ቦት ካሸነፈ winner_id NULL እንዲሆን በማድረግ የዳታቤዝ ስህተትን መከላከል
                 const realWinnerId = winners[0].isBot ? null : winners[0].userId;
 
                 await client.query(
@@ -237,11 +277,15 @@ setInterval(async () => {
                 client.release();
             }
 
-            io.emit('round_won', { winners, prize: splitPrize, calledNumbers: gameState.calledNumbers });
+            io.emit('round_won', {
+                winners: winners.map(w => ({ userName: w.userName, cardIndex: w.cardIndex })),
+                prize: splitPrize,
+                calledNumbers: gameState.calledNumbers
+            });
 
             setTimeout(() => {
                 resetGame();
-            }, 6000);
+            }, 7000);
         } else {
             io.emit('number_called', {
                 number: nextNum,
@@ -262,17 +306,17 @@ function resetGame() {
     gameState.ownerProfit = 0;
     io.emit('game_reset', gameState);
 
-    // 🤖 አዲሱ ዙር እንደጀመረ ቦቶች ካርድ እንዲቆርጡ መጥራት
     simulateBotPurchases();
 }
 
-// ሰርቨሩ ልክ ሲነሳ የመጀመሪያው ዙር ላይ ቦቶችን ማስጀመር
+// የመጀመሪያው ዙር ቦቶች ማስጀመሪያ
 setTimeout(() => {
     simulateBotPurchases();
 }, 2000);
 
 // ================= REST APIS ================= //
 
+// User Sync (አፑ እንደተከፈተ መመዝገቢያ)
 app.post('/api/user/sync', async (req, res) => {
     const { telegramId, firstName, username } = req.body;
     if (!telegramId) return res.status(400).json({ error: 'telegramId is required' });
@@ -292,6 +336,17 @@ app.post('/api/user/sync', async (req, res) => {
     }
 });
 
+app.get('/api/user/:telegramId', async (req, res) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM users WHERE telegram_id = $1', [req.params.telegramId]);
+        if (rows.length === 0) return res.status(404).json({ error: 'User not found' });
+        res.json(rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 🎁 20 ETB Welcome Bonus Claim API
 app.post('/api/user/claim-welcome', async (req, res) => {
     const { telegramId } = req.body;
     const client = await pool.connect();
@@ -311,7 +366,7 @@ app.post('/api/user/claim-welcome', async (req, res) => {
 
         if (checkBonus.rows.length > 0) {
             await client.query('ROLLBACK');
-            return res.status(400).json({ error: 'ይቅርታ! የእንኳን ደህና መጡ ቦነስዎን ቀደም ሲል ወስደዋል!' });
+            return res.status(400).json({ error: 'የእንኳን ደህና መጡ ቦነስዎን ቀደም ሲል ወስደዋል!' });
         }
 
         await client.query('UPDATE users SET balance = balance + 20 WHERE id = $1', [user.id]);
@@ -322,6 +377,12 @@ app.post('/api/user/claim-welcome', async (req, res) => {
         );
 
         await client.query('COMMIT');
+
+        sendTelegramNotification(
+            telegramId,
+            `🎁 <b>የ 20 ETB ቦነስ ተሰጥቶዎታል!</b>\n\nእንኳን ወደ Dash Bingo በደህና መጡ! 2 ዙር በነፃ ይጫወቱ። መልካም እድል!`
+        );
+
         res.json({ success: true, message: '🎉 እንኳን ደስ አለዎት! የ 20 ብር ቦነስ ወደ ዋሌትዎ ገቢ ሆኗል!' });
     } catch (err) {
         await client.query('ROLLBACK');
@@ -331,9 +392,12 @@ app.post('/api/user/claim-welcome', async (req, res) => {
     }
 });
 
+// 📥 Deposit Request (ከ Bot Notification ጋር)
 app.post('/api/deposit', async (req, res) => {
     const { telegramId, firstName, username, method, amount, smsText } = req.body;
-    if (!amount || amount <= 0 || !smsText || smsText.trim().length < 15) {
+    const depAmount = parseFloat(amount);
+
+    if (isNaN(depAmount) || depAmount <= 0 || !smsText || smsText.trim().length < 15) {
         return res.status(400).json({ error: 'እባክዎ ትክክለኛ መጠንና ሙሉ የ SMS ጽሁፍ ያስገቡ!' });
     }
 
@@ -353,17 +417,25 @@ app.post('/api/deposit', async (req, res) => {
         await pool.query(
             `INSERT INTO transactions (user_id, type, payment_method, amount, sms_text, sms_hash, status) 
              VALUES ($1, 'DEPOSIT', $2, $3, $4, $5, 'PENDING')`,
-            [userId, method, amount, smsText, smsHash]
+            [userId, method, depAmount, smsText, smsHash]
         );
+
+        // 📩 ለተጠቃሚው በቦት ደረሰኝ ላክ
+        sendTelegramNotification(
+            telegramId,
+            `📥 <b>የማስገቢያ ጥያቄ ደርሶናል</b>\n\nመጠን፡ <b>${depAmount.toFixed(2)} ETB</b> (${method})\nሁኔታ፡ ⏳ በማረጋገጥ ላይ...\n\nአድሚን ሲያረጋግጥ ወዲያውኑ ገቢ ይሆናል።`
+        );
+
         res.json({ success: true, message: 'ማስገቢያ ጥያቄዎ ለአድሚን ተልኳል! ጥቂት ደቂቃ ይጠብቁ።' });
     } catch (err) {
         if (err.code === '23505') {
-            return res.status(400).json({ error: 'ይህ SMS ቀደም ሲል ጥቅም ላይ ውሏል! አዲስ SMS ያስገቡ።' });
+            return res.status(400).json({ error: 'ይህ SMS ቀደም ሲል ጥቅም ላይ ውሏል! አዲስ የግብይት SMS ያስገቡ።' });
         }
         res.status(500).json({ error: err.message });
     }
 });
 
+// 📤 Withdraw Request (ከ Bot Notification ጋር)
 app.post('/api/withdraw', async (req, res) => {
     const { telegramId, method, amount, accountNumber, accountName } = req.body;
     const withdrawAmount = parseFloat(amount);
@@ -398,6 +470,13 @@ app.post('/api/withdraw', async (req, res) => {
         );
 
         await client.query('COMMIT');
+
+        // 📩 ለተጠቃሚው በቦት ደረሰኝ ላክ
+        sendTelegramNotification(
+            telegramId,
+            `📤 <b>የማውጣት ጥያቄዎ ተመዝግቧል</b>\n\nመጠን፡ <b>${withdrawAmount.toFixed(2)} ETB</b>\nወደ፡ <b>${accountNumber}</b> (${accountName})\nሁኔታ፡ ⏳ ክፍያ በመፈጸም ላይ...`
+        );
+
         res.json({ success: true, message: 'የማውጣት ጥያቄዎ በተሳካ ሁኔታ ተመዝግቧል!' });
     } catch (err) {
         await client.query('ROLLBACK');
@@ -407,6 +486,7 @@ app.post('/api/withdraw', async (req, res) => {
     }
 });
 
+// Promo Code Redeem
 app.post('/api/promocode/redeem', async (req, res) => {
     const { telegramId, code } = req.body;
     if (!code) return res.status(400).json({ error: 'እባክዎ ኮድ ያስገቡ!' });
@@ -453,6 +533,7 @@ app.post('/api/promocode/redeem', async (req, res) => {
     }
 });
 
+// Weekly Top & Leaderboards
 app.get('/api/weekly-top', async (req, res) => {
     try {
         const { rows } = await pool.query(
@@ -490,7 +571,8 @@ app.get('/api/history/:telegramId', async (req, res) => {
     }
 });
 
-// Admin APIs
+// ================= ADMIN APIS WITH INSTANT USER BOT ALERTS ================= //
+
 app.get('/api/admin/transactions', checkAdminAuth, async (req, res) => {
     try {
         const { rows } = await pool.query(
@@ -504,12 +586,18 @@ app.get('/api/admin/transactions', checkAdminAuth, async (req, res) => {
     }
 });
 
+// ✅ አድሚን ሲያጸድቅ ለተጠቃሚው በቦት ያሳውቃል
 app.post('/api/admin/approve', checkAdminAuth, async (req, res) => {
     const { txId } = req.body;
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        const txRes = await client.query('SELECT * FROM transactions WHERE id = $1 FOR UPDATE', [txId]);
+        const txRes = await client.query(
+            `SELECT t.*, u.telegram_id FROM transactions t 
+             JOIN users u ON u.id = t.user_id 
+             WHERE t.id = $1 FOR UPDATE`, 
+            [txId]
+        );
         if (txRes.rows.length === 0) {
             await client.query('ROLLBACK');
             return res.status(404).json({ error: 'ግብይቱ አልተገኘም' });
@@ -526,6 +614,20 @@ app.post('/api/admin/approve', checkAdminAuth, async (req, res) => {
 
         await client.query("UPDATE transactions SET status = 'APPROVED' WHERE id = $1", [txId]);
         await client.query('COMMIT');
+
+        // 📩 ለተጠቃሚው ማረጋገጫ በቴሌግራም ላክ
+        if (tx.type === 'DEPOSIT') {
+            sendTelegramNotification(
+                tx.telegram_id,
+                `✅ <b>ዴፖዚትዎ ጸድቋል!</b>\n\nየ <b>${parseFloat(tx.amount).toFixed(2)} ETB</b> ክፍያዎ ተረጋግጦ ወደ ዋሌትዎ ገቢ ሆኗል። አሁኑኑ ገብተው ይጫወቱ!`
+            );
+        } else {
+            sendTelegramNotification(
+                tx.telegram_id,
+                `✅ <b>የማውጣት ጥያቄዎ ተፈጽሟል!</b>\n\nየ <b>${parseFloat(tx.amount).toFixed(2)} ETB</b> ክፍያ ወደ <b>${tx.account_number}</b> ተልኮልዎታል። እናመሰግናለን!`
+            );
+        }
+
         res.json({ success: true, message: 'ግብይቱ ጸድቋል!' });
     } catch (err) {
         await client.query('ROLLBACK');
@@ -535,12 +637,18 @@ app.post('/api/admin/approve', checkAdminAuth, async (req, res) => {
     }
 });
 
+// ❌ አድሚን ውድቅ ሲያደርግ ለተጠቃሚው በቦት ያሳውቃል
 app.post('/api/admin/reject', checkAdminAuth, async (req, res) => {
     const { txId } = req.body;
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        const txRes = await client.query('SELECT * FROM transactions WHERE id = $1 FOR UPDATE', [txId]);
+        const txRes = await client.query(
+            `SELECT t.*, u.telegram_id FROM transactions t 
+             JOIN users u ON u.id = t.user_id 
+             WHERE t.id = $1 FOR UPDATE`, 
+            [txId]
+        );
         const tx = txRes.rows[0];
 
         if (tx.type === 'WITHDRAW') {
@@ -549,6 +657,12 @@ app.post('/api/admin/reject', checkAdminAuth, async (req, res) => {
 
         await client.query("UPDATE transactions SET status = 'REJECTED' WHERE id = $1", [txId]);
         await client.query('COMMIT');
+
+        sendTelegramNotification(
+            tx.telegram_id,
+            `❌ <b>ይቅርታ፣ ጥያቄዎ ውድቅ ተደርጓል!</b>\n\nየ <b>${parseFloat(tx.amount).toFixed(2)} ETB</b> (${tx.type}) ጥያቄዎ በአድሚን ውድቅ ተደርጓል።\n\nጥያቄ ካለዎት የደንበኞች ድጋፍ ያነጋግሩ፡ @DashBingoo`
+        );
+
         res.json({ success: true, message: 'ግብይቱ ውድቅ ተደርጓል!' });
     } catch (err) {
         await client.query('ROLLBACK');
@@ -578,7 +692,7 @@ app.post('/api/admin/distribute-weekly-bonus', checkAdminAuth, async (req, res) 
     try {
         await client.query('BEGIN');
         const { rows } = await client.query(
-            `SELECT id, first_name, cards_bought_this_week 
+            `SELECT id, first_name, telegram_id, cards_bought_this_week 
              FROM users 
              WHERE cards_bought_this_week > 0 
              ORDER BY cards_bought_this_week DESC LIMIT 10`
@@ -597,6 +711,11 @@ app.post('/api/admin/distribute-weekly-bonus', checkAdminAuth, async (req, res) 
 
             await client.query('UPDATE users SET balance = balance + $1 WHERE id = $2', [bonus, rows[i].id]);
             distributed.push({ name: rows[i].first_name, bonus });
+
+            sendTelegramNotification(
+                rows[i].telegram_id,
+                `🏆 <b>እንኳን ደስ አለዎት! የሳምንቱ ምርጥ ተጫዋች ሽልማት!</b>\n\nበሳምንቱ ከፍተኛ ካርድ በመቁረጥዎ የ <b>${bonus} ETB</b> ቦነስ አሸንፈዋል!`
+            );
         }
 
         await client.query('UPDATE users SET cards_bought_this_week = 0');
@@ -625,9 +744,19 @@ app.get('/api/admin/analytics', checkAdminAuth, async (req, res) => {
     }
 });
 
-// Socket.io Buy Card
+// ================= SOCKET.IO: REAL-TIME GAME STATE ================= //
 io.on('connection', (socket) => {
-    socket.emit('game_init', gameState);
+    // ⚡ አዲስ ሰው በገባበት ቅጽበት ያለውን ትክክለኛ ሁኔታ ያለምንም ስህተት ይላክለት (#9)
+    socket.emit('game_init', {
+        roundNumber: gameState.roundNumber,
+        status: gameState.status,
+        countdown: gameState.countdown,
+        calledNumbers: gameState.calledNumbers,
+        currentNumber: gameState.currentNumber,
+        totalPrize: gameState.totalPrize,
+        totalCards: Object.keys(gameState.selectedCards).length,
+        selectedCards: Object.keys(gameState.selectedCards).map(Number)
+    });
 
     socket.on('buy_card', async ({ telegramId, cardIndex }) => {
         const cIndex = parseInt(cardIndex);
@@ -681,6 +810,7 @@ io.on('connection', (socket) => {
             const cardCount = Object.keys(gameState.selectedCards).length;
             const totalPot = cardCount * CARD_PRICE;
             gameState.totalPrize = totalPot * (1 - HOUSE_COMMISSION);
+            gameState.ownerProfit = totalPot * HOUSE_COMMISSION;
 
             io.emit('card_taken', {
                 cardIndex: cIndex,
@@ -701,6 +831,6 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`⚡ Dash Bingo Server running on port ${PORT}`);
+    console.log(`⚡ Dash Bingo Ultra-Server running on port ${PORT}`);
     bot.launch();
 });
