@@ -6,10 +6,11 @@
     <title>Dash Bingo ⚡</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
-        body { background-color: #070b14; color: #f8fafc; }
+        body { background-color: #070b14; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
         .gradient-blue { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #38bdf8 100%); }
         .gradient-header { background: linear-gradient(135deg, #0f172a 0%, #1e40af 60%, #3b82f6 100%); }
         .glass-box { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(59, 130, 246, 0.2); }
@@ -17,9 +18,32 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="font-sans pb-24 select-none">
+<body class="pb-24 select-none">
 
-    <!-- Top Fixed Header -->
+    <!-- FLOATING TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="fixed top-4 left-4 right-4 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
+
+    <!-- WINNER CELEBRATION MODAL OVERLAY -->
+    <div id="winnerModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-box p-6 rounded-3xl max-w-sm w-full text-center space-y-4 border-2 border-yellow-400 shadow-2xl relative overflow-hidden">
+            <div class="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-tr from-yellow-500 to-amber-300 flex items-center justify-center text-4xl shadow-xl shadow-yellow-500/50 animate-bounce">
+                🏆
+            </div>
+            <div>
+                <h2 class="text-xl font-black text-yellow-300 tracking-wider">BINGO WINNER!</h2>
+                <p id="winnerNamesDisplay" class="text-sm font-bold text-white mt-1">--</p>
+            </div>
+            <div class="p-3 bg-slate-950 rounded-2xl border border-yellow-500/30">
+                <span class="text-[10px] text-slate-400 font-bold uppercase">የአሸናፊው ሽልማት</span>
+                <h3 id="winnerPrizeDisplay" class="text-2xl font-black text-emerald-400">0.00 ETB</h3>
+            </div>
+            <button onclick="closeWinnerModal()" class="w-full gradient-blue text-white font-black py-3 rounded-2xl text-xs shadow-lg active:scale-95 transition">
+                ቀጥል (Continue)
+            </button>
+        </div>
+    </div>
+
+    <!-- TOP FIXED HEADER -->
     <header class="gradient-header text-white p-3 sticky top-0 z-40 shadow-xl border-b border-blue-500/30">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2.5">
@@ -48,7 +72,7 @@
             <div class="flex items-center gap-2.5">
                 <span class="text-2xl animate-bounce">🎁</span>
                 <div>
-                    <h4 class="font-black text-xs text-yellow-300">የ 20 ብር ነፃ ቦነስ!</h4>
+                    <h4 class="font-black text-xs text-yellow-300">የ 20 ETB ነፃ ቦነስ!</h4>
                     <p class="text-[10px] text-slate-300">አሁኑኑ ይውሰዱና 2 ዙር በነፃ ይጫወቱ</p>
                 </div>
             </div>
@@ -60,7 +84,7 @@
         <!-- ================= TAB 1: BINGO ARENA ================= -->
         <section id="tab-game" class="space-y-2.5">
             
-            <!-- Compact Pot & Timer Bar -->
+            <!-- Compact Pot & Countdown Bar -->
             <div class="grid grid-cols-2 gap-2">
                 <div class="glass-box p-2.5 rounded-2xl text-center relative overflow-hidden border border-blue-500/30 shadow-sm">
                     <p class="text-[9px] font-bold text-slate-300 uppercase tracking-wider">የዙሩ ድራሽ (Pot)</p>
@@ -73,17 +97,17 @@
                 </div>
             </div>
 
-            <!-- 1. SELECTION STAGE: CARDS UP TO 999 WITH DIRECT INPUT & FAST GRID -->
+            <!-- 1. SELECTION STAGE: 999 CARDS SCROLLABLE DOWNWARDS -->
             <div id="cardPickerSection" class="space-y-2">
                 
-                <!-- Pick Card by Number (1 to 999) & Random Pick -->
+                <!-- Direct Search & Random Pick Bar -->
                 <div class="glass-box p-2.5 rounded-2xl border border-blue-500/30 space-y-1.5 shadow-sm">
                     <div class="flex justify-between items-center text-[11px] font-bold">
-                        <span class="text-white flex items-center gap-1"><i class="fa-solid fa-ticket text-yellow-400"></i> ካርድ ይምረጡ (1 - 999)</span>
+                        <span class="text-white flex items-center gap-1"><i class="fa-solid fa-ticket text-yellow-400"></i> ካርድ ቁጥር (1 - 999)</span>
                         <span class="text-yellow-400 font-black">10 ETB</span>
                     </div>
                     <div class="flex gap-1.5">
-                        <input id="directCardInput" type="number" min="1" max="999" placeholder="የካርድ ቁጥር (ለምሳሌ 232)" class="w-full text-xs font-bold p-2 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-blue-500">
+                        <input id="directCardInput" type="number" min="1" max="999" placeholder="ቁጥር (ለምሳሌ 232)" class="w-full text-xs font-bold p-2 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-blue-500">
                         <button onclick="buyCustomCard()" class="gradient-blue text-white px-3 py-2 rounded-xl font-black text-xs shadow-md whitespace-nowrap active:scale-95 transition">
                             ቁረጥ
                         </button>
@@ -93,9 +117,9 @@
                     </div>
                 </div>
 
-                <!-- Fast Selection Grid (Quick Access Cards) -->
+                <!-- 999 Cards Header & Legends -->
                 <div class="flex justify-between items-center px-1">
-                    <span class="text-[10px] text-slate-400 font-bold">ፈጣን ምርጫ ካርዶች</span>
+                    <span class="text-[10px] text-slate-300 font-bold">የካርዶች ዝርዝር (#1 - #999 ወደ ታች)</span>
                     <div class="flex gap-2 text-[9px] font-bold">
                         <span class="flex items-center gap-1 text-blue-300"><span class="w-2 h-2 rounded-full bg-blue-500"></span> ክፍት</span>
                         <span class="flex items-center gap-1 text-emerald-300"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> የእኛ</span>
@@ -103,12 +127,13 @@
                     </div>
                 </div>
 
-                <div id="cardGrid" class="grid grid-cols-6 gap-1.5 bg-slate-900/90 p-2.5 rounded-2xl border border-blue-500/20 shadow-md">
-                    <!-- Cards 1-60 injected here for instant 1-tap buy -->
+                <!-- 999 Cards Smooth Scrollable Container -->
+                <div id="cardGrid" class="grid grid-cols-6 gap-1.5 bg-slate-900/90 p-2.5 rounded-2xl border border-blue-500/20 shadow-md max-h-80 overflow-y-auto">
+                    <!-- Cards 1 to 999 loaded here -->
                 </div>
             </div>
 
-            <!-- 2. PLAYING STAGE: BINGO CALLING & LIVE MASTER BOARD -->
+            <!-- 2. PLAYING STAGE: BINGO CALLING & MASTER BOARD -->
             <div id="playingBoardContainer" class="hidden space-y-2.5">
                 
                 <!-- Current Ball Sphere -->
@@ -136,7 +161,7 @@
                     <div class="space-y-1 text-xs font-bold" id="masterBingoBoard"></div>
                 </div>
 
-                <!-- User's Active 5x5 Card -->
+                <!-- User's Active 5x5 Card (With Free Center Star ★) -->
                 <div id="myCardSection" class="hidden">
                     <div class="flex justify-between items-center mb-1 px-1">
                         <h3 class="font-extrabold text-xs text-white">የእርስዎ ካርድ (<span id="myCardNumber" class="text-yellow-400 font-black">#0</span>)</h3>
@@ -171,24 +196,32 @@
                         <h3 class="font-black text-xs text-white">የክፍያ አካውንቶች</h3>
                     </div>
 
+                    <!-- Telebirr (Updated: 0968260447 Nebyu) -->
                     <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
-                        <div>
-                            <span class="font-black text-xs text-white">CBE (ንግድ ባንክ)</span>
-                            <p class="text-xs font-mono font-bold text-blue-400">1000562339427</p>
-                            <p class="text-[10px] text-slate-400">Aymen Kemal</p>
+                        <div class="flex items-center gap-2.5">
+                            <img src="https://i.postimg.cc/1zH5wqRj/20260805-174415.png" alt="Telebirr" class="w-8 h-8 rounded-lg object-contain">
+                            <div>
+                                <span class="font-black text-xs text-white">Telebirr (ቴሌብር)</span>
+                                <p class="text-xs font-mono font-bold text-blue-400">0968260447</p>
+                                <p class="text-[10px] text-slate-400">Nebyu</p>
+                            </div>
                         </div>
-                        <button onclick="copyToClipboard('1000562339427')" class="text-xs gradient-blue text-white font-bold px-3 py-1.5 rounded-lg active:scale-95 transition">
+                        <button onclick="copyToClipboard('0968260447')" class="text-xs gradient-blue text-white font-bold px-3 py-1.5 rounded-lg active:scale-95 transition">
                             ኮፒ
                         </button>
                     </div>
 
+                    <!-- CBE (1000562339427 Aymen Kemal) -->
                     <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
-                        <div>
-                            <span class="font-black text-xs text-white">Telebirr (ቴሌብር)</span>
-                            <p class="text-xs font-mono font-bold text-blue-400">0996910607</p>
-                            <p class="text-[10px] text-slate-400">Aymen</p>
+                        <div class="flex items-center gap-2.5">
+                            <img src="https://i.postimg.cc/Hk1pN2VS/20260805-174301.png" alt="CBE" class="w-8 h-8 rounded-lg object-contain">
+                            <div>
+                                <span class="font-black text-xs text-white">CBE (ንግድ ባንክ)</span>
+                                <p class="text-xs font-mono font-bold text-blue-400">1000562339427</p>
+                                <p class="text-[10px] text-slate-400">Aymen Kemal</p>
+                            </div>
                         </div>
-                        <button onclick="copyToClipboard('0996910607')" class="text-xs gradient-blue text-white font-bold px-3 py-1.5 rounded-lg active:scale-95 transition">
+                        <button onclick="copyToClipboard('1000562339427')" class="text-xs gradient-blue text-white font-bold px-3 py-1.5 rounded-lg active:scale-95 transition">
                             ኮፒ
                         </button>
                     </div>
@@ -249,7 +282,7 @@
                     <i class="fa-solid fa-fire text-yellow-300 text-base"></i>
                     <h3 class="font-black text-xs">የሳምንቱ ከፍተኛ ተጫዋቾች ሽልማት 🔥</h3>
                 </div>
-                <p class="text-[10px] text-blue-100 leading-relaxed">በየሳምንቱ ብዙ ካርድ ለቆረጡ 10 ምርጥ ተጫዋቾች ከ 200 - 300 ብር ቦነስ ይሰጣቸዋል!</p>
+                <p class="text-[10px] text-blue-100 leading-relaxed">በየሳምንቱ ብዙ ካርድ ለቆረጡ 10 ምርጥ ተጫዋቾች ከ 200 - 300 ETB ቦነስ ይሰጣቸዋል!</p>
             </div>
 
             <div class="glass-box p-3 rounded-2xl space-y-2 border border-slate-800">
@@ -269,16 +302,16 @@
             <div id="historyList" class="space-y-2"></div>
         </section>
 
-        <!-- ================= TAB 5: SETTINGS ================= -->
+        <!-- ================= TAB 5: SETTINGS & LINKS (#10) ================= -->
         <section id="tab-settings" class="hidden space-y-3">
             <div class="glass-box p-3 rounded-2xl space-y-2.5 border border-slate-800">
                 <h3 class="font-black text-xs text-white flex items-center gap-2">
-                    <i class="fa-solid fa-sliders text-blue-400"></i> የድምጽና የጨዋታ ቅንብሮች
+                    <i class="fa-solid fa-sliders text-blue-400"></i> የድምጽ ቅንብሮች
                 </h3>
                 
                 <div class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800">
                     <div>
-                        <p class="font-bold text-xs text-white">የሴት ድምጽ ጥሪ (Female Caller)</p>
+                        <p class="font-bold text-xs text-white">የሴት ድምጽ ጥሪ (Voice Caller)</p>
                         <p class="text-[9px] text-slate-400">ቁጥሮች ሲወጡ "B 12" እያለች ትጣራለች</p>
                     </div>
                     <button onclick="toggleVoice()" id="btnVoiceToggle" class="px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30">
@@ -287,23 +320,16 @@
                 </div>
             </div>
 
+            <!-- Verified Links: Channel & Support (No Group) -->
             <div class="glass-box p-3 rounded-2xl space-y-2.5 border border-slate-800">
                 <h3 class="font-black text-xs text-white flex items-center gap-2">
-                    <i class="fa-brands fa-telegram text-blue-400"></i> ማህበራዊ ትስስር (Social Links)
+                    <i class="fa-brands fa-telegram text-blue-400"></i> ማህበራዊ ትስስር (Official Links)
                 </h3>
                 
                 <a href="https://t.me/DashBingo" target="_blank" class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800 hover:border-blue-500 transition">
                     <div class="flex items-center gap-2">
                         <i class="fa-solid fa-bullhorn text-blue-400 text-xs"></i>
-                        <span class="font-bold text-xs text-white">የቴሌግራም ቻናላችን</span>
-                    </div>
-                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
-                </a>
-
-                <a href="https://t.me/DashBingo" target="_blank" class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800 hover:border-blue-500 transition">
-                    <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-users text-green-400 text-xs"></i>
-                        <span class="font-bold text-xs text-white">የቴሌግራም ግሩፓችን</span>
+                        <span class="font-bold text-xs text-white">የቴሌግራም ቻናል (@DashBingo)</span>
                     </div>
                     <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
                 </a>
@@ -311,7 +337,7 @@
                 <a href="https://t.me/DashBingoo" target="_blank" class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800 hover:border-blue-500 transition">
                     <div class="flex items-center gap-2">
                         <i class="fa-solid fa-headset text-yellow-400 text-xs"></i>
-                        <span class="font-bold text-xs text-white">የደንበኞች አገልግሎት (Support)</span>
+                        <span class="font-bold text-xs text-white">የደንበኞች ድጋፍ (@DashBingoo)</span>
                     </div>
                     <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
                 </a>
@@ -327,8 +353,8 @@
         </section>
     </main>
 
-    <!-- Bottom Navigation -->
-    <nav class="fixed bottom-2 left-3 right-3 max-w-md mx-auto bg-slate-900/95 backdrop-blur-2xl border border-blue-500/30 shadow-2xl rounded-2xl flex justify-around p-1.5 z-50">
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="fixed bottom-2 left-3 right-3 max-w-md mx-auto bg-slate-900/95 backdrop-blur-2xl border border-blue-500/30 shadow-2xl rounded-2xl flex justify-around p-1.5 z-40">
         <button onclick="switchTab('game')" class="nav-btn text-blue-400 flex flex-col items-center">
             <i class="fa-solid fa-gamepad text-base"></i>
             <span class="text-[9px] font-black mt-0.5">ቢንጎ</span>
@@ -351,10 +377,86 @@
         </button>
     </nav>
 
-    <!-- ================= FEMALE VOICE CALLER ENGINE ================= -->
+    <!-- ================= FLOATING TOAST ENGINE (#5) ================= -->
+    <script>
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            let bgClass = "bg-slate-900 border-slate-700 text-white";
+            let icon = '<i class="fa-solid fa-circle-info text-blue-400"></i>';
+
+            if (type === 'success') {
+                bgClass = "bg-slate-900 border-emerald-500/60 text-emerald-300";
+                icon = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
+            } else if (type === 'error') {
+                bgClass = "bg-slate-900 border-red-500/60 text-red-300";
+                icon = '<i class="fa-solid fa-circle-exclamation text-red-400"></i>';
+            }
+
+            toast.className = `flex items-center gap-2 px-4 py-2.5 rounded-2xl border shadow-2xl text-xs font-bold pointer-events-auto transform transition duration-300 translate-y-[-10px] opacity-0 ${bgClass}`;
+            toast.innerHTML = `${icon} <span>${message}</span>`;
+            
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-[-10px]', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+            });
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'translate-y-[-10px]');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+    </script>
+
+    <!-- ================= VOICE & AIRPORT DING-DONG ENGINE (#8) ================= -->
     <script>
         let voiceActive = true;
         let femaleVoice = null;
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        // Airport-style Dual Tone Chime (High quality Ding-Dong)
+        function playChime() {
+            try {
+                const ctx = getAudioContext();
+                const now = ctx.currentTime;
+
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(587.33, now); // D5
+                gain1.gain.setValueAtTime(0.12, now);
+                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.start(now);
+                osc1.stop(now + 0.3);
+
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(880, now + 0.15); // A5
+                gain2.gain.setValueAtTime(0.12, now + 0.15);
+                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.start(now + 0.15);
+                osc2.stop(now + 0.5);
+            } catch (e) {}
+        }
 
         function loadFemaleVoice() {
             if (!('speechSynthesis' in window)) return;
@@ -365,9 +467,8 @@
                     v.name.includes('Google US English') || 
                     v.name.includes('Samantha') || 
                     v.name.includes('Victoria') || 
-                    v.name.includes('Karen') ||
-                    v.name.includes('Natural') ||
-                    v.name.includes('Zira')
+                    v.name.includes('Zira') ||
+                    v.name.includes('Natural')
                 )
             ) || voices.find(v => v.lang.startsWith('en'));
         }
@@ -377,22 +478,25 @@
             loadFemaleVoice();
         }
 
-        document.body.addEventListener('click', function initAudio() {
+        // Audio unlocker on mobile
+        document.addEventListener('touchstart', function unlockAudio() {
+            getAudioContext();
             if ('speechSynthesis' in window && window.speechSynthesis.paused) {
                 window.speechSynthesis.resume();
             }
-            document.body.removeEventListener('click', initAudio);
         }, { once: true });
 
         function toggleVoice() {
             voiceActive = !voiceActive;
             const btn = document.getElementById('btnVoiceToggle');
-            if(voiceActive) {
+            if (voiceActive) {
                 btn.className = "px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30";
                 btn.innerText = "በርቷል (ON)";
+                showToast("የድምጽ ጥሪ በርቷል", "success");
             } else {
                 btn.className = "px-3 py-1 rounded-lg font-black text-xs bg-red-500/20 text-red-400 border border-red-500/30";
                 btn.innerText = "ጠፍቷል (OFF)";
+                showToast("የድምጽ ጥሪ ጠፍቷል", "info");
             }
         }
 
@@ -405,41 +509,27 @@
         }
 
         function announceNumber(num) {
+            playChime();
+
             if (!voiceActive || !('speechSynthesis' in window)) return;
             const letter = getBingoLetter(num);
             window.speechSynthesis.cancel();
 
-            const utterance = new SpeechSynthesisUtterance(`${letter} ... ${num}`);
-            if (femaleVoice) utterance.voice = femaleVoice;
-            utterance.pitch = 1.25; // ለስላሳ የሴት ድምጽ
-            utterance.rate = 0.88;  // የተረጋጋ አጠራር
-            utterance.volume = 1.0;
-
-            window.speechSynthesis.speak(utterance);
-        }
-
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playBeep(freq, type = 'sine', duration = 0.15) {
-            try {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = type;
-                osc.frequency.value = freq;
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + duration);
-            } catch (e) {}
+            setTimeout(() => {
+                const utterance = new SpeechSynthesisUtterance(`${letter} ... ${num}`);
+                if (femaleVoice) utterance.voice = femaleVoice;
+                utterance.pitch = 1.25;
+                utterance.rate = 0.88;
+                utterance.volume = 1.0;
+                window.speechSynthesis.speak(utterance);
+            }, 180);
         }
     </script>
 
-    <!-- ================= MAIN GAME LOGIC ================= -->
+    <!-- ================= CLIENT CORE ENGINE ================= -->
     <script>
         const tg = window.Telegram?.WebApp;
-        if(tg) tg.expand();
+        if (tg) tg.expand();
 
         const user = tg?.initDataUnsafe?.user || { id: 9876543, first_name: "ሙከራ ተጫዋች", username: "" };
         document.getElementById('playerName').innerText = user.first_name;
@@ -460,10 +550,10 @@
                     })
                 });
                 const data = await res.json();
-                if(data.balance !== undefined) {
+                if (data.balance !== undefined) {
                     document.getElementById('playerBalance').innerText = parseFloat(data.balance).toFixed(2);
                 }
-            } catch(e) {}
+            } catch (e) {}
         }
         syncUser();
 
@@ -475,13 +565,15 @@
                     body: JSON.stringify({ telegramId: user.id })
                 });
                 const data = await res.json();
-                alert(data.message || data.error);
-                if(data.success) {
+                if (data.success) {
+                    showToast(data.message, "success");
                     document.getElementById('welcomeBonusBanner').classList.add('hidden');
                     syncUser();
+                } else {
+                    showToast(data.error || "ቦነስ መውሰድ አልተቻለም", "error");
                 }
-            } catch(e) {
-                alert("ስህተት ተፈጥሯል!");
+            } catch (e) {
+                showToast("ስህተት ተፈጥሯል!", "error");
             }
         }
 
@@ -498,12 +590,12 @@
             event.currentTarget.classList.add('text-blue-400');
             event.currentTarget.classList.remove('text-slate-500');
 
-            if(tabId === 'leaderboard') { loadLeaderboard(); loadWeeklyTop(); }
-            if(tabId === 'profile') loadHistory();
+            if (tabId === 'leaderboard') { loadLeaderboard(); loadWeeklyTop(); }
+            if (tabId === 'profile') loadHistory();
         }
 
         function switchWalletView(view) {
-            if(view === 'deposit') {
+            if (view === 'deposit') {
                 document.getElementById('walletDepositView').classList.remove('hidden');
                 document.getElementById('walletWithdrawView').classList.add('hidden');
                 document.getElementById('btnWalletDep').className = "py-2 rounded-xl font-black text-xs gradient-blue text-white shadow-md transition";
@@ -516,9 +608,9 @@
             }
         }
 
-        // Render Quick Access Cards (1 - 60)
+        // Render 999 Cards Downwards
         const cardGrid = document.getElementById('cardGrid');
-        for (let i = 1; i <= 60; i++) {
+        for (let i = 1; i <= 999; i++) {
             const btn = document.createElement('button');
             btn.id = `btn-card-${i}`;
             btn.className = "h-8 rounded-xl text-xs font-black bg-slate-950 text-white border border-blue-500/40 hover:border-blue-400 active:scale-95 transition shadow-sm flex items-center justify-center";
@@ -549,7 +641,7 @@
 
                 const numsContainer = document.createElement('div');
                 numsContainer.className = "flex gap-1 flex-1 overflow-x-auto no-scrollbar";
-                for(let n = group.min; n <= group.max; n++) {
+                for (let n = group.min; n <= group.max; n++) {
                     const span = document.createElement('span');
                     span.id = `master-num-${n}`;
                     span.className = "w-4 h-4 rounded-md bg-slate-950 text-slate-400 flex items-center justify-center text-[9px] border border-slate-800 transition";
@@ -563,7 +655,6 @@
         initMasterBingoBoard();
 
         function buyCard(index) {
-            playBeep(440, 'triangle');
             socket.emit('buy_card', { telegramId: user.id, cardIndex: index });
         }
 
@@ -571,7 +662,7 @@
             const inputVal = document.getElementById('directCardInput').value;
             const cardNum = parseInt(inputVal);
             if (!cardNum || cardNum < 1 || cardNum > 999) {
-                return alert("እባክዎ ከ 1 እስከ 999 ያለ የካርድ ቁጥር ያስገቡ!");
+                return showToast("እባክዎ ከ 1 እስከ 999 ያለ የካርድ ቁጥር ያስገቡ!", "error");
             }
             buyCard(cardNum);
             document.getElementById('directCardInput').value = '';
@@ -582,7 +673,46 @@
             buyCard(rand);
         }
 
-        socket.on('error_msg', (msg) => alert(msg));
+        // ================= SOCKET.IO LIVE STATE SYNC (#9) ================= //
+        socket.on('game_init', (data) => {
+            document.getElementById('poolPrize').innerHTML = `<span class="text-yellow-400">${data.totalPrize.toFixed(2)}</span> <span class="text-[10px] text-slate-300">ETB</span>`;
+            
+            // Mark all already-taken cards
+            if (data.selectedCards && Array.isArray(data.selectedCards)) {
+                data.selectedCards.forEach(cIdx => {
+                    const btn = document.getElementById(`btn-card-${cIdx}`);
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.className = "h-8 rounded-xl text-xs font-bold bg-slate-800/60 text-slate-500 border border-slate-700/50 cursor-not-allowed flex items-center justify-center opacity-70 line-through";
+                    }
+                });
+            }
+
+            if (data.status === 'SELECTION') {
+                document.getElementById('cardPickerSection').classList.remove('hidden');
+                document.getElementById('playingBoardContainer').classList.add('hidden');
+                document.getElementById('timer').innerText = data.countdown;
+            } else if (data.status === 'PLAYING') {
+                document.getElementById('cardPickerSection').classList.add('hidden');
+                document.getElementById('playingBoardContainer').classList.remove('hidden');
+                document.getElementById('calledCount').innerText = data.calledNumbers.length;
+
+                if (data.currentNumber) {
+                    const letter = getBingoLetter(data.currentNumber);
+                    document.getElementById('activeBall').innerText = `${letter}${data.currentNumber}`;
+                }
+
+                // Highlight already called numbers
+                data.calledNumbers.forEach(num => {
+                    const masterCell = document.getElementById(`master-num-${num}`);
+                    if (masterCell) {
+                        masterCell.className = "w-4 h-4 rounded-md bg-yellow-400 text-black font-black flex items-center justify-center text-[9px] scale-105";
+                    }
+                });
+            }
+        });
+
+        socket.on('error_msg', (msg) => showToast(msg, "error"));
 
         socket.on('game_tick', (data) => {
             document.getElementById('timer').innerText = data.countdown;
@@ -590,9 +720,9 @@
 
         socket.on('card_taken', (data) => {
             const btn = document.getElementById(`btn-card-${data.cardIndex}`);
-            if(btn) {
+            if (btn) {
                 btn.disabled = true;
-                if(mySelectedCards.has(data.cardIndex)) {
+                if (mySelectedCards.has(data.cardIndex)) {
                     btn.className = "h-8 rounded-xl text-xs font-black bg-emerald-600 text-white border-2 border-emerald-300 shadow-md shadow-emerald-500/40 flex items-center justify-center";
                 } else {
                     btn.className = "h-8 rounded-xl text-xs font-bold bg-slate-800/60 text-slate-500 border border-slate-700/50 cursor-not-allowed flex items-center justify-center opacity-70 line-through";
@@ -606,19 +736,21 @@
             mySelectedCards.add(data.cardIndex);
             
             const btn = document.getElementById(`btn-card-${data.cardIndex}`);
-            if(btn) {
+            if (btn) {
                 btn.className = "h-8 rounded-xl text-xs font-black bg-emerald-600 text-white border-2 border-emerald-300 shadow-md shadow-emerald-500/40 flex items-center justify-center";
             }
 
             document.getElementById('myCardNumber').innerText = `#${data.cardIndex}`;
             document.getElementById('myCardSection').classList.remove('hidden');
             renderBingoCard(data.numbers);
+            showToast(`ካርድ #${data.cardIndex} በተሳካ ሁኔታ ተቆርጧል!`, "success");
             syncUser();
         });
 
         socket.on('round_started', () => {
             document.getElementById('cardPickerSection').classList.add('hidden');
             document.getElementById('playingBoardContainer').classList.remove('hidden');
+            showToast("ጨዋታው ተጀምሯል! መልካም እድል!", "info");
         });
 
         socket.on('number_called', (data) => {
@@ -629,7 +761,7 @@
             announceNumber(data.number);
 
             const masterCell = document.getElementById(`master-num-${data.number}`);
-            if(masterCell) {
+            if (masterCell) {
                 masterCell.className = "w-4 h-4 rounded-md bg-yellow-400 text-black font-black flex items-center justify-center text-[9px] shadow-md shadow-yellow-400/50 scale-105 transition";
             }
 
@@ -639,20 +771,36 @@
             document.getElementById('recentBalls').prepend(pill);
 
             const el = document.getElementById(`cell-${data.number}`);
-            if(el) {
+            if (el) {
                 el.classList.remove('bg-slate-950');
                 el.classList.add('gradient-blue', 'text-white', 'shadow-lg', 'scale-105');
             }
         });
 
+        // CELEBRATION MODAL & CONFETTI (#4)
         socket.on('round_won', (data) => {
-            playBeep(880, 'square', 0.5);
-            alert(`🎉 ቢንጎ ተበልቷል!\nአሸናፊ: ${data.winners.map(w => w.userName).join(', ')}\nሽልማት: ${data.prize.toFixed(2)} ETB`);
+            document.getElementById('winnerNamesDisplay').innerText = data.winners.map(w => `${w.userName} (#${w.cardIndex})`).join(', ');
+            document.getElementById('winnerPrizeDisplay').innerText = `${data.prize.toFixed(2)} ETB`;
+            document.getElementById('winnerModal').classList.remove('hidden');
+
+            try {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            } catch (e) {}
+
             syncUser();
         });
 
+        function closeWinnerModal() {
+            document.getElementById('winnerModal').classList.add('hidden');
+        }
+
         socket.on('game_reset', () => {
             mySelectedCards.clear();
+            document.getElementById('winnerModal').classList.add('hidden');
             document.getElementById('playingBoardContainer').classList.add('hidden');
             document.getElementById('cardPickerSection').classList.remove('hidden');
             document.getElementById('myCardSection').classList.add('hidden');
@@ -661,15 +809,16 @@
 
             initMasterBingoBoard();
 
-            for (let i = 1; i <= 60; i++) {
+            for (let i = 1; i <= 999; i++) {
                 const btn = document.getElementById(`btn-card-${i}`);
-                if(btn) {
+                if (btn) {
                     btn.disabled = false;
                     btn.className = "h-8 rounded-xl text-xs font-black bg-slate-950 text-white border border-blue-500/40 hover:border-blue-400 active:scale-95 transition shadow-sm flex items-center justify-center";
                 }
             }
         });
 
+        // 5x5 Grid with Center Star (★ FREE Center Permanent Fix - #7)
         function renderBingoCard(card) {
             const board = document.getElementById('bingoBoard');
             board.innerHTML = '';
@@ -679,8 +828,15 @@
                     const div = document.createElement('div');
                     div.id = `cell-${val}`;
                     div.className = "p-2 bg-slate-950 text-white border border-slate-800 rounded-xl flex items-center justify-center text-xs font-black";
-                    div.innerText = val === 0 ? "★" : val;
-                    if(val === 0) div.classList.add('bg-yellow-400', 'text-slate-950');
+
+                    // Center Cell is ★ FREE
+                    if (r === 2 && c === 2) {
+                        div.className = "p-2 bg-yellow-400 text-slate-950 rounded-xl flex items-center justify-center text-sm font-black shadow-md shadow-yellow-400/40";
+                        div.innerText = "★";
+                    } else {
+                        div.innerText = val;
+                    }
+
                     board.appendChild(div);
                 }
             }
@@ -691,7 +847,7 @@
             const amount = document.getElementById('depAmount').value;
             const smsText = document.getElementById('depSms').value;
 
-            if(!amount || !smsText) return alert("እባክዎ መጠን እና ሙሉ የSMS ጽሁፍ ያስገቡ!");
+            if (!amount || !smsText) return showToast("እባክዎ መጠን እና ሙሉ የSMS ጽሁፍ ያስገቡ!", "error");
 
             const res = await fetch('/api/deposit', {
                 method: 'POST',
@@ -699,10 +855,12 @@
                 body: JSON.stringify({ telegramId: user.id, firstName: user.first_name, username: user.username, method, amount, smsText })
             });
             const data = await res.json();
-            alert(data.message || data.error);
-            if(data.success) {
+            if (data.success) {
+                showToast(data.message, "success");
                 document.getElementById('depAmount').value = '';
                 document.getElementById('depSms').value = '';
+            } else {
+                showToast(data.error || "ማስገባት አልተቻለም", "error");
             }
         }
 
@@ -712,7 +870,7 @@
             const accountNumber = document.getElementById('withAccount').value;
             const accountName = document.getElementById('withName').value;
 
-            if(!amount || !accountNumber) return alert("መረጃዎችን በትክክል ይሙሉ!");
+            if (!amount || !accountNumber) return showToast("መረጃዎችን በትክክል ይሙሉ!", "error");
 
             const res = await fetch('/api/withdraw', {
                 method: 'POST',
@@ -720,13 +878,17 @@
                 body: JSON.stringify({ telegramId: user.id, method, amount, accountNumber, accountName })
             });
             const data = await res.json();
-            alert(data.message || data.error);
-            syncUser();
+            if (data.success) {
+                showToast(data.message, "success");
+                syncUser();
+            } else {
+                showToast(data.error || "ማውጣት አልተቻለም", "error");
+            }
         }
 
         async function redeemPromo() {
             const code = document.getElementById('promoInput').value;
-            if(!code) return alert("ኮድ ያስገቡ!");
+            if (!code) return showToast("ኮድ ያስገቡ!", "error");
 
             const res = await fetch('/api/promocode/redeem', {
                 method: 'POST',
@@ -734,10 +896,12 @@
                 body: JSON.stringify({ telegramId: user.id, code })
             });
             const data = await res.json();
-            alert(data.message || data.error);
-            if(data.success) {
+            if (data.success) {
+                showToast(data.message, "success");
                 document.getElementById('promoInput').value = '';
                 syncUser();
+            } else {
+                showToast(data.error || "የተሳሳተ ኮድ", "error");
             }
         }
 
@@ -791,7 +955,7 @@
 
         function copyToClipboard(txt) {
             navigator.clipboard.writeText(txt);
-            alert("ኮፒ ተደርጓል: " + txt);
+            showToast("ኮፒ ተደርጓል: " + txt, "success");
         }
     </script>
 </body>
