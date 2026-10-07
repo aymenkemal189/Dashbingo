@@ -108,7 +108,7 @@ bot.start(async (ctx) => {
 });
 
 // ================= 25 BOT NAMES ================= //
-const ENABLE_SIMULATED_PLAYERS = true;
+const ENABLE_SIMULATED_PLAYERS = false;
 const BOT_NAMES = [
     "Almush 🌱 SEED 🐾", "Girmay", "Rui costa", "Abuker", "Daniel", 
     "🐐 MARCY 🇪🇷 👻", "JERMIAH", "Hkedi Yeseya", "Alst 🙋 costey", "Meli 🌸", 
