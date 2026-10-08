@@ -664,7 +664,7 @@ app.get('/api/admin/transactions', checkAdminAuth, async (req, res) => {
         const { rows } = await pool.query(
             `SELECT t.*, u.first_name, u.telegram_id FROM transactions t 
              JOIN users u ON u.id = t.user_id 
-             ORDER BY t.created_at DESC LIMIT 50`
+             ORDER BY t.created_at DESC LIMIT 300`
         );
         res.json(rows);
     } catch (err) {
@@ -826,6 +826,50 @@ app.get('/api/admin/analytics', checkAdminAuth, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+// 📊 FULL ALL-TIME FINANCIAL AUDIT API (ከመጀመሪያው ቀን ጀምሮ ያለ ሙሉ ሂሳብ)
+app.get('/api/admin/audit', checkAdminAuth, async (req, res) => {
+    try {
+        const auditQuery = `
+            SELECT 
+                COALESCE(SUM(CASE WHEN type = 'DEPOSIT' AND status = 'APPROVED' AND payment_method = 'CBE' THEN amount ELSE 0 END), 0) AS cbe_deposits,
+                COALESCE(SUM(CASE WHEN type = 'DEPOSIT' AND status = 'APPROVED' AND payment_method = 'TELEBIRR' THEN amount ELSE 0 END), 0) AS telebirr_deposits,
+                COALESCE(SUM(CASE WHEN type = 'WITHDRAW' AND status = 'APPROVED' AND payment_method = 'CBE' THEN amount ELSE 0 END), 0) AS cbe_withdrawals,
+                COALESCE(SUM(CASE WHEN type = 'WITHDRAW' AND status = 'APPROVED' AND payment_method = 'TELEBIRR' THEN amount ELSE 0 END), 0) AS telebirr_withdrawals,
+                COALESCE(SUM(CASE WHEN type = 'WITHDRAW' AND status = 'APPROVED' THEN amount ELSE 0 END), 0) AS total_withdrawals,
+                COALESCE(SUM(CASE WHEN type = 'WELCOME_BONUS' THEN amount ELSE 0 END), 0) AS welcome_bonus,
+                COALESCE(SUM(CASE WHEN type = 'REFERRAL_BONUS' THEN amount ELSE 0 END), 0) AS referral_bonus,
+                COALESCE(SUM(CASE WHEN type = 'DEPOSIT' AND status = 'PENDING' THEN 1 ELSE 0 END), 0) AS pending_deposits_count,
+                COALESCE(SUM(CASE WHEN type = 'WITHDRAW' AND status = 'PENDING' THEN 1 ELSE 0 END), 0) AS pending_withdrawals_count
+            FROM transactions;
+        `;
+        const { rows } = await pool.query(auditQuery);
+        const data = rows[0];
+
+        // የተጫዋቾች ዋሌት ውስጥ ያለ አጠቃላይ ቀሪ ሒሳብ
+        const userBalRes = await pool.query('SELECT COALESCE(SUM(balance), 0) AS total_user_balance, COUNT(*) AS user_count FROM users');
+        const roundRes = await pool.query('SELECT COALESCE(SUM(owner_rake), 0) AS total_rake, COUNT(*) AS round_count FROM bingo_rounds');
+
+        res.json({
+            cbeDeposits: parseFloat(data.cbe_deposits),
+            telebirrDeposits: parseFloat(data.telebirr_deposits),
+            cbeWithdrawals: parseFloat(data.cbe_withdrawals),
+            telebirrWithdrawals: parseFloat(data.telebirr_withdrawals),
+            totalWithdrawals: parseFloat(data.total_withdrawals),
+            welcomeBonus: parseFloat(data.welcome_bonus),
+            referralBonus: parseFloat(data.referral_bonus),
+            pendingDepositsCount: parseInt(data.pending_deposits_count),
+            pendingWithdrawalsCount: parseInt(data.pending_withdrawals_count),
+            totalUserLiability: parseFloat(userBalRes.rows[0].total_user_balance),
+            totalUsers: parseInt(userBalRes.rows[0].user_count),
+            totalRake: parseFloat(roundRes.rows[0].total_rake),
+            totalRounds: parseInt(roundRes.rows[0].round_count)
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 
 // ================= SOCKET.IO: BUY CARD & REFERRAL REWARD ================= //
 io.on('connection', (socket) => {
