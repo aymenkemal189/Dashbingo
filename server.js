@@ -11,6 +11,9 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
+const cors = require('cors');
+app.use(cors({ origin: '*' }));
+
 // Database Connection (Neon Postgres) with Auto-Reconnect Pool
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
