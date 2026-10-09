@@ -7,7 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
+    <!-- CDN Socket.io (ከ GitHub Pages ሆነን Renderን ለማግኘት የሚያስፈልገው) -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
         body { background-color: #060911; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
@@ -73,7 +74,7 @@
 
     <main class="max-w-md mx-auto p-3 space-y-2.5">
 
-        <!-- 🎁 20 ETB WELCOME BONUS BANNER (ከተወሰደ በኋላ ይጠፋል) -->
+        <!-- 🎁 20 ETB WELCOME BONUS BANNER -->
         <div id="welcomeBonusBanner" class="p-3 bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-500/20 rounded-2xl border border-yellow-500/40 flex justify-between items-center shadow-md">
             <div class="flex items-center gap-2.5">
                 <span class="text-2xl animate-bounce">🎁</span>
@@ -90,7 +91,6 @@
         <!-- ================= TAB 1: BINGO ARENA ================= -->
         <section id="tab-game" class="space-y-2.5">
             
-            <!-- FLASH BINGO STYLE HEADER (ድራሹ & የተያዙ ካርዶች ብዛት በግልጽ) -->
             <div class="grid grid-cols-2 gap-2">
                 <div class="glass-box p-2.5 rounded-2xl text-center relative overflow-hidden border border-blue-500/30 shadow-sm">
                     <p class="text-[9px] font-bold text-slate-300 uppercase tracking-wider">ድራሹ (Pot Prize)</p>
@@ -105,9 +105,8 @@
                 </div>
             </div>
 
-            <!-- 1. SELECTION STAGE: 999 CARDS (FRONT SHOWS ~80, SCROLLS TO 999) -->
+            <!-- SELECTION STAGE -->
             <div id="cardPickerSection" class="space-y-2">
-                
                 <div class="glass-box p-2.5 rounded-2xl border border-blue-500/30 space-y-1.5 shadow-sm">
                     <div class="flex justify-between items-center text-[11px] font-bold">
                         <span class="text-white flex items-center gap-1"><i class="fa-solid fa-ticket text-yellow-400"></i> ካርድ ቁጥር (1 - 999)</span>
@@ -134,14 +133,12 @@
                 </div>
 
                 <div id="cardGrid" class="grid grid-cols-6 gap-1.5 bg-slate-900/90 p-2.5 rounded-2xl border border-blue-500/20 shadow-md max-h-80 overflow-y-auto">
-                    <!-- Cards 1 to 999 injected here -->
+                    <!-- Cards 1-999 -->
                 </div>
             </div>
 
-            <!-- 2. PLAYING STAGE: BINGO CALLING & MULTI-CARD SWIPER -->
+            <!-- PLAYING STAGE -->
             <div id="playingBoardContainer" class="hidden space-y-2.5">
-                
-                <!-- Active Ball Sphere -->
                 <div class="glass-box p-3 rounded-2xl text-center shadow-lg border border-blue-500/40 relative overflow-hidden">
                     <div class="flex justify-around items-center">
                         <div class="text-center">
@@ -160,13 +157,11 @@
                     </div>
                 </div>
 
-                <!-- B-I-N-G-O 1-75 Master Board -->
                 <div class="glass-box p-2.5 rounded-2xl border border-slate-800 shadow-md">
                     <div class="text-center text-[10px] font-bold text-slate-400 mb-1.5">የጥሪ ሰሌዳ (B I N G O)</div>
                     <div class="space-y-1 text-xs font-bold" id="masterBingoBoard"></div>
                 </div>
 
-                <!-- MULTI-CARD SECTION -->
                 <div id="myMultiCardSection" class="hidden space-y-1.5">
                     <div class="flex justify-between items-center px-1">
                         <div class="flex items-center gap-1.5">
@@ -215,7 +210,6 @@
                         <h3 class="font-black text-xs text-white">የክፍያ አካውንቶች</h3>
                     </div>
 
-                    <!-- 1. CBE (ON TOP) -->
                     <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
                         <div class="flex items-center gap-2.5">
                             <img src="https://i.postimg.cc/Hk1pN2VS/20260805-174301.png" alt="CBE" class="w-8 h-8 rounded-lg object-contain">
@@ -230,7 +224,6 @@
                         </button>
                     </div>
 
-                    <!-- 2. Telebirr -->
                     <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
                         <div class="flex items-center gap-2.5">
                             <img src="https://i.postimg.cc/1zH5wqRj/20260805-174415.png" alt="Telebirr" class="w-8 h-8 rounded-lg object-contain">
@@ -246,7 +239,6 @@
                     </div>
                 </div>
 
-                <!-- Deposit SMS Form -->
                 <div class="glass-box p-3 rounded-2xl space-y-2.5 border border-blue-500/20">
                     <div class="flex justify-between items-center">
                         <h4 class="font-black text-xs text-white flex items-center gap-1.5">
@@ -320,10 +312,8 @@
             <div id="historyList" class="space-y-2"></div>
         </section>
 
-        <!-- ================= TAB 5: SETTINGS & FULL PROFILE SUMMARY ================= -->
+        <!-- ================= TAB 5: SETTINGS ================= -->
         <section id="tab-settings" class="hidden space-y-3">
-            
-            <!-- Complete Profile & Balance Breakdown Card -->
             <div class="glass-box p-4 rounded-3xl space-y-3 border border-blue-500/30">
                 <div class="flex items-center gap-3 pb-3 border-b border-slate-800">
                     <div class="w-12 h-12 rounded-2xl gradient-blue flex items-center justify-center text-xl font-black text-white shadow-md">
@@ -335,7 +325,6 @@
                     </div>
                 </div>
 
-                <!-- 3 Balances: Current, Win, and Bonus -->
                 <div class="grid grid-cols-3 gap-1.5 text-center">
                     <div class="p-2 bg-slate-950 rounded-xl border border-slate-800">
                         <span class="text-[8px] text-slate-400 font-bold uppercase">ዋና ሒሳብ</span>
@@ -351,7 +340,6 @@
                     </div>
                 </div>
 
-                <!-- Referral Section with 1-Click Share to Telegram -->
                 <div class="pt-2 border-t border-slate-800 space-y-2">
                     <span class="text-[10px] font-bold text-slate-300">የሪፈራል ሊንክዎ (1 ሰው ሲጋብዙ = 10 ETB)፦</span>
                     <div class="flex gap-1.5">
@@ -362,7 +350,6 @@
                     </div>
                 </div>
 
-                <!-- Promo Code Box inside Settings -->
                 <div class="pt-2 border-t border-slate-800 space-y-1.5">
                     <span class="text-[10px] font-bold text-slate-300">ፕሮሞ ኮድ ማስገቢያ፦</span>
                     <div class="flex gap-1.5">
@@ -374,13 +361,12 @@
                 </div>
             </div>
 
-            <!-- 3 Audio Toggles: Background Music, Touch Sound, Voice Caller -->
+            <!-- Audio Toggles -->
             <div class="glass-box p-3.5 rounded-3xl space-y-2.5 border border-slate-800">
                 <h3 class="font-black text-xs text-white flex items-center gap-2">
-                    <i class="fa-solid fa-sliders text-blue-400"></i> የድምጽ ቅንብሮች (Audio Toggles)
+                    <i class="fa-solid fa-sliders text-blue-400"></i> የድምጽ ቅንብሮች
                 </h3>
                 
-                <!-- 1. Background Music Toggle -->
                 <div class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800">
                     <div>
                         <p class="font-bold text-xs text-white">የጀርባ ሙዚቃ (Lobby BG Music)</p>
@@ -391,22 +377,18 @@
                     </button>
                 </div>
 
-                <!-- 2. Touch Sound Toggle -->
                 <div class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800">
                     <div>
                         <p class="font-bold text-xs text-white">የስክሪን ንክኪ ድምጽ (Touch Sounds)</p>
-                        <p class="text-[9px] text-slate-400">አዝራሮችን ሲጫኑ የሚሰማ ድምጽ</p>
                     </div>
                     <button onclick="toggleTouchSound()" id="btnTouchToggle" class="px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30">
                         በርቷል (ON)
                     </button>
                 </div>
 
-                <!-- 3. Voice Caller Toggle -->
                 <div class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800">
                     <div>
                         <p class="font-bold text-xs text-white">የቁጥር ጥሪ ድምጽ (Amharic Caller)</p>
-                        <p class="text-[9px] text-slate-400">ቁጥሮች ሲወጡ "ቢ... አስራ ሁለት" እያለች ትጣራለች</p>
                     </div>
                     <button onclick="toggleVoiceCaller()" id="btnVoiceToggle" class="px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30">
                         በርቷል (ON)
@@ -414,7 +396,6 @@
                 </div>
             </div>
 
-            <!-- Official Links -->
             <div class="glass-box p-3 rounded-2xl space-y-2 border border-slate-800">
                 <a href="https://t.me/DashBingo" target="_blank" class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800 hover:border-blue-500 transition">
                     <div class="flex items-center gap-2">
@@ -459,13 +440,8 @@
         </button>
     </nav>
 
-    <!-- ================= FLOATING TOAST ENGINE ================= -->
+    <!-- TOAST ENGINE -->
     <script>
-        // ዋናው የ Render ሰርቨር አድራሻ
-const BACKEND_URL = "https://dashbingo.onrender.com";
-
-// socket ን እንዲህ ቀይረው:
-const socket = io(BACKEND_URL);
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
@@ -499,24 +475,20 @@ const socket = io(BACKEND_URL);
         }
     </script>
 
-    <!-- ================= AUDIO ENGINE: 2 BACKGROUND TRACKS & AMHARIC CALLER ================= -->
+    <!-- AUDIO ENGINE -->
     <script>
-        // Audio Toggles
         let bgMusicEnabled = true;
         let touchSoundEnabled = true;
         let voiceCallerEnabled = true;
 
-        // 🎵 Background Audio 1: 30sec Selection Lobby Music (Low Volume 0.15)
-        const bgSelectionAudio = new Audio('/audio/30sec_first.mp3');
+        const bgSelectionAudio = new Audio('audio/30sec_first.mp3');
         bgSelectionAudio.loop = true;
         bgSelectionAudio.volume = 0.15;
 
-        // 🎵 Background Audio 2: 150sec Playing Outcome Music (Low Volume 0.15)
-        const bgPlayingAudio = new Audio('/audio/150sec_second.mp3');
+        const bgPlayingAudio = new Audio('audio/150sec_second.mp3');
         bgPlayingAudio.loop = true;
         bgPlayingAudio.volume = 0.15;
 
-        // Unlock audio playback on first interaction
         function unlockAudio() {
             if (bgMusicEnabled && bgSelectionAudio.paused) {
                 bgSelectionAudio.play().catch(() => {});
@@ -588,25 +560,22 @@ const socket = io(BACKEND_URL);
             return 'O';
         }
 
-        // 🎙️ Amharic MP3 Voice Caller (Supports 01_B.mp3 to 75_O.mp3)
         function announceNumber(num) {
             if (!voiceCallerEnabled) return;
-
             const letter = getBingoLetter(num);
             const formattedNum = num < 10 ? `0${num}` : `${num}`;
             const audioFileName = `${formattedNum}_${letter}.mp3`;
-
-            // Try playing local audio file
-            const audio = new Audio(`/audio/${audioFileName}`);
+            const audio = new Audio(`audio/${audioFileName}`);
             audio.volume = 1.0;
-            audio.play().catch(() => {
-                // If MP3 file is not yet uploaded, fallback gracefully without error
-            });
+            audio.play().catch(() => {});
         }
     </script>
 
-    <!-- ================= CLIENT CORE ENGINE ================= -->
+    <!-- ================= CLIENT CORE ENGINE (DIRECT RENDER BACKEND URL) ================= -->
     <script>
+        // ⚡ ዋናው የ Render ሰርቨር አድራሻ (ከ GitHub Pages በቀጥታ እንዲነጋገር የሚያደርገው)
+        const BACKEND_URL = "https://dashbingo.onrender.com";
+
         const tg = window.Telegram?.WebApp;
         if (tg) tg.expand();
 
@@ -626,7 +595,10 @@ const socket = io(BACKEND_URL);
         const urlParams = new URLSearchParams(window.location.search);
         const refPayload = urlParams.get('tgWebAppStartParam') || urlParams.get('startapp') || urlParams.get('ref') || '';
 
-        const socket = io();
+        // ⚡ Socket.io በቀጥታ ወደ Render እንዲገናኝ ማድረግ
+        const socket = io(BACKEND_URL, {
+            transports: ['websocket', 'polling']
+        });
 
         let myCards = [];
         let currentCardViewIndex = 0;
@@ -635,7 +607,7 @@ const socket = io(BACKEND_URL);
 
         async function syncUser() {
             try {
-                const res = await fetch('/api/user/sync', {
+                const res = await fetch(`${BACKEND_URL}/api/user/sync`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -656,11 +628,10 @@ const socket = io(BACKEND_URL);
         }
         syncUser();
 
-        // 🎁 Welcome Bonus: Banner hides completely once claimed
         async function claimWelcomeBonus() {
             playTouchBeep();
             try {
-                const res = await fetch('/api/user/claim-welcome', {
+                const res = await fetch(`${BACKEND_URL}/api/user/claim-welcome`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
@@ -684,7 +655,6 @@ const socket = io(BACKEND_URL);
             }
         }
 
-        // Hide banner if already claimed locally
         if (localStorage.getItem(`claimed_welcome_${user.id}`) === 'true') {
             document.getElementById('welcomeBonusBanner').classList.add('hidden');
         }
@@ -734,7 +704,6 @@ const socket = io(BACKEND_URL);
             }
         }
 
-        // Render 999 Cards
         const cardGrid = document.getElementById('cardGrid');
         for (let i = 1; i <= 999; i++) {
             const btn = document.createElement('button');
@@ -823,7 +792,6 @@ const socket = io(BACKEND_URL);
                 document.getElementById('playingBoardContainer').classList.add('hidden');
                 document.getElementById('timer').innerText = data.countdown;
 
-                // Play 30sec BG Music
                 if (bgMusicEnabled) {
                     bgPlayingAudio.pause();
                     bgSelectionAudio.currentTime = 0;
@@ -848,7 +816,6 @@ const socket = io(BACKEND_URL);
                 });
                 renderCurrentActiveCard();
 
-                // Play 150sec BG Music
                 if (bgMusicEnabled) {
                     bgSelectionAudio.pause();
                     bgPlayingAudio.play().catch(() => {});
@@ -875,7 +842,6 @@ const socket = io(BACKEND_URL);
             document.getElementById('takenCardsCount').innerText = data.totalCards;
         });
 
-        // 🎟 Multi-Card Purchase
         socket.on('my_card', (data) => {
             myCards.push({ cardIndex: data.cardIndex, numbers: data.numbers });
             
@@ -910,12 +876,10 @@ const socket = io(BACKEND_URL);
             renderCurrentActiveCard();
         }
 
-        // ================= 1-AWAY CHECK & RENDER ================= //
         function checkOneAway(card, called) {
             const isM = (v) => v === 0 || called.includes(v);
             let minNeeded = 5;
 
-            // Columns
             for (let c = 0; c < 5; c++) {
                 let missing = 0;
                 for (let r = 0; r < 5; r++) {
@@ -923,7 +887,6 @@ const socket = io(BACKEND_URL);
                 }
                 minNeeded = Math.min(minNeeded, missing);
             }
-            // Rows
             for (let r = 0; r < 5; r++) {
                 let missing = 0;
                 for (let c = 0; c < 5; c++) {
@@ -931,7 +894,6 @@ const socket = io(BACKEND_URL);
                 }
                 minNeeded = Math.min(minNeeded, missing);
             }
-            // Diagonals
             let d1 = 0, d2 = 0;
             for (let i = 0; i < 5; i++) {
                 if (!isM(card[i][i])) d1++;
@@ -969,7 +931,6 @@ const socket = io(BACKEND_URL);
                     const div = document.createElement('div');
                     div.id = `cell-${val}`;
 
-                    // Center Free Star (★)
                     if (r === 2 && c === 2) {
                         div.className = "p-2 bg-yellow-400 text-slate-950 rounded-xl flex items-center justify-center text-sm font-black shadow-md shadow-yellow-400/40";
                         div.innerText = "★";
@@ -993,7 +954,6 @@ const socket = io(BACKEND_URL);
             document.getElementById('playingBoardContainer').classList.remove('hidden');
             showToast("ጨዋታው ተጀምሯል! መልካም እድል!", "info");
 
-            // Transition from 30sec BG music to 150sec BG music
             if (bgMusicEnabled) {
                 bgSelectionAudio.pause();
                 bgPlayingAudio.currentTime = 0;
@@ -1007,7 +967,6 @@ const socket = io(BACKEND_URL);
             document.getElementById('calledCount').innerText = data.called.length;
             currentCalledNumbers = data.called;
 
-            // Announce voice call
             announceNumber(data.number);
 
             const masterCell = document.getElementById(`master-num-${data.number}`);
@@ -1023,7 +982,6 @@ const socket = io(BACKEND_URL);
             renderCurrentActiveCard();
         });
 
-        // CELEBRATION MODAL & CONFETTI
         socket.on('round_won', (data) => {
             bgPlayingAudio.pause();
 
@@ -1060,7 +1018,6 @@ const socket = io(BACKEND_URL);
 
             initMasterBingoBoard();
 
-            // Restart 30sec Selection BG Music
             if (bgMusicEnabled) {
                 bgPlayingAudio.pause();
                 bgSelectionAudio.currentTime = 0;
@@ -1083,7 +1040,7 @@ const socket = io(BACKEND_URL);
 
             if (!amount || !smsText) return showToast("እባክዎ መጠን እና ሙሉ የSMS ጽሁፍ ያስገቡ!", "error");
 
-            const res = await fetch('/api/deposit', {
+            const res = await fetch(`${BACKEND_URL}/api/deposit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
@@ -1114,7 +1071,7 @@ const socket = io(BACKEND_URL);
 
             if (!amount || !accountNumber) return showToast("መረጃዎችን በትክክል ይሙሉ!", "error");
 
-            const res = await fetch('/api/withdraw', {
+            const res = await fetch(`${BACKEND_URL}/api/withdraw`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ telegramId: user.id, method, amount, accountNumber, accountName })
@@ -1133,7 +1090,7 @@ const socket = io(BACKEND_URL);
             const code = document.getElementById('promoInput').value;
             if (!code) return showToast("ኮድ ያስገቡ!", "error");
 
-            const res = await fetch('/api/promocode/redeem', {
+            const res = await fetch(`${BACKEND_URL}/api/promocode/redeem`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ telegramId: user.id, code })
@@ -1149,7 +1106,7 @@ const socket = io(BACKEND_URL);
         }
 
         async function loadWeeklyTop() {
-            const res = await fetch('/api/weekly-top');
+            const res = await fetch(`${BACKEND_URL}/api/weekly-top`);
             const data = await res.json();
             const list = document.getElementById('weeklyTopList');
             list.innerHTML = data.map((u, i) => `
@@ -1164,7 +1121,7 @@ const socket = io(BACKEND_URL);
         }
 
         async function loadLeaderboard() {
-            const res = await fetch('/api/leaderboard');
+            const res = await fetch(`${BACKEND_URL}/api/leaderboard`);
             const data = await res.json();
             const list = document.getElementById('leaderboardList');
             list.innerHTML = data.map((u, i) => `
@@ -1179,7 +1136,7 @@ const socket = io(BACKEND_URL);
         }
 
         async function loadHistory() {
-            const res = await fetch(`/api/history/${user.id}`);
+            const res = await fetch(`${BACKEND_URL}/api/history/${user.id}`);
             const data = await res.json();
             const list = document.getElementById('historyList');
             list.innerHTML = data.map(t => `
