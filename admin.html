@@ -308,6 +308,11 @@
 
     <!-- CLIENT AUDIT & ACCOUNTING SCRIPT -->
     <script>
+        // ዋናው የ Render ሰርቨር አድራሻ
+const BACKEND_URL = "https://dashbingo.onrender.com";
+
+// socket ን እንዲህ ቀይረው:
+const socket = io(BACKEND_URL);
         let adminKey = localStorage.getItem('dash_admin_key') || '';
         let allTransactions = [];
         let currentFilter = 'PENDING';
