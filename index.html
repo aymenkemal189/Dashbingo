@@ -461,6 +461,11 @@
 
     <!-- ================= FLOATING TOAST ENGINE ================= -->
     <script>
+        // ዋናው የ Render ሰርቨር አድራሻ
+const BACKEND_URL = "https://dashbingo.onrender.com";
+
+// socket ን እንዲህ ቀይረው:
+const socket = io(BACKEND_URL);
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
