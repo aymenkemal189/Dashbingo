@@ -830,6 +830,35 @@ app.get('/api/admin/analytics', checkAdminAuth, async (req, res) => {
     }
 });
 
+// 📢 Broadcast Message to All Users
+app.post('/api/admin/broadcast', checkAdminAuth, async (req, res) => {
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ error: 'Message is required' });
+
+    try {
+        const { rows } = await pool.query('SELECT telegram_id FROM users');
+        let sentCount = 0;
+
+        // ለሁሉም ተጠቃሚዎች በየተራ መላክ
+        for (const user of rows) {
+            try {
+                await bot.telegram.sendMessage(user.telegram_id, message, { parse_mode: 'HTML' });
+                sentCount++;
+                // ቴሌግራም እንዳያግደን በየ 50ms ክፍተት መላክ
+                await new Promise(r => setTimeout(r, 50));
+            } catch (err) {
+                // ቦቱን የዘጉትን ዝም ብሎ ያልፋል
+            }
+        }
+
+        res.json({ success: true, message: `መልእክቱ ለ ${sentCount} ተጫዋቾች ተልኳል!` });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+
+
 // 📊 FULL ALL-TIME FINANCIAL AUDIT API (ከመጀመሪያው ቀን ጀምሮ ያለ ሙሉ ሂሳብ)
 app.get('/api/admin/audit', checkAdminAuth, async (req, res) => {
     try {
