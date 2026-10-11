@@ -667,7 +667,7 @@ app.get('/api/admin/transactions', checkAdminAuth, async (req, res) => {
         const { rows } = await pool.query(
             `SELECT t.*, u.first_name, u.telegram_id FROM transactions t 
              JOIN users u ON u.id = t.user_id 
-             ORDER BY t.created_at DESC LIMIT 300`
+             ORDER BY t.created_at DESC LIMIT 300` // <-- LIMIT 300 መሆኑን አረጋግጥ
         );
         res.json(rows);
     } catch (err) {
