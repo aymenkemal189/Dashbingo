@@ -753,14 +753,53 @@ app.get('/api/admin/audit', checkAdminAuth, async (req, res) => {
     }
 });
 
-// 300 Rows Transactions API (with optional timeframe and type filters)
+// ⚡ በዳታቤዝ ደረጃ ተጠባባቂዎችን፣ ገቢዎችን እና ወጪዎችን ብቻ ለይቶ የሚያመጣ API
 app.get('/api/admin/transactions', checkAdminAuth, async (req, res) => {
+    const { category, timeframe } = req.query;
+
+    // ቦነሶችን አውጥቶ እውነተኛ የሰው ገቢና ወጪዎችን ብቻ ማጣሪያ
+    let conditions = ["t.type IN ('DEPOSIT', 'WITHDRAW')"];
+
+    if (category === 'PENDING') {
+        conditions.push("t.status = 'PENDING'");
+    } else if (category === 'DEPOSIT') {
+        conditions.push("t.type = 'DEPOSIT'");
+    } else if (category === 'WITHDRAW') {
+        conditions.push("t.type = 'WITHDRAW'");
+    } else if (category === 'APPROVED') {
+        conditions.push("t.status = 'APPROVED'");
+    } else if (category === 'REJECTED') {
+        conditions.push("t.status = 'REJECTED'");
+    }
+
+    // የጊዜ ማጣሪያ
+    if (timeframe && timeframe !== 'all') {
+        const intervals = {
+            '30m': '30 minutes',
+            '1h': '1 hour',
+            '12h': '12 hours',
+            '24h': '24 hours',
+            '7d': '7 days',
+            '15d': '15 days',
+            '30d': '30 days'
+        };
+        if (intervals[timeframe]) {
+            conditions.push(`t.created_at >= NOW() - INTERVAL '${intervals[timeframe]}'`);
+        }
+    }
+
+    const whereClause = `WHERE ${conditions.join(' AND ')}`;
+
     try {
-        const { rows } = await pool.query(
-            `SELECT t.*, u.first_name, u.telegram_id FROM transactions t 
-             JOIN users u ON u.id = t.user_id 
-             ORDER BY t.created_at DESC LIMIT 300`
-        );
+        const query = `
+            SELECT t.*, u.first_name, u.telegram_id 
+            FROM transactions t 
+            LEFT JOIN users u ON u.id = t.user_id 
+            ${whereClause}
+            ORDER BY t.created_at DESC 
+            LIMIT 300
+        `;
+        const { rows } = await pool.query(query);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
