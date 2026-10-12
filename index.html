@@ -26,7 +26,7 @@
 </head>
 <body class="pb-24 select-none">
 
-    <!-- FAST MICRO-TOAST CONTAINER (1.5s FAST DISMISS) -->
+    <!-- FAST MICRO-TOAST CONTAINER -->
     <div id="toastContainer" class="fixed top-3 left-4 right-4 z-50 flex flex-col items-center gap-1.5 pointer-events-none"></div>
 
     <!-- WINNER CELEBRATION MODAL -->
@@ -49,7 +49,7 @@
         </div>
     </div>
 
-    <!-- 📜 10 RULES MODAL (POPUPS ON DEMAND - CLEAN UX) -->
+    <!-- 📜 10 RULES MODAL -->
     <div id="rulesModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-50 flex items-center justify-center p-4 hidden">
         <div class="glass-box p-5 rounded-3xl max-w-sm w-full space-y-3 border border-yellow-500/40 shadow-2xl max-h-[85vh] overflow-y-auto">
             <div class="flex justify-between items-center pb-2 border-b border-slate-800">
@@ -61,16 +61,16 @@
                 </button>
             </div>
             <div class="space-y-2 text-[11px] text-slate-300 leading-relaxed">
-                <p><b>1. የመጀመሪያ ተቀማጭ ግዴታ፦</b> ገንዘብ ለማውጣት ቢያንስ 1 ጊዜ ተቀማጭ (Deposit) ማድረግ ግዴታ ነው።</p>
+                <p><b>1. የመጀመሪያ ተቀማጭ ግዴታ፦</b> ገንዘብ ለማውጣት ቢያንስ 1 ጊዜ 50 ETB ተቀማጭ (Deposit) ማድረግ ግዴታ ነው።</p>
                 <p><b>2. አነስተኛ ማውጫ፦</b> አነስተኛው የማውጣት መጠን <b>100 ETB</b> ነው።</p>
                 <p><b>3. ከፍተኛ ማውጫ፦</b> በአንድ ጊዜ የሚፈቀደው ከፍተኛው ማውጫ <b>5,000 ETB</b> ነው።</p>
                 <p><b>4. የቦነስ ጨዋታ ግዴታ፦</b> ነፃ ቦነሶችን በቀጥታ ማውጣት አይቻልም፤ ተጫውተውበት ያሸነፉትን ማውጣት ይችላሉ።</p>
-                <p><b>5. የአገልግሎት ክፍያ፦</b> በማንኛውም ዊዝድሮው ላይ የ 5% የኔትወርክና የባንክ ማስተላለፊያ ክፍያ ይቀነሳል።</p>
+                <p><b>5. የአገልግሎት ክፍያ፦</b> በማንኛውም ዊዝድሮው ላይ የ 5% የኔትወርክ ማስተላለፊያ ክፍያ ይቀነሳል።</p>
                 <p><b>6. የማውጣት ድግግሞሽ፦</b> በ 24 ሰዓት ውስጥ ቢበዛ 2 ጊዜ ብቻ ማውጣት ይቻላል።</p>
-                <p><b>7. የማረጋገጫ ጊዜ፦</b> ጥያቄዎ ከ 5 ደቂቃ እስከ 1 ሰዓት ባለው ጊዜ ውስጥ በኤጀንቶቻችን ይፈጸማል።</p>
-                <p><b>8. የተረጋገጠ ሪፈራል፦</b> የ 10 ETB ሪፈራል ቦነስ የሚሰጠው የተጋበዘው ሰው ዴፖዚት አድርጎ ጨዋታ ሲጀምር ነው።</p>
-                <p><b>9. የስም መመሳሰል፦</b> ገንዘብ የሚያወጡበት ስም እና መረጃ ትክክለኛ መሆን አለበት።</p>
-                <p><b>10. ዜሮ ማጭበርበር፦</b> የውሸት SMS መላክ አካውንትን ያሳግዳል፤ ቀሪ ሒሳብም ይሰረዛል።</p>
+                <p><b>7. የማረጋገጫ ጊዜ፦</b> ዴፖዚት በ Verifi አውቶማቲክ ወዲያውኑ ይገባል፤ ዊዝድሮው ደግሞ በ 15 ደቂቃ ውስጥ በኤጀንት ይፈጸማል።</p>
+                <p><b>8. የተረጋገጠ ሪፈራል፦</b> የ 10 ETB ሪፈራል ቦነስ የሚሰጠው የተጋበዘው ሰው 50 ETB ዴፖዚት አድርጎ ጨዋታ ሲጀምር ነው።</p>
+                <p><b>9. የስም መመሳሰል፦</b> ገንዘብ የሚያወጡበት የቴሌብር አካውንት ስም ትክክለኛ መሆን አለበት።</p>
+                <p><b>10. ዜሮ ማጭበርበር፦</b> የውሸት ወይም የተደገመ Ref ማስገባት አካውንትን ወዲያውኑ ያሳግዳል።</p>
             </div>
             <button onclick="toggleRulesModal()" class="w-full gradient-blue text-white font-black py-2.5 rounded-xl text-xs active:scale-95 transition">
                 ተረድቻለሁ (I Agree)
@@ -78,7 +78,7 @@
         </div>
     </div>
 
-    <!-- TOP FIXED HEADER -->
+    <!-- TOP FIXED HEADER WITH DUAL WALLET BADGES -->
     <header class="gradient-header text-white p-3 sticky top-0 z-40 shadow-xl border-b border-blue-500/30">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2.5">
@@ -91,11 +91,18 @@
                 </div>
             </div>
 
-            <!-- Balance Badge -->
-            <div class="bg-black/40 backdrop-blur-md px-3 py-1 rounded-2xl flex items-center gap-1.5 border border-white/20 shadow-inner">
-                <i class="fa-solid fa-wallet text-yellow-300 text-xs"></i>
-                <span id="playerBalance" class="font-black text-xs text-white tracking-wide">0.00</span>
-                <span class="text-[9px] text-blue-200 font-bold uppercase">ETB</span>
+            <!-- Dual Wallet Quick Badges -->
+            <div class="flex items-center gap-1.5">
+                <!-- Real Wallet -->
+                <div class="bg-emerald-950/80 px-2.5 py-1 rounded-xl flex items-center gap-1 border border-emerald-500/40 shadow-sm">
+                    <span class="text-[9px] text-emerald-400 font-bold uppercase">Real:</span>
+                    <span id="playerRealBalance" class="font-black text-xs text-white">0.00</span>
+                </div>
+                <!-- Bonus Wallet -->
+                <div class="bg-purple-950/80 px-2 py-1 rounded-xl flex items-center gap-1 border border-purple-500/40 shadow-sm">
+                    <span class="text-[9px] text-yellow-300 font-bold uppercase">Bonus:</span>
+                    <span id="playerBonusBalance" class="font-black text-xs text-yellow-300">0.00</span>
+                </div>
             </div>
         </div>
     </header>
@@ -133,7 +140,7 @@
                 </div>
             </div>
 
-            <!-- SELECTION STAGE -->
+            <!-- SELECTION STAGE: 999 CARDS -->
             <div id="cardPickerSection" class="space-y-2">
                 <div class="glass-box p-2.5 rounded-2xl border border-blue-500/30 space-y-1.5 shadow-sm">
                     <div class="flex justify-between items-center text-[11px] font-bold">
@@ -219,7 +226,7 @@
             </div>
         </section>
 
-        <!-- ================= TAB 2: WALLET (AGENT-BASED & STREAMLINED) ================= -->
+        <!-- ================= TAB 2: WALLET (AUTOMATED TELEBIRR "VERIFI" V5 ONLY) ================= -->
         <section id="tab-wallet" class="hidden space-y-3">
             
             <div class="grid grid-cols-2 gap-2 p-1 bg-slate-900 rounded-2xl border border-slate-800">
@@ -231,128 +238,88 @@
                 </button>
             </div>
 
-            <!-- VIEW A: DEPOSIT WITH LIVE AGENTS & SMS INPUT -->
+            <!-- VIEW A: AUTOMATED TELEBIRR DEPOSIT -->
             <div id="walletDepositView" class="space-y-3">
                 
-                <!-- Agent Cashier Cards (CBE & Telebirr) -->
-                <div class="glass-box p-3 rounded-2xl space-y-2 border border-blue-500/20">
-                    <div class="flex justify-between items-center">
-                        <h3 class="font-black text-xs text-white flex items-center gap-1.5">
-                            <i class="fa-solid fa-user-shield text-blue-400"></i> ይፋዊ የክፍያ ኤጀንቶች (Cashiers)
-                        </h3>
-                        <span class="text-[9px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">
-                            የተረጋገጡ
-                        </span>
-                    </div>
-
-                    <!-- Agent 1: Aymen (CBE) -->
-                    <div onclick="selectDepositMethod('CBE')" id="agentCard-CBE" class="p-2.5 bg-slate-950 rounded-xl border-2 border-blue-500 flex justify-between items-center cursor-pointer transition shadow-md">
-                        <div class="flex items-center gap-2.5">
-                            <img src="https://i.postimg.cc/Hk1pN2VS/20260805-174301.png" alt="CBE" class="w-8 h-8 rounded-lg object-contain">
-                            <div>
-                                <div class="flex items-center gap-1.5">
-                                    <span class="font-black text-xs text-white">Aymen Kemal (CBE)</span>
-                                    <span class="flex items-center gap-1 text-[8px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.2 rounded-full">
-                                        <span class="w-1 h-1 rounded-full bg-emerald-500 animate-pulse"></span> Online
-                                    </span>
-                                </div>
-                                <p class="text-xs font-mono font-bold text-blue-400">1000562339427</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-1.5">
-                            <button onclick="copyToClipboard('1000562339427'); event.stopPropagation();" class="text-xs gradient-blue text-white font-bold px-2.5 py-1.5 rounded-lg active:scale-95 transition">
-                                ኮፒ
-                            </button>
-                            <!-- 👉 የአይመን የቴሌግራም ሊንክ እዚህ ጋር ተጨምሯል -->
-                            <a href="https://t.me/Dashagent1" target="_blank" onclick="event.stopPropagation();" class="text-xs bg-blue-600 hover:bg-blue-500 text-white font-bold px-2.5 py-1.5 rounded-lg active:scale-95 transition flex items-center gap-1">
-                                <i class="fa-brands fa-telegram"></i> አናግር
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Agent 2: Nebyu (Telebirr) -->
-                    <div onclick="selectDepositMethod('TELEBIRR')" id="agentCard-TELEBIRR" class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center cursor-pointer transition">
-                        <div class="flex items-center gap-2.5">
+                <!-- Telebirr Merchant Card (0996910607 Aymen) -->
+                <div class="glass-box p-3.5 rounded-2xl border border-blue-500/30 space-y-2">
+                    <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+                        <div class="flex items-center gap-2">
                             <img src="https://i.postimg.cc/1zH5wqRj/20260805-174415.png" alt="Telebirr" class="w-8 h-8 rounded-lg object-contain">
                             <div>
-                                <div class="flex items-center gap-1.5">
-                                    <span class="font-black text-xs text-white">Nebyu (Telebirr)</span>
-                                    <span class="flex items-center gap-1 text-[8px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.2 rounded-full">
-                                        <span class="w-1 h-1 rounded-full bg-emerald-500 animate-pulse"></span> Online
-                                    </span>
-                                </div>
-                                <p class="text-xs font-mono font-bold text-blue-400">0968260447</p>
+                                <h3 class="font-black text-xs text-white">Telebirr አውቶማቲክ ማስገቢያ</h3>
+                                <p class="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> በ 2 ሰከንድ ውስጥ ገቢ ይሆናል
+                                </p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-1.5">
-                            <button onclick="copyToClipboard('0968260447'); event.stopPropagation();" class="text-xs gradient-blue text-white font-bold px-2.5 py-1.5 rounded-lg active:scale-95 transition">
-                                ኮፒ
-                            </button>
-                            <!-- 👉 የነብዩ የቴሌግራም ሊንክ እዚህ ጋር ተጨምሯል -->
-                            <a href="https://t.me/Dashagent1" target="_blank" onclick="event.stopPropagation();" class="text-xs bg-blue-600 hover:bg-blue-500 text-white font-bold px-2.5 py-1.5 rounded-lg active:scale-95 transition flex items-center gap-1">
-                                <i class="fa-brands fa-telegram"></i> አናግር
-                            </a>
-                        </div>
-                    </div>
-                </div>  <!-- ← ይህ ዘጊ tag ጠፍቷል! (agent cashier glass-box closes here) -->
-
-
-                <!-- Clean Deposit Form for Database & Audit -->
-                <div class="glass-box p-3 rounded-2xl space-y-2 border border-blue-500/20">
-                    <div class="flex justify-between items-center">
-                        <h4 class="font-black text-xs text-white">የከፈሉበትን SMS ደረሰኝ ያስገቡ</h4>
-                        <span class="text-[9px] text-yellow-300 font-bold bg-yellow-500/10 px-2 py-0.5 rounded-full border border-yellow-500/20">
-                            የተመረጠው፡ <b id="selectedMethodBadge">CBE</b>
+                        <span class="text-[9px] bg-blue-500/20 text-blue-300 font-bold px-2 py-0.5 rounded-full border border-blue-500/30">
+                            Min: 50 ETB
                         </span>
                     </div>
 
-                    <input id="depAmount" type="number" placeholder="ያስገቡት የብር መጠን (ETB)" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-blue-500">
-                    <textarea id="depSms" rows="3" placeholder="ከባንክ ወይም ከቴሌብር የደረሶትን ሙሉ የ SMS ጽሁፍ እዚህ Paste ያድርጉ..." class="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-blue-500 leading-relaxed"></textarea>
+                    <!-- Payment Phone Number & Copy -->
+                    <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
+                        <div>
+                            <span class="text-[9px] text-slate-400 font-medium">ገንዘብ መላኪያ የቴሌብር ቁጥር፦</span>
+                            <p class="text-sm font-mono font-black text-yellow-400">0996910607</p>
+                            <p class="text-[10px] text-slate-300">Aymen</p>
+                        </div>
+                        <button onclick="copyToClipboard('0996910607')" class="text-xs gradient-blue text-white font-bold px-3 py-1.5 rounded-xl active:scale-95 transition">
+                            ኮፒ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Automated Verification Form (Ref OR Full SMS) -->
+                <div class="glass-box p-3.5 rounded-2xl space-y-2.5 border border-blue-500/20">
+                    <div>
+                        <h4 class="font-black text-xs text-white">ክፍያዎን በራስ-ሰር ያረጋግጡ</h4>
+                        <p class="text-[10px] text-slate-400 mt-0.5">የግብይት ቁጥር (Ref ለምሳሌ <b>DJC5Q7Q5UV</b>) ወይም <b>ሙሉውን የቴሌብር SMS</b> እዚህ ያስገቡ፦</p>
+                    </div>
+
+                    <textarea id="telebirrRawInput" rows="3" placeholder="ምሳሌ፡ DJC5Q7Q5UV ወይም ሙሉውን የቴሌብር SMS እዚህ Paste ያድርጉ..." class="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-blue-500 leading-relaxed font-mono"></textarea>
                     
-                    <button onclick="submitDeposit()" class="w-full gradient-blue text-white py-2.5 rounded-xl font-black text-xs shadow-lg shadow-blue-500/20 active:scale-95 transition">
-                        ማረጋገጫ ላክ (Submit Deposit)
+                    <input id="telebirrTypedAmount" type="number" placeholder="የብር መጠን (ከተፈለገ ብቻ)" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-blue-500">
+
+                    <button onclick="submitAutomatedTelebirr()" id="btnTelebirrVerify" class="w-full gradient-blue text-white py-3 rounded-xl font-black text-xs shadow-lg shadow-blue-500/20 active:scale-95 transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-bolt text-yellow-300"></i> አረጋግጥና አስገባ (Instant Verify)
                     </button>
                 </div>
             </div>
 
-            <!-- VIEW B: WITHDRAW WITH 5% CALCULATION & 100 ETB MINIMUM -->
-            <div id="walletWithdrawView" class="hidden glass-box p-3 rounded-2xl space-y-2.5 border border-blue-500/20">
+            <!-- VIEW B: WITHDRAW (TELEBIRR ONLY, 5% FEE, 50 DEPOSIT CHECK) -->
+            <div id="walletWithdrawView" class="hidden glass-box p-3.5 rounded-2xl space-y-2.5 border border-blue-500/20">
                 <div class="flex justify-between items-center">
                     <h4 class="font-black text-xs text-white flex items-center gap-1.5">
-                        <i class="fa-solid fa-money-bill-transfer text-orange-400"></i> ገንዘብ ማውጫ ቅጽ
+                        <i class="fa-solid fa-money-bill-transfer text-orange-400"></i> ገንዘብ ማውጫ (Telebirr Payout)
                     </h4>
                     <span class="text-[9px] text-slate-400">አነስተኛው፡ <b>100 ETB</b></span>
                 </div>
 
-                <!-- Contextual Security Badge -->
-                <div class="p-2 bg-blue-950/40 rounded-xl border border-blue-500/30 text-[10px] text-blue-200 flex items-center gap-1.5">
-                    <i class="fa-solid fa-lock text-yellow-400"></i>
-                    <span>ገንዘብ ለማውጣት ቢያንስ 1 ጊዜ ተቀማጭ ማድረግ ግዴታ ነው።</span>
+                <!-- First Deposit Requirement Lock Notice -->
+                <div id="withdrawLockNotice" class="p-2.5 bg-blue-950/40 rounded-xl border border-blue-500/30 text-[10px] text-blue-200 flex items-center gap-2">
+                    <i class="fa-solid fa-lock text-yellow-400 text-sm"></i>
+                    <span>ገንዘብ ለማውጣት ቢያንስ 1 ጊዜ <b>50 ETB</b> ተቀማጭ ማድረግ ግዴታ ነው። ማውጣት የሚቻለው ከ <b>Real Wallet</b> ብቻ ነው።</span>
                 </div>
-
-                <select id="withMethod" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200">
-                    <option value="CBE">CBE (ንግድ ባንክ) - ኤጀንት Aymen</option>
-                    <option value="TELEBIRR">Telebirr (ቴሌብር) - ኤጀንት Nebyu</option>
-                </select>
 
                 <div>
                     <input id="withAmount" oninput="calculateWithdrawFee()" type="number" placeholder="የሚያወጡት መጠን (Min 100 ETB)" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
-                    <!-- Real-time 5% Fee Calculation Display -->
                     <div id="feeCalcBox" class="flex justify-between items-center text-[10px] px-1 mt-1 text-slate-400 hidden">
                         <span>የ 5% ክፍያ፡ <b id="calcFeeText" class="text-orange-400">0.00 ETB</b></span>
                         <span>የሚደርስዎት፡ <b id="calcNetText" class="text-emerald-400 font-bold">0.00 ETB</b></span>
                     </div>
                 </div>
 
-                <input id="withAccount" type="text" placeholder="የአካውንት ወይም የስልክ ቁጥር" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
-                <input id="withName" type="text" placeholder="ሙሉ ስም (የአካውንቱ ባለቤት)" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
+                <input id="withAccount" type="text" placeholder="የቴሌብር ስልክ ቁጥር (09...)" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
+                <input id="withName" type="text" placeholder="ሙሉ ስም (በቴሌብር የተመዘገበ)" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
                 
-                <button onclick="submitWithdraw()" class="w-full bg-slate-800 hover:bg-slate-700 text-white py-2.5 rounded-xl font-black text-xs shadow-md transition">
-                    ገንዘብ አውጣ (Withdraw Now)
+                <button onclick="submitWithdraw()" id="btnSubmitWithdraw" class="w-full bg-slate-800 hover:bg-slate-700 text-white py-2.5 rounded-xl font-black text-xs shadow-md transition">
+                    ገንዘብ አውጣ (Withdraw to Telebirr)
                 </button>
             </div>
 
-            <!-- RULES POPUP TRIGGER BUTTON (CLEAN UX) -->
+            <!-- RULES POPUP BUTTON -->
             <button onclick="toggleRulesModal()" class="w-full p-2.5 bg-slate-950 rounded-2xl border border-slate-800 flex justify-between items-center text-xs text-slate-300 hover:text-white transition">
                 <span class="flex items-center gap-1.5"><i class="fa-solid fa-book-open text-yellow-400"></i> የክፍያና ማውጣት 10 ደንቦች</span>
                 <i class="fa-solid fa-chevron-right text-[10px] text-slate-500"></i>
@@ -380,14 +347,13 @@
             </div>
         </section>
 
-        <!-- ================= TAB 4: COMPLETE HISTORY (TRANSACTIONS + BINGO BETS) ================= -->
+        <!-- ================= TAB 4: COMPLETE HISTORY ================= -->
         <section id="tab-profile" class="hidden space-y-2.5">
             <div class="flex justify-between items-center px-1">
                 <h3 class="font-black text-xs text-white">የተሟላ የግብይትና ጨዋታ ታሪክ</h3>
                 <span class="text-[9px] text-blue-400 font-bold">ቀጥታ መዝገብ</span>
             </div>
 
-            <!-- Sub-Toggles: Transactions vs Bingo Bets -->
             <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-900 rounded-xl border border-slate-800 text-xs font-bold">
                 <button onclick="switchHistorySubTab('txs')" id="subBtn-txs" class="py-1 rounded-lg gradient-blue text-white transition">
                     የገንዘብ ዝውውሮች
@@ -414,18 +380,19 @@
                     </div>
                 </div>
 
+                <!-- 3 Balances Breakdown -->
                 <div class="grid grid-cols-3 gap-1.5 text-center">
                     <div class="p-2 bg-slate-950 rounded-xl border border-slate-800">
-                        <span class="text-[8px] text-slate-400 font-bold uppercase">ዋና ሒሳብ</span>
-                        <h4 id="profileCurrentBal" class="text-xs font-black text-white mt-0.5">0.00</h4>
+                        <span class="text-[8px] text-emerald-400 font-bold uppercase">Real ሒሳብ</span>
+                        <h4 id="profileRealBal" class="text-xs font-black text-emerald-400 mt-0.5">0.00</h4>
                     </div>
                     <div class="p-2 bg-slate-950 rounded-xl border border-slate-800">
-                        <span class="text-[8px] text-emerald-400 font-bold uppercase">ያሸነፉት</span>
-                        <h4 id="profileWinBal" class="text-xs font-black text-emerald-400 mt-0.5">0.00</h4>
+                        <span class="text-[8px] text-yellow-400 font-bold uppercase">Bonus ሒሳብ</span>
+                        <h4 id="profileBonusBal" class="text-xs font-black text-yellow-400 mt-0.5">0.00</h4>
                     </div>
                     <div class="p-2 bg-slate-950 rounded-xl border border-slate-800">
-                        <span class="text-[8px] text-yellow-400 font-bold uppercase">ቦነስ ሒሳብ</span>
-                        <h4 id="profileBonusBal" class="text-xs font-black text-yellow-400 mt-0.5">20.00</h4>
+                        <span class="text-[8px] text-blue-400 font-bold uppercase">ያሸነፉት</span>
+                        <h4 id="profileWinBal" class="text-xs font-black text-blue-400 mt-0.5">0.00</h4>
                     </div>
                 </div>
 
@@ -459,7 +426,6 @@
                 <div class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800">
                     <div>
                         <p class="font-bold text-xs text-white">የጀርባ ሙዚቃ (Lobby BG Music)</p>
-                        <p class="text-[9px] text-slate-400">ካርድ በሚቆረጥበት ሰዓት የሚጫወት ድምፅ</p>
                     </div>
                     <button onclick="toggleBgMusic()" id="btnBgMusicToggle" class="px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30">
                         በርቷል (ON)
@@ -485,7 +451,7 @@
                 </div>
             </div>
 
-            <!-- Official Channels -->
+            <!-- Official Links -->
             <div class="glass-box p-3 rounded-2xl space-y-2 border border-slate-800">
                 <a href="https://t.me/DashBingo" target="_blank" class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800 hover:border-blue-500 transition">
                     <div class="flex items-center gap-2">
@@ -530,7 +496,7 @@
         </button>
     </nav>
 
-    <!-- FAST 1.5s MICRO-TOAST ENGINE -->
+    <!-- TOAST & MODAL ENGINE -->
     <script>
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
@@ -557,7 +523,6 @@
                 toast.classList.add('translate-y-0', 'opacity-100');
             });
 
-            // Fast 1.5s Dismissal
             setTimeout(() => {
                 toast.classList.remove('opacity-100');
                 toast.classList.add('opacity-0', 'translate-y-[-8px]');
@@ -566,8 +531,7 @@
         }
 
         function toggleRulesModal() {
-            const modal = document.getElementById('rulesModal');
-            modal.classList.toggle('hidden');
+            document.getElementById('rulesModal').classList.toggle('hidden');
         }
     </script>
 
@@ -696,11 +660,10 @@
 
         let myCards = [];
         let currentCardViewIndex = 0;
-        let selectedDepMethod = 'CBE';
         let currentCalledNumbers = [];
         let activeRoundNumber = 1001;
+        let userData = { real_balance: 0, bonus_balance: 0, total_deposited: 0 };
 
-        // Local bet history storage for complete user transparency
         let myBetHistory = JSON.parse(localStorage.getItem(`bets_${user.id}`) || '[]');
 
         async function syncUser() {
@@ -716,11 +679,23 @@
                     })
                 });
                 const data = await res.json();
-                if (data.balance !== undefined) {
-                    const bal = parseFloat(data.balance).toFixed(2);
-                    document.getElementById('playerBalance').innerText = bal;
-                    document.getElementById('profileCurrentBal').innerText = bal;
+                if (data.id) {
+                    userData = data;
+                    const realBal = parseFloat(data.real_balance || 0).toFixed(2);
+                    const bonusBal = parseFloat(data.bonus_balance || 0).toFixed(2);
+                    
+                    document.getElementById('playerRealBalance').innerText = realBal;
+                    document.getElementById('playerBonusBalance').innerText = bonusBal;
+                    document.getElementById('profileRealBal').innerText = realBal;
+                    document.getElementById('profileBonusBal').innerText = bonusBal;
                     document.getElementById('profileWinBal').innerText = parseFloat(data.total_won || 0).toFixed(2);
+
+                    // Update withdrawal lock notice
+                    const lockNotice = document.getElementById('withdrawLockNotice');
+                    if (parseFloat(data.total_deposited || 0) >= 50) {
+                        lockNotice.className = "p-2.5 bg-emerald-950/40 rounded-xl border border-emerald-500/30 text-[10px] text-emerald-200 flex items-center gap-2";
+                        lockNotice.innerHTML = '<i class="fa-solid fa-lock-open text-emerald-400 text-sm"></i> <span>የመጀመሪያ ተቀማጭ ተረጋግጧል! ከ Real Walletዎ ገንዘብ ማውጣት ይችላሉ።</span>';
+                    }
                 }
             } catch (e) {}
         }
@@ -790,23 +765,7 @@
             }
         }
 
-        // Clean Agent Cashier Selection
-        function selectDepositMethod(method) {
-            playTouchBeep();
-            selectedDepMethod = method;
-
-            document.getElementById('agentCard-CBE').className = (method === 'CBE')
-                ? "p-2.5 bg-slate-950 rounded-xl border-2 border-blue-500 flex justify-between items-center cursor-pointer transition shadow-md"
-                : "p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center cursor-pointer transition";
-
-            document.getElementById('agentCard-TELEBIRR').className = (method === 'TELEBIRR')
-                ? "p-2.5 bg-slate-950 rounded-xl border-2 border-blue-500 flex justify-between items-center cursor-pointer transition shadow-md"
-                : "p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center cursor-pointer transition";
-
-            document.getElementById('selectedMethodBadge').innerText = method;
-        }
-
-        // 5% Real-Time Withdrawal Fee Calculation
+        // 5% Withdrawal Fee Calculation Display
         function calculateWithdrawFee() {
             const inputVal = parseFloat(document.getElementById('withAmount').value);
             const feeBox = document.getElementById('feeCalcBox');
@@ -961,11 +920,9 @@
             document.getElementById('takenCardsCount').innerText = data.totalCards;
         });
 
-        // 🎟 Multi-Card Purchase with Bet History Registration
         socket.on('my_card', (data) => {
             myCards.push({ cardIndex: data.cardIndex, numbers: data.numbers });
             
-            // Save bet to history
             myBetHistory.unshift({
                 round: activeRoundNumber,
                 cardIndex: data.cardIndex,
@@ -1165,50 +1122,80 @@
             }
         });
 
-        // 📥 Submit Deposit directly to Database for Audit
-        async function submitDeposit() {
+        // ================= ⚡ "VERIFI" V5 AUTOMATED DEPOSIT ================= //
+        async function submitAutomatedTelebirr() {
             playTouchBeep();
-            const amount = document.getElementById('depAmount').value;
-            const smsText = document.getElementById('depSms').value;
+            const rawInput = document.getElementById('telebirrRawInput').value.trim();
+            const typedAmount = document.getElementById('telebirrTypedAmount').value.trim();
 
-            if (!amount || !smsText) return showToast("እባክዎ መጠን እና ሙሉ የSMS ጽሁፍ ያስገቡ!", "error");
+            if (!rawInput) {
+                return showToast("እባክዎ የግብይት ቁጥር (Ref) ወይም ሙሉ የቴሌብር SMS ያስገቡ!", "error");
+            }
 
-            const res = await fetch(`${BACKEND_URL}/api/deposit`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    telegramId: user.id, 
-                    firstName: user.first_name, 
-                    username: user.username, 
-                    method: selectedDepMethod, 
-                    amount, 
-                    smsText 
-                })
-            });
-            const data = await res.json();
-            if (data.success) {
-                showToast(data.message, "success");
-                document.getElementById('depAmount').value = '';
-                document.getElementById('depSms').value = '';
-            } else {
-                showToast(data.error || "ማስገባት አልተቻለም", "error");
+            const btn = document.getElementById('btnTelebirrVerify');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> በቴሌብር በማረጋገጥ ላይ...';
+
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/deposit/telebirr-verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        telegramId: user.id,
+                        rawInput: rawInput,
+                        typedAmount: typedAmount
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message, "success");
+                    document.getElementById('telebirrRawInput').value = '';
+                    document.getElementById('telebirrTypedAmount').value = '';
+                    syncUser();
+                } else {
+                    showToast(data.error || "ክፍያውን ማረጋገጥ አልተቻለም", "error");
+                }
+            } catch (e) {
+                showToast("የሰርቨር ግንኙነት ተቋርጧል፤ እባክዎ እንደገና ይሞክሩ!", "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-bolt text-yellow-300"></i> አረጋግጥና አስገባ (Instant Verify)';
             }
         }
 
-        // 📤 Submit Withdraw with 5% Fee deduction
+        // 📤 SUBMIT WITHDRAWAL (TELEBIRR ONLY)
         async function submitWithdraw() {
             playTouchBeep();
-            const method = document.getElementById('withMethod').value;
-            const amount = document.getElementById('withAmount').value;
-            const accountNumber = document.getElementById('withAccount').value;
-            const accountName = document.getElementById('withName').value;
+            const amount = parseFloat(document.getElementById('withAmount').value);
+            const accountNumber = document.getElementById('withAccount').value.trim();
+            const accountName = document.getElementById('withName').value.trim();
 
-            if (!amount || !accountNumber || !accountName) return showToast("መረጃዎችን በትክክል ይሙሉ!", "error");
+            if (isNaN(amount) || amount < 100) {
+                return showToast("አነስተኛው የማውጣት መጠን 100 ETB ነው!", "error");
+            }
+
+            if (parseFloat(userData.total_deposited || 0) < 50) {
+                return showToast("ገንዘብ ለማውጣት ቢያንስ 1 ጊዜ 50 ETB ተቀማጭ ማድረግ ግዴታ ነው!", "error");
+            }
+
+            if (parseFloat(userData.real_balance || 0) < amount) {
+                return showToast(`በቂ Real Balance የለዎትም! (ያለዎት Real: ${(userData.real_balance || 0)} ETB)`, "error");
+            }
+
+            if (!accountNumber || !accountName) {
+                return showToast("እባክዎ የቴሌብር ስልክ እና ሙሉ ስም በትክክል ያስገቡ!", "error");
+            }
 
             const res = await fetch(`${BACKEND_URL}/api/withdraw`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ telegramId: user.id, method, amount, accountNumber, accountName })
+                body: JSON.stringify({ 
+                    telegramId: user.id, 
+                    method: 'TELEBIRR', 
+                    amount, 
+                    accountNumber, 
+                    accountName 
+                })
             });
             const data = await res.json();
             if (data.success) {
@@ -1291,7 +1278,6 @@
         }
 
         async function loadHistory() {
-            // 1. Load Financial Transactions
             const res = await fetch(`${BACKEND_URL}/api/history/${user.id}`);
             const data = await res.json();
             const list = document.getElementById('historyListTxs');
