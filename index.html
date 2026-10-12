@@ -93,12 +93,10 @@
 
             <!-- Dual Wallet Quick Badges -->
             <div class="flex items-center gap-1.5">
-                <!-- Real Wallet -->
                 <div class="bg-emerald-950/80 px-2.5 py-1 rounded-xl flex items-center gap-1 border border-emerald-500/40 shadow-sm">
                     <span class="text-[9px] text-emerald-400 font-bold uppercase">Real:</span>
                     <span id="playerRealBalance" class="font-black text-xs text-white">0.00</span>
                 </div>
-                <!-- Bonus Wallet -->
                 <div class="bg-purple-950/80 px-2 py-1 rounded-xl flex items-center gap-1 border border-purple-500/40 shadow-sm">
                     <span class="text-[9px] text-yellow-300 font-bold uppercase">Bonus:</span>
                     <span id="playerBonusBalance" class="font-black text-xs text-yellow-300">0.00</span>
@@ -125,7 +123,6 @@
 
         <!-- ================= TAB 1: BINGO ARENA ================= -->
         <section id="tab-game" class="space-y-2.5">
-            
             <div class="grid grid-cols-2 gap-2">
                 <div class="glass-box p-2.5 rounded-2xl text-center relative overflow-hidden border border-blue-500/30 shadow-sm">
                     <p class="text-[9px] font-bold text-slate-300 uppercase tracking-wider">ድራሹ (Pot Prize)</p>
@@ -140,7 +137,7 @@
                 </div>
             </div>
 
-            <!-- SELECTION STAGE: 999 CARDS -->
+            <!-- SELECTION STAGE -->
             <div id="cardPickerSection" class="space-y-2">
                 <div class="glass-box p-2.5 rounded-2xl border border-blue-500/30 space-y-1.5 shadow-sm">
                     <div class="flex justify-between items-center text-[11px] font-bold">
@@ -226,9 +223,8 @@
             </div>
         </section>
 
-        <!-- ================= TAB 2: WALLET (AUTOMATED TELEBIRR "VERIFI" V5 ONLY) ================= -->
+        <!-- ================= TAB 2: WALLET (3-STEP TELEBIRR DEPOSIT & WITHDRAW) ================= -->
         <section id="tab-wallet" class="hidden space-y-3">
-            
             <div class="grid grid-cols-2 gap-2 p-1 bg-slate-900 rounded-2xl border border-slate-800">
                 <button onclick="switchWalletView('deposit')" id="btnWalletDep" class="py-2 rounded-xl font-black text-xs gradient-blue text-white shadow-md transition">
                     <i class="fa-solid fa-arrow-down mr-1"></i> ማስገቢያ (Deposit)
@@ -238,52 +234,78 @@
                 </button>
             </div>
 
-            <!-- VIEW A: AUTOMATED TELEBIRR DEPOSIT -->
+            <!-- VIEW A: 3-STEP GUIDED TELEBIRR DEPOSIT -->
             <div id="walletDepositView" class="space-y-3">
                 
-                <!-- Telebirr Merchant Card (0996910607 Aymen) -->
-                <div class="glass-box p-3.5 rounded-2xl border border-blue-500/30 space-y-2">
-                    <div class="flex justify-between items-center pb-2 border-b border-slate-800">
-                        <div class="flex items-center gap-2">
-                            <img src="https://i.postimg.cc/1zH5wqRj/20260805-174415.png" alt="Telebirr" class="w-8 h-8 rounded-lg object-contain">
-                            <div>
-                                <h3 class="font-black text-xs text-white">Telebirr አውቶማቲክ ማስገቢያ</h3>
-                                <p class="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> በ 2 ሰከንድ ውስጥ ገቢ ይሆናል
-                                </p>
-                            </div>
-                        </div>
-                        <span class="text-[9px] bg-blue-500/20 text-blue-300 font-bold px-2 py-0.5 rounded-full border border-blue-500/30">
+                <!-- STEP 1: AMOUNT SELECTION (FIRST & REQUIRED) -->
+                <div class="glass-box p-3.5 rounded-2xl border border-blue-500/30 space-y-2.5">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-black text-white flex items-center gap-1.5">
+                            <span class="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] flex items-center justify-center font-black">1</span>
+                            የሚያስገቡትን የብር መጠን ይምረጡ
+                        </span>
+                        <span class="text-[9px] text-amber-300 font-bold bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
                             Min: 50 ETB
                         </span>
                     </div>
 
-                    <!-- Payment Phone Number & Copy -->
+                    <!-- Quick Amount Select Buttons -->
+                    <div class="grid grid-cols-5 gap-1.5 text-[10px] font-black">
+                        <button type="button" onclick="setQuickAmount(50)" class="quick-amt-btn py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-blue-400 transition">50</button>
+                        <button type="button" onclick="setQuickAmount(100)" class="quick-amt-btn py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-blue-400 transition">100</button>
+                        <button type="button" onclick="setQuickAmount(200)" class="quick-amt-btn py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-blue-400 transition">200</button>
+                        <button type="button" onclick="setQuickAmount(500)" class="quick-amt-btn py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-blue-400 transition">500</button>
+                        <button type="button" onclick="setQuickAmount(1000)" class="quick-amt-btn py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-blue-400 transition">1000</button>
+                    </div>
+
+                    <!-- Amount Input Field -->
+                    <div>
+                        <input id="depositAmountInput" oninput="onAmountChanged()" type="number" min="50" placeholder="የብር መጠን ይጻፉ (ምሳሌ: 100)" class="w-full text-xs font-black p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-yellow-300 outline-none focus:border-blue-500">
+                        <p class="text-[9px] text-amber-300 mt-1">⚠️ ማስጠንቀቂያ፦ እዚህ የጻፉት መጠን እና በቴሌብር የሚልኩት መጠን አንድ አይነት መሆን አለበት!</p>
+                    </div>
+                </div>
+
+                <!-- STEP 2: SEND MONEY TO TELEBIRR -->
+                <div class="glass-box p-3.5 rounded-2xl border border-blue-500/30 space-y-2">
+                    <span class="text-xs font-black text-white flex items-center gap-1.5">
+                        <span class="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] flex items-center justify-center font-black">2</span>
+                        ብሩን ወደ ቴሌብር ይላኩ
+                    </span>
+
                     <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
-                        <div>
-                            <span class="text-[9px] text-slate-400 font-medium">ገንዘብ መላኪያ የቴሌብር ቁጥር፦</span>
-                            <p class="text-sm font-mono font-black text-yellow-400">0996910607</p>
-                            <p class="text-[10px] text-slate-300">Aymen</p>
+                        <div class="flex items-center gap-2.5">
+                            <img src="https://i.postimg.cc/1zH5wqRj/20260805-174415.png" alt="Telebirr" class="w-8 h-8 rounded-lg object-contain">
+                            <div>
+                                <span class="text-[9px] text-slate-400 font-medium">የቴሌብር ቁጥር፦</span>
+                                <p class="text-sm font-mono font-black text-yellow-400">0996910607</p>
+                                <p class="text-[10px] text-slate-300">Aymen</p>
+                            </div>
                         </div>
                         <button onclick="copyToClipboard('0996910607')" class="text-xs gradient-blue text-white font-bold px-3 py-1.5 rounded-xl active:scale-95 transition">
                             ኮፒ
                         </button>
                     </div>
+
+                    <p id="step2DynamicText" class="text-[10px] text-blue-300 font-bold bg-blue-950/40 p-2 rounded-xl border border-blue-500/20">
+                        👉 አሁን ወደ <b>0996910607 (Aymen)</b> በቴሌብር ይላኩ።
+                    </p>
                 </div>
 
-                <!-- Automated Verification Form (Ref OR Full SMS) -->
-                <div class="glass-box p-3.5 rounded-2xl space-y-2.5 border border-blue-500/20">
-                    <div>
-                        <h4 class="font-black text-xs text-white">ክፍያዎን በራስ-ሰር ያረጋግጡ</h4>
-                        <p class="text-[10px] text-slate-400 mt-0.5">የግብይት ቁጥር (Ref ለምሳሌ <b>DJC5Q7Q5UV</b>) ወይም <b>ሙሉውን የቴሌብር SMS</b> እዚህ ያስገቡ፦</p>
+                <!-- STEP 3: VERIFY WITH REF OR FULL SMS -->
+                <div class="glass-box p-3.5 rounded-2xl border border-blue-500/30 space-y-2">
+                    <span class="text-xs font-black text-white flex items-center gap-1.5">
+                        <span class="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] flex items-center justify-center font-black">3</span>
+                        የደረሰኝ ቁጥሩን (Ref) ወይም SMS አስገብተው ያረጋግጡ
+                    </span>
+
+                    <textarea id="depositRawInput" oninput="onDepositInputPasted()" rows="3" placeholder="ምሳሌ፡ DJC5Q7Q5UV ወይም ከቴሌብር የደረሶትን ሙሉ SMS እዚህ Paste ያድርጉ..." class="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-blue-500 font-mono leading-relaxed"></textarea>
+
+                    <div id="extractedRefBadge" class="hidden text-[10px] text-emerald-400 font-bold bg-emerald-950/50 p-2 rounded-xl border border-emerald-500/30">
+                        ✅ የተገኘው የግብይት ቁጥር (Ref)፦ <span id="extractedRefText" class="font-mono text-white"></span>
                     </div>
 
-                    <textarea id="telebirrRawInput" rows="3" placeholder="ምሳሌ፡ DJC5Q7Q5UV ወይም ሙሉውን የቴሌብር SMS እዚህ Paste ያድርጉ..." class="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-blue-500 leading-relaxed font-mono"></textarea>
-                    
-                    <input id="telebirrTypedAmount" type="number" placeholder="የብር መጠን (ከተፈለገ ብቻ)" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-blue-500">
-
-                    <button onclick="submitAutomatedTelebirr()" id="btnTelebirrVerify" class="w-full gradient-blue text-white py-3 rounded-xl font-black text-xs shadow-lg shadow-blue-500/20 active:scale-95 transition flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-bolt text-yellow-300"></i> አረጋግጥና አስገባ (Instant Verify)
+                    <button onclick="submitAutomatedDeposit()" id="btnInstantVerify" class="w-full gradient-blue text-white py-3 rounded-xl font-black text-xs shadow-lg shadow-blue-500/20 active:scale-95 transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-bolt text-yellow-300"></i> ⚡ አረጋግጥና አስገባ (Instant Verify)
                     </button>
                 </div>
             </div>
@@ -297,7 +319,6 @@
                     <span class="text-[9px] text-slate-400">አነስተኛው፡ <b>100 ETB</b></span>
                 </div>
 
-                <!-- First Deposit Requirement Lock Notice -->
                 <div id="withdrawLockNotice" class="p-2.5 bg-blue-950/40 rounded-xl border border-blue-500/30 text-[10px] text-blue-200 flex items-center gap-2">
                     <i class="fa-solid fa-lock text-yellow-400 text-sm"></i>
                     <span>ገንዘብ ለማውጣት ቢያንስ 1 ጊዜ <b>50 ETB</b> ተቀማጭ ማድረግ ግዴታ ነው። ማውጣት የሚቻለው ከ <b>Real Wallet</b> ብቻ ነው።</span>
@@ -338,12 +359,16 @@
 
             <div class="glass-box p-3 rounded-2xl space-y-2 border border-slate-800">
                 <h4 class="font-black text-[11px] text-slate-300 uppercase">የሳምንቱ 10 ምርጥ ተጫዋቾች</h4>
-                <div id="weeklyTopList" class="space-y-1.5"></div>
+                <div id="weeklyTopList" class="space-y-1.5">
+                    <div class="p-3 text-center text-slate-500 text-xs">በመጫን ላይ...</div>
+                </div>
             </div>
 
             <div class="glass-box p-3 rounded-2xl space-y-2 border border-slate-800">
                 <h4 class="font-black text-[11px] text-slate-300 uppercase">ከፍተኛ አሸናፊዎች (All-Time)</h4>
-                <div id="leaderboardList" class="space-y-1.5"></div>
+                <div id="leaderboardList" class="space-y-1.5">
+                    <div class="p-3 text-center text-slate-500 text-xs">በመጫን ላይ...</div>
+                </div>
             </div>
         </section>
 
@@ -363,7 +388,9 @@
                 </button>
             </div>
 
-            <div id="historyListTxs" class="space-y-2"></div>
+            <div id="historyListTxs" class="space-y-2">
+                <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 text-center text-slate-500 text-xs">በመጫን ላይ...</div>
+            </div>
             <div id="historyListBets" class="space-y-2 hidden"></div>
         </section>
 
@@ -380,7 +407,6 @@
                     </div>
                 </div>
 
-                <!-- 3 Balances Breakdown -->
                 <div class="grid grid-cols-3 gap-1.5 text-center">
                     <div class="p-2 bg-slate-950 rounded-xl border border-slate-800">
                         <span class="text-[8px] text-emerald-400 font-bold uppercase">Real ሒሳብ</span>
@@ -474,23 +500,23 @@
 
     <!-- BOTTOM NAVIGATION -->
     <nav class="fixed bottom-2 left-3 right-3 max-w-md mx-auto bg-slate-900/95 backdrop-blur-2xl border border-blue-500/30 shadow-2xl rounded-2xl flex justify-around p-1.5 z-40">
-        <button onclick="switchTab('game')" class="nav-btn text-blue-400 flex flex-col items-center">
+        <button onclick="switchTab('game')" id="nav-btn-game" class="nav-btn text-blue-400 flex flex-col items-center">
             <i class="fa-solid fa-gamepad text-base"></i>
             <span class="text-[9px] font-black mt-0.5">ቢንጎ</span>
         </button>
-        <button onclick="switchTab('wallet')" class="nav-btn text-slate-500 flex flex-col items-center">
+        <button onclick="switchTab('wallet')" id="nav-btn-wallet" class="nav-btn text-slate-500 flex flex-col items-center">
             <i class="fa-solid fa-wallet text-base"></i>
             <span class="text-[9px] font-bold mt-0.5">ዋሌት</span>
         </button>
-        <button onclick="switchTab('leaderboard')" class="nav-btn text-slate-500 flex flex-col items-center">
+        <button onclick="switchTab('leaderboard')" id="nav-btn-leaderboard" class="nav-btn text-slate-500 flex flex-col items-center">
             <i class="fa-solid fa-trophy text-base"></i>
             <span class="text-[9px] font-bold mt-0.5">ደረጃዎች</span>
         </button>
-        <button onclick="switchTab('profile')" class="nav-btn text-slate-500 flex flex-col items-center">
+        <button onclick="switchTab('profile')" id="nav-btn-profile" class="nav-btn text-slate-500 flex flex-col items-center">
             <i class="fa-solid fa-clock-rotate-left text-base"></i>
             <span class="text-[9px] font-bold mt-0.5">ታሪክ</span>
         </button>
-        <button onclick="switchTab('settings')" class="nav-btn text-slate-500 flex flex-col items-center">
+        <button onclick="switchTab('settings')" id="nav-btn-settings" class="nav-btn text-slate-500 flex flex-col items-center">
             <i class="fa-solid fa-gear text-base"></i>
             <span class="text-[9px] font-bold mt-0.5">ቅንብሮች</span>
         </button>
@@ -690,7 +716,6 @@
                     document.getElementById('profileBonusBal').innerText = bonusBal;
                     document.getElementById('profileWinBal').innerText = parseFloat(data.total_won || 0).toFixed(2);
 
-                    // Update withdrawal lock notice
                     const lockNotice = document.getElementById('withdrawLockNotice');
                     if (parseFloat(data.total_deposited || 0) >= 50) {
                         lockNotice.className = "p-2.5 bg-emerald-950/40 rounded-xl border border-emerald-500/30 text-[10px] text-emerald-200 flex items-center gap-2";
@@ -732,22 +757,36 @@
             document.getElementById('welcomeBonusBanner').classList.add('hidden');
         }
 
+        // ⚡ SAFE NAVIGATION SWITCHER (FIXED)
         function switchTab(tabId) {
             playTouchBeep();
             ['game', 'wallet', 'leaderboard', 'profile', 'settings'].forEach(t => {
-                document.getElementById(`tab-${t}`).classList.add('hidden');
+                const el = document.getElementById(`tab-${t}`);
+                if (el) el.classList.add('hidden');
             });
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            const target = document.getElementById(`tab-${tabId}`);
+            if (target) target.classList.remove('hidden');
 
             document.querySelectorAll('.nav-btn').forEach(b => {
                 b.classList.remove('text-blue-400');
                 b.classList.add('text-slate-500');
             });
-            event.currentTarget.classList.add('text-blue-400');
-            event.currentTarget.classList.remove('text-slate-500');
 
-            if (tabId === 'leaderboard') { loadLeaderboard(); loadWeeklyTop(); }
-            if (tabId === 'profile') loadHistory();
+            const activeNavBtn = document.getElementById(`nav-btn-${tabId}`);
+            if (activeNavBtn) {
+                activeNavBtn.classList.add('text-blue-400');
+                activeNavBtn.classList.remove('text-slate-500');
+            }
+
+            if (tabId === 'leaderboard') { 
+                loadLeaderboard(); 
+                loadWeeklyTop(); 
+            }
+            if (tabId === 'profile') { 
+                loadHistory(); 
+                renderBetHistory(); 
+            }
         }
 
         function switchWalletView(view) {
@@ -765,7 +804,112 @@
             }
         }
 
-        // 5% Withdrawal Fee Calculation Display
+        // ================= ⚡ STEP-BY-STEP DEPOSIT LOGIC ================= //
+        function setQuickAmount(amt) {
+            playTouchBeep();
+            document.getElementById('depositAmountInput').value = amt;
+            onAmountChanged();
+
+            document.querySelectorAll('.quick-amt-btn').forEach(b => {
+                b.className = "quick-amt-btn py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-blue-400 transition";
+            });
+            event.target.className = "quick-amt-btn py-1.5 rounded-xl bg-blue-600 border border-blue-400 text-white font-black transition shadow-sm";
+        }
+
+        function onAmountChanged() {
+            const amt = parseFloat(document.getElementById('depositAmountInput').value);
+            const step2Text = document.getElementById('step2DynamicText');
+            if (!isNaN(amt) && amt >= 50) {
+                step2Text.innerHTML = `👉 አሁን ወደ <b>0996910607 (Aymen)</b> በትክክል <b class="text-yellow-300 underline">${amt} ETB</b> በቴሌብር ይላኩ።`;
+            } else {
+                step2Text.innerHTML = `👉 አሁን ወደ <b>0996910607 (Aymen)</b> በቴሌብር ይላኩ።`;
+            }
+        }
+
+        // Smart Extraction on SMS/Ref Paste
+        function onDepositInputPasted() {
+            const val = document.getElementById('depositRawInput').value.trim();
+            const badge = document.getElementById('extractedRefBadge');
+            const refText = document.getElementById('extractedRefText');
+
+            if (!val) {
+                badge.classList.add('hidden');
+                return;
+            }
+
+            // Extract Ref (DJ...)
+            const refMatch = val.match(/transaction\s*(?:number|no|id)\s*(?:is)?[\s:]*([A-Z0-9]{10,12})\b/i) || val.match(/\b(DJ[A-Z0-9]{8,12})\b/i);
+            if (refMatch) {
+                refText.innerText = refMatch[1].toUpperCase();
+                badge.classList.remove('hidden');
+            } else if (/^[A-Z0-9]{8,14}$/i.test(val)) {
+                refText.innerText = val.toUpperCase();
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            // Auto extract amount from SMS if amount field is empty
+            const amtInput = document.getElementById('depositAmountInput');
+            if (!amtInput.value) {
+                const amtMatch = val.match(/(?:transferred|paid|received|ETB|Birr)\s*([0-9,]+(?:\.[0-9]{1,2})?)/i);
+                if (amtMatch) {
+                    const parsedAmt = parseFloat(amtMatch[1].replace(/,/g, ''));
+                    if (parsedAmt >= 50) {
+                        amtInput.value = parsedAmt;
+                        onAmountChanged();
+                    }
+                }
+            }
+        }
+
+        // Submit Automated Deposit (Validates BOTH amount >= 50 and ref)
+        async function submitAutomatedDeposit() {
+            playTouchBeep();
+            const amountVal = parseFloat(document.getElementById('depositAmountInput').value);
+            const rawInput = document.getElementById('depositRawInput').value.trim();
+
+            if (isNaN(amountVal) || amountVal < 50) {
+                return showToast("እባክዎ በደረጃ 1 ላይ ትክክለኛ የብር መጠን (ቢያንስ 50 ETB) ይምረጡ ወይም ይጻፉ!", "error");
+            }
+
+            if (!rawInput) {
+                return showToast("እባክዎ በደረጃ 3 ላይ የግብይት ቁጥሩን (Ref) ወይም ሙሉ የቴሌብር SMS ያስገቡ!", "error");
+            }
+
+            const btn = document.getElementById('btnInstantVerify');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> በቴሌብር በማረጋገጥ ላይ...';
+
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/deposit/telebirr-verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        telegramId: user.id,
+                        rawInput: rawInput,
+                        typedAmount: amountVal
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message, "success");
+                    document.getElementById('depositRawInput').value = '';
+                    document.getElementById('depositAmountInput').value = '';
+                    document.getElementById('extractedRefBadge').classList.add('hidden');
+                    onAmountChanged();
+                    syncUser();
+                } else {
+                    showToast(data.error || "ክፍያውን ማረጋገጥ አልተቻለም", "error");
+                }
+            } catch (e) {
+                showToast("የሰርቨር ግንኙነት ተቋርጧል፤ እባክዎ እንደገና ይሞክሩ!", "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-bolt text-yellow-300"></i> ⚡ አረጋግጥና አስገባ (Instant Verify)';
+            }
+        }
+
         function calculateWithdrawFee() {
             const inputVal = parseFloat(document.getElementById('withAmount').value);
             const feeBox = document.getElementById('feeCalcBox');
@@ -777,6 +921,52 @@
                 feeBox.classList.remove('hidden');
             } else {
                 feeBox.classList.add('hidden');
+            }
+        }
+
+        // 📤 SUBMIT WITHDRAWAL
+        async function submitWithdraw() {
+            playTouchBeep();
+            const amount = parseFloat(document.getElementById('withAmount').value);
+            const accountNumber = document.getElementById('withAccount').value.trim();
+            const accountName = document.getElementById('withName').value.trim();
+
+            if (isNaN(amount) || amount < 100) {
+                return showToast("አነስተኛው የማውጣት መጠን 100 ETB ነው!", "error");
+            }
+
+            if (parseFloat(userData.total_deposited || 0) < 50) {
+                return showToast("ገንዘብ ለማውጣት ቢያንስ 1 ጊዜ 50 ETB ተቀማጭ ማድረግ ግዴታ ነው!", "error");
+            }
+
+            if (parseFloat(userData.real_balance || 0) < amount) {
+                return showToast(`በቂ Real Balance የለዎትም! (ያለዎት Real: ${(userData.real_balance || 0)} ETB)`, "error");
+            }
+
+            if (!accountNumber || !accountName) {
+                return showToast("እባክዎ የቴሌብር ስልክ እና ሙሉ ስም በትክክል ያስገቡ!", "error");
+            }
+
+            const res = await fetch(`${BACKEND_URL}/api/withdraw`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    telegramId: user.id, 
+                    amount, 
+                    accountNumber, 
+                    accountName 
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(data.message, "success");
+                document.getElementById('withAmount').value = '';
+                document.getElementById('withAccount').value = '';
+                document.getElementById('withName').value = '';
+                document.getElementById('feeCalcBox').classList.add('hidden');
+                syncUser();
+            } else {
+                showToast(data.error || "ማውጣት አልተቻለም", "error");
             }
         }
 
@@ -1070,7 +1260,6 @@
             renderCurrentActiveCard();
         });
 
-        // CELEBRATION MODAL & CONFETTI
         socket.on('round_won', (data) => {
             bgPlayingAudio.pause();
 
@@ -1122,94 +1311,6 @@
             }
         });
 
-        // ================= ⚡ "VERIFI" V5 AUTOMATED DEPOSIT ================= //
-        async function submitAutomatedTelebirr() {
-            playTouchBeep();
-            const rawInput = document.getElementById('telebirrRawInput').value.trim();
-            const typedAmount = document.getElementById('telebirrTypedAmount').value.trim();
-
-            if (!rawInput) {
-                return showToast("እባክዎ የግብይት ቁጥር (Ref) ወይም ሙሉ የቴሌብር SMS ያስገቡ!", "error");
-            }
-
-            const btn = document.getElementById('btnTelebirrVerify');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> በቴሌብር በማረጋገጥ ላይ...';
-
-            try {
-                const res = await fetch(`${BACKEND_URL}/api/deposit/telebirr-verify`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        telegramId: user.id,
-                        rawInput: rawInput,
-                        typedAmount: typedAmount
-                    })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    showToast(data.message, "success");
-                    document.getElementById('telebirrRawInput').value = '';
-                    document.getElementById('telebirrTypedAmount').value = '';
-                    syncUser();
-                } else {
-                    showToast(data.error || "ክፍያውን ማረጋገጥ አልተቻለም", "error");
-                }
-            } catch (e) {
-                showToast("የሰርቨር ግንኙነት ተቋርጧል፤ እባክዎ እንደገና ይሞክሩ!", "error");
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-bolt text-yellow-300"></i> አረጋግጥና አስገባ (Instant Verify)';
-            }
-        }
-
-        // 📤 SUBMIT WITHDRAWAL (TELEBIRR ONLY)
-        async function submitWithdraw() {
-            playTouchBeep();
-            const amount = parseFloat(document.getElementById('withAmount').value);
-            const accountNumber = document.getElementById('withAccount').value.trim();
-            const accountName = document.getElementById('withName').value.trim();
-
-            if (isNaN(amount) || amount < 100) {
-                return showToast("አነስተኛው የማውጣት መጠን 100 ETB ነው!", "error");
-            }
-
-            if (parseFloat(userData.total_deposited || 0) < 50) {
-                return showToast("ገንዘብ ለማውጣት ቢያንስ 1 ጊዜ 50 ETB ተቀማጭ ማድረግ ግዴታ ነው!", "error");
-            }
-
-            if (parseFloat(userData.real_balance || 0) < amount) {
-                return showToast(`በቂ Real Balance የለዎትም! (ያለዎት Real: ${(userData.real_balance || 0)} ETB)`, "error");
-            }
-
-            if (!accountNumber || !accountName) {
-                return showToast("እባክዎ የቴሌብር ስልክ እና ሙሉ ስም በትክክል ያስገቡ!", "error");
-            }
-
-            const res = await fetch(`${BACKEND_URL}/api/withdraw`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    telegramId: user.id, 
-                    method: 'TELEBIRR', 
-                    amount, 
-                    accountNumber, 
-                    accountName 
-                })
-            });
-            const data = await res.json();
-            if (data.success) {
-                showToast(data.message, "success");
-                document.getElementById('withAmount').value = '';
-                document.getElementById('withAccount').value = '';
-                document.getElementById('withName').value = '';
-                document.getElementById('feeCalcBox').classList.add('hidden');
-                syncUser();
-            } else {
-                showToast(data.error || "ማውጣት አልተቻለም", "error");
-            }
-        }
-
         async function redeemPromo() {
             playTouchBeep();
             const code = document.getElementById('promoInput').value;
@@ -1230,37 +1331,56 @@
             }
         }
 
+        // ================= 🏆 LEADERBOARD LOADERS (SAFE ARRAY CHECK) ================= //
         async function loadWeeklyTop() {
-            const res = await fetch(`${BACKEND_URL}/api/weekly-top`);
-            const data = await res.json();
             const list = document.getElementById('weeklyTopList');
-            list.innerHTML = data.map((u, i) => `
-                <div class="flex justify-between items-center p-2 bg-slate-950 rounded-xl border border-slate-800 text-xs">
-                    <div class="flex items-center gap-2">
-                        <span class="font-black text-blue-400">#${i+1}</span>
-                        <p class="font-bold text-white">${u.first_name || u.username}</p>
-                    </div>
-                    <span class="font-black text-yellow-400">${u.cards_bought_this_week} ካርዶች</span>
-                </div>
-            `).join('') || '<p class="text-xs text-slate-500">እስካሁን ምንም ተጫዋች የለም</p>';
+            if (!list) return;
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/weekly-top`);
+                const data = await res.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    list.innerHTML = data.map((u, i) => `
+                        <div class="flex justify-between items-center p-2 bg-slate-950 rounded-xl border border-slate-800 text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="font-black text-blue-400">#${i+1}</span>
+                                <p class="font-bold text-white">${u.first_name || u.username || 'ተጫዋች'}</p>
+                            </div>
+                            <span class="font-black text-yellow-400">${u.cards_bought_this_week || 0} ካርዶች</span>
+                        </div>
+                    `).join('');
+                } else {
+                    list.innerHTML = '<div class="p-3 text-center text-slate-500 text-xs">በዚህ ሳምንት እስካሁን ምንም ተጫዋች የለም</div>';
+                }
+            } catch (e) {
+                list.innerHTML = '<div class="p-3 text-center text-slate-500 text-xs">መረጃውን ማምጣት አልተቻለም</div>';
+            }
         }
 
         async function loadLeaderboard() {
-            const res = await fetch(`${BACKEND_URL}/api/leaderboard`);
-            const data = await res.json();
             const list = document.getElementById('leaderboardList');
-            list.innerHTML = data.map((u, i) => `
-                <div class="flex justify-between items-center p-2 bg-slate-950 rounded-xl border border-slate-800 text-xs">
-                    <div class="flex items-center gap-2">
-                        <span class="font-black text-blue-400">#${i+1}</span>
-                        <p class="font-bold text-white">${u.first_name || u.username}</p>
-                    </div>
-                    <span class="font-black text-green-400">${parseFloat(u.total_won).toFixed(2)} ETB</span>
-                </div>
-            `).join('');
+            if (!list) return;
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/leaderboard`);
+                const data = await res.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    list.innerHTML = data.map((u, i) => `
+                        <div class="flex justify-between items-center p-2 bg-slate-950 rounded-xl border border-slate-800 text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="font-black text-blue-400">#${i+1}</span>
+                                <p class="font-bold text-white">${u.first_name || u.username || 'ተጫዋች'}</p>
+                            </div>
+                            <span class="font-black text-green-400">${parseFloat(u.total_won || 0).toFixed(2)} ETB</span>
+                        </div>
+                    `).join('');
+                } else {
+                    list.innerHTML = '<div class="p-3 text-center text-slate-500 text-xs">እስካሁን ምንም አሸናፊ አልተመዘገበም</div>';
+                }
+            } catch (e) {
+                list.innerHTML = '<div class="p-3 text-center text-slate-500 text-xs">መረጃውን ማምጣት አልተቻለም</div>';
+            }
         }
 
-        // ================= COMPLETE HISTORY LOGIC ================= //
+        // ================= 📜 COMPLETE HISTORY LOGIC ================= //
         function switchHistorySubTab(tab) {
             playTouchBeep();
             if (tab === 'txs') {
@@ -1278,37 +1398,51 @@
         }
 
         async function loadHistory() {
-            const res = await fetch(`${BACKEND_URL}/api/history/${user.id}`);
-            const data = await res.json();
             const list = document.getElementById('historyListTxs');
-            list.innerHTML = data.map(t => `
-                <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
-                    <div>
-                        <span class="font-black ${t.type === 'DEPOSIT' ? 'text-green-400' : 'text-orange-400'}">${t.type}</span>
-                        <p class="text-[9px] text-slate-500">${new Date(t.created_at).toLocaleDateString()}</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-black text-white">${t.amount} ETB</p>
-                        <span class="text-[9px] px-2 py-0.5 rounded-full font-bold ${t.status === 'APPROVED' ? 'bg-green-500/20 text-green-400' : t.status === 'REJECTED' ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400'}">${t.status}</span>
-                    </div>
-                </div>
-            `).join('') || '<p class="text-xs text-slate-500 text-center py-4">ምንም አይነት የገንዘብ ዝውውር የለም</p>';
+            if (!list) return;
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/history/${user.id}`);
+                const data = await res.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    list.innerHTML = data.map(t => `
+                        <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                            <div>
+                                <span class="font-black ${t.type === 'DEPOSIT' ? 'text-green-400' : 'text-orange-400'}">${t.type}</span>
+                                <p class="text-[9px] text-slate-500">${new Date(t.created_at).toLocaleDateString()}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-black text-white">${parseFloat(t.amount || 0).toFixed(2)} ETB</p>
+                                <span class="text-[9px] px-2 py-0.5 rounded-full font-bold ${t.status === 'APPROVED' ? 'bg-green-500/20 text-green-400' : t.status === 'REJECTED' ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400'}">${t.status}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    list.innerHTML = '<div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 text-center text-slate-500 text-xs">እስካሁን ምንም አይነት የገንዘብ ዝውውር የለም</div>';
+                }
+            } catch (e) {
+                list.innerHTML = '<div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 text-center text-slate-500 text-xs">ታሪክን ማምጣት አልተቻለም</div>';
+            }
         }
 
         function renderBetHistory() {
             const list = document.getElementById('historyListBets');
-            list.innerHTML = myBetHistory.map(b => `
-                <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
-                    <div>
-                        <span class="font-black text-blue-400">ዙር #${b.round} (ካርድ #${b.cardIndex})</span>
-                        <p class="text-[9px] text-slate-500">ሰዓት: ${b.time}</p>
+            if (!list) return;
+            if (myBetHistory.length > 0) {
+                list.innerHTML = myBetHistory.map(b => `
+                    <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                        <div>
+                            <span class="font-black text-blue-400">ዙር #${b.round} (ካርድ #${b.cardIndex})</span>
+                            <p class="text-[9px] text-slate-500">ሰዓት: ${b.time}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-black text-white">${b.stake} ETB</p>
+                            <span class="text-[9px] px-2 py-0.5 rounded-full font-bold bg-blue-500/20 text-blue-300">${b.status}</span>
+                        </div>
                     </div>
-                    <div class="text-right">
-                        <p class="font-black text-white">${b.stake} ETB</p>
-                        <span class="text-[9px] px-2 py-0.5 rounded-full font-bold bg-blue-500/20 text-blue-300">${b.status}</span>
-                    </div>
-                </div>
-            `).join('') || '<p class="text-xs text-slate-500 text-center py-4">ምንም አይነት የጨዋታ ውርርድ የለም</p>';
+                `).join('');
+            } else {
+                list.innerHTML = '<div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 text-center text-slate-500 text-xs">ምንም አይነት የጨዋታ ውርርድ የለም</div>';
+            }
         }
 
         function copyToClipboard(txt) {
