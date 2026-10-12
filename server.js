@@ -839,7 +839,7 @@ app.post('/api/admin/reject', checkAdminAuth, async (req, res) => {
 
         sendTelegramNotification(
             tx.telegram_id,
-            `❌ <b>ይቅርታ፣ ጥያቄዎ ውድቅ ተደርጓል!</b>\n\nየ <b>${parseFloat(tx.amount).toFixed(2)} ETB</b> (${tx.type}) ጥያቄዎ በአድሚን ውድቅ ተደርጓል።\n\nጥያቄ ካለዎት የደንበኞች ድጋፍ ያነጋግሩ፡ @DashBingoo`
+            `🔄 <b>ውድ የ Dash Bingo ተጫዋች፦</b>\n\nበአዲሱ የኤጀንት አሰራር ስርዓታችን መሰረት የጠየቁት የ <b>${parseFloat(tx.amount).toFixed(2)} ETB</b> ማውጣት ጥያቄ ወደ Bingo Walletዎ በሰላም ተመልሷል! ✅\n\nቻናላችን ላይ በተገለጸው መሰረት አዲሱን የኤጀንት አሰራር ይፋ ስናደርግ በቀጥታ ማውጣት ይችላሉ።\n\nትብብርዎን ከልብ እናመሰግናለን! 🙏⚡\n@DashBingo`
         );
 
         res.json({ success: true, message: 'ግብይቱ ውድቅ ተደርጓል!' });
