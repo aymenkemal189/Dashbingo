@@ -457,6 +457,14 @@ app.post('/api/user/claim-welcome', async (req, res) => {
     }
 });
 
+
+
+
+
+
+
+
+
 // ================= ⚡ "VERIFI" V5 AUTOMATED TELEBIRR DEPOSIT (FLOW A) ================= //
 app.post('/api/deposit/telebirr-verify', async (req, res) => {
     const { telegramId, rawInput, typedAmount } = req.body;
@@ -545,6 +553,122 @@ app.post('/api/deposit/telebirr-verify', async (req, res) => {
         await client.query('COMMIT');
 
         sendTelegramNotification(
+// ================= ⚡ "VERIFI" V5 AUTOMATED TELEBIRR DEPOSIT (EXACT STATUS CODES) ================= //
+app.post('/api/deposit/telebirr-verify', async (req, res) => {
+    const { telegramId, rawInput, typedAmount } = req.body;
+
+    if (!telegramId || !rawInput) {
+        return res.status(400).json({ error: 'እባክዎ የግብይት ቁጥር (Ref) ወይም ሙሉ የቴሌብር SMS ያስገቡ!' });
+    }
+
+    const parsed = parseTelebirrInput(rawInput);
+    const ref = parsed.ref;
+    const finalAmount = parsed.amount || parseFloat(typedAmount);
+
+    if (!ref || ref.length < 8) {
+        return res.status(400).json({ error: 'ትክክለኛ የቴሌብር ግብይት ቁጥር (Ref ለምሳሌ DJC5Q7Q5UV) አልተገኘም!' });
+    }
+
+    if (!finalAmount || finalAmount < MINIMUM_DEPOSIT) {
+        return res.status(400).json({ error: `ዝቅተኛው የዴፖዚት መጠን ${MINIMUM_DEPOSIT} ETB ነው!` });
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        const userRes = await client.query('SELECT id, telegram_id, real_balance, bonus_balance FROM users WHERE telegram_id = $1 FOR UPDATE', [telegramId]);
+        if (userRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'ተጠቃሚው አልተገኘም' });
+        }
+        const user = userRes.rows[0];
+
+        const refCheck = await client.query('SELECT id FROM transactions WHERE trx_ref = $1', [ref]);
+        if (refCheck.rows.length > 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'ይህ የግብይት ቁጥር ቀደም ሲል ጥቅም ላይ ውሏል!' });
+        }
+
+        const orderId = `DEP_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        const verifyUrl = `${TELEBIRR_API_URL}?ref=${encodeURIComponent(ref)}&amount=${encodeURIComponent(finalAmount)}&order=${encodeURIComponent(orderId)}&token=${encodeURIComponent(TELEBIRR_SECRET_TOKEN)}`;
+        
+        let gatewayResponse;
+        try {
+            // ⚡ 302 HTTP Redirectን በራሱ ተከትሎ JSON ይቀበላል
+            const resp = await fetch(verifyUrl, {
+                method: 'GET',
+                redirect: 'follow',
+                headers: { 'Accept': 'application/json' }
+            });
+            const rawText = await resp.text();
+            try {
+                gatewayResponse = JSON.parse(rawText);
+            } catch (jsonErr) {
+                console.error("Non-JSON Apps Script response:", rawText);
+                throw new Error("Invalid response from verification gateway");
+            }
+        } catch (fetchErr) {
+            await client.query('ROLLBACK');
+            console.error('Verifi Gateway Fetch Error:', fetchErr);
+            return res.status(502).json({ error: 'የቴሌብር ማረጋገጫ ሲስተሙ ለጊዜው አልመለሰም፤ እባክዎ ከጥቂት ሰከንዶች በኋላ እንደገና ይሞክሩ።' });
+        }
+
+        // 🔍 ትክክለኛዎቹን 5ቱ የ Verifi V5 ምላሾች መመርመር
+        const gStatus = gatewayResponse?.status;
+
+        // 1. ⏳ ገና በ Sheet ላይ ያልደረሰ ከሆነ
+        if (gStatus === 'Pending') {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'ክፍያው በቴሌብር ገና አልተመዘገበም። እባክዎ ጥቂት ሰከንዶች ጠብቀው እንደገና ይሞክሩ።' });
+        }
+
+        // 2. ❌ ቀደም ሲል ጥቅም ላይ የዋለ ከሆነ
+        if (gStatus === 'AlreadyUsed') {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'ይህ የግብይት ቁጥር ቀደም ሲል ጥቅም ላይ ውሏል!' });
+        }
+
+        // 3. ❌ መጠኑ ካልተመሳከረ
+        if (gStatus === 'InvalidAmount') {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'የተላከው የገንዘብ መጠን ከተጠየቀው መጠን ጋር አይዛመድም።' });
+        }
+
+        // 4. ❌ የወጪ ማስተላለፊያ ደረሰኝ ከሆነ
+        if (gStatus === 'Invalid_Transaction_Type') {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'ይህ የገንዘብ መቀበያ ሳይሆን የወጪ ማስተላለፊያ ደረሰኝ ነው፤ ውድቅ ተደርጓል።' });
+        }
+
+        // 5. ✅ የተረጋገጠ ክፍያ (Verified)
+        if (gStatus !== 'Verified') {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: gatewayResponse?.message || 'ክፍያውን ማረጋገጥ አልተቻለም።' });
+        }
+
+        const verifiedAmount = parseFloat(gatewayResponse.amount || finalAmount);
+        const newRealBalance = parseFloat(user.real_balance || 0) + verifiedAmount;
+        const newTotalBalance = newRealBalance + parseFloat(user.bonus_balance || 0);
+
+        await client.query(
+            `UPDATE users 
+             SET real_balance = $1, 
+                 total_deposited = total_deposited + $2,
+                 balance = $3 
+             WHERE id = $4`,
+            [newRealBalance, verifiedAmount, newTotalBalance, user.id]
+        );
+
+        await client.query(
+            `INSERT INTO transactions (user_id, type, payment_method, amount, trx_ref, order_id, status) 
+             VALUES ($1, 'DEPOSIT', 'TELEBIRR', $2, $3, $4, 'APPROVED')`,
+            [user.id, verifiedAmount, ref, orderId]
+        );
+
+        await client.query('COMMIT');
+
+        sendTelegramNotification(
             telegramId,
             `✅ <b>የቴሌብር ዴፖዚትዎ በራስ-ሰር ጸድቋል!</b>\n\nመጠን፡ <b>${verifiedAmount.toFixed(2)} ETB</b>\nRef: <code>${ref}</code>\nየ Real Wallet ሒሳብዎ፡ <b>${newRealBalance.toFixed(2)} ETB</b>\n\nአሁኑኑ ገብተው ይጫወቱ!`
         );
@@ -565,6 +689,16 @@ app.post('/api/deposit/telebirr-verify', async (req, res) => {
         client.release();
     }
 });
+
+
+
+
+
+
+
+
+
+
 
 // 📤 10ሩን ህጎች ያካተተ የተጠናከረ የገንዘብ ማውጫ API (Withdrawal API)
 app.post('/api/withdraw', async (req, res) => {
