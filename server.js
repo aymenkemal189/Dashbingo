@@ -29,7 +29,7 @@ pool.on('error', (err) => {
     console.error('Neon DB Pool Error:', err);
 });
 
-// Auto-run DB Migrations (አዳዲስ አምዶችንና ቴብሎችን በራስ-ሰር ይፈጥራል)
+// Auto-run DB Migrations
 (async () => {
     try {
         await pool.query(`
@@ -96,7 +96,7 @@ pool.on('error', (err) => {
                 UNIQUE(user_id, promo_id)
             );
         `);
-        console.log('✅ Database Schema & Migrations verified successfully');
+        console.log('✅ Database Schema verified successfully (Telebirr Only)');
     } catch (e) {
         console.error('Migration notice:', e.message);
     }
@@ -108,7 +108,7 @@ app.get('/index.html', (req, res) => res.sendFile(path.join(__dirname, 'index.ht
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
 app.get('/admin.html', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
 
-// ================= ADMIN AUTH MIDDLEWARE ================= //
+// ================= ADMIN SECURITY MIDDLEWARE ================= //
 const ADMIN_SECRET = process.env.ADMIN_SECRET || 'super_secret_dash_admin_2026';
 function checkAdminAuth(req, res, next) {
     const key = req.headers['x-admin-key'] || req.query.admin_key;
@@ -128,11 +128,59 @@ async function sendTelegramNotification(telegramId, message) {
         if (!telegramId) return;
         await bot.telegram.sendMessage(telegramId, message, { parse_mode: 'HTML' });
     } catch (err) {
-        console.warn(`Telegram notification error for ${telegramId}:`, err.message);
+        console.warn(`Telegram notification notice (${telegramId}):`, err.message);
     }
 }
 
-// Bot Start with Referral Deep-Link
+// ================= "VERIFI" V5 GATEWAY CREDENTIALS ================= //
+const TELEBIRR_API_URL = process.env.TELEBIRR_API_URL || 'https://script.google.com/macros/s/AKfycbwuyYvDk0w_YvmIHq0_QIdysYpmizrJrCKhNUIKeMhOdaxslASsv2VJPMgWUs0zOcD7xQ/exec';
+const TELEBIRR_SECRET_TOKEN = process.env.TELEBIRR_SECRET_TOKEN || 'Verifi_Prod_9842_Aymen_X9!2026';
+const MERCHANT_TELEBIRR_PHONE = '0996910607'; // Aymen
+const MINIMUM_DEPOSIT = 50; // ዝቅተኛው ዴፖዚት 50 ETB
+
+function parseTelebirrInput(input) {
+    const text = String(input || '').trim();
+    let ref = null;
+    let amount = null;
+
+    // 1. የግብይት ቁጥር መፈለግ (DJ የሚለውን ጨምሮ ሙሉውን ይወስዳል)
+    const djMatch = text.match(/\b(DJ[A-Z0-9]{8,12})\b/i);
+    if (djMatch) {
+        ref = djMatch[1].toUpperCase();
+    } else {
+        const genericMatch = text.match(/transaction\s*(?:number|id|ref|no)?\s*(?:is|:)?\s*([A-Z0-9]{8,14})/i);
+        if (genericMatch) {
+            ref = genericMatch[1].toUpperCase();
+        } else if (/^[A-Z0-9]{8,14}$/i.test(text)) {
+            ref = text.toUpperCase();
+        }
+    }
+
+    // 2. የገንዘብ መጠን መፈለግ
+    const amtMatch = text.match(/(?:ETB|Birr)\s*([0-9]+(?:\.[0-9]{1,2})?)/i) || text.match(/\b([0-9]+(?:\.[0-9]{1,2})?)\s*(?:ETB|Birr)/i);
+    if (amtMatch) {
+        amount = parseFloat(amtMatch[1]);
+    }
+
+    return { ref, amount };
+}
+
+// ================= TELEBIRR AGENT STATUS CONTROLLER ================= //
+let agentStatus = {
+    telebirr: { name: "Aymen", handle: "@AymenKemal", account: "0996910607", isOnline: true }
+};
+
+app.get('/api/agents/status', (req, res) => {
+    res.json(agentStatus);
+});
+
+app.post('/api/admin/agents/toggle', checkAdminAuth, (req, res) => {
+    const { isOnline } = req.body;
+    agentStatus.telebirr.isOnline = Boolean(isOnline);
+    res.json({ success: true, agentStatus });
+});
+
+// Telegram Bot Start
 bot.start(async (ctx) => {
     const { id, first_name, username } = ctx.from;
     const startPayload = ctx.startPayload || '';
@@ -168,62 +216,10 @@ bot.start(async (ctx) => {
     }
 });
 
-// ================= "VERIFI" V5 GATEWAY CREDENTIALS & REGEX ================= //
-const TELEBIRR_API_URL = process.env.TELEBIRR_API_URL || 'https://script.google.com/macros/s/AKfycbwuyYvDk0w_YvmIHq0_QIdysYpmizrJrCKhNUIKeMhOdaxslASsv2VJPMgWUs0zOcD7xQ/exec';
-const TELEBIRR_SECRET_TOKEN = process.env.TELEBIRR_SECRET_TOKEN || 'Verifi_Prod_9842_Aymen_X9!2026';
-const MINIMUM_DEPOSIT = 50; // ዝቅተኛው ዴፖዚት 50 ETB
-
-function parseTelebirrInput(input) {
-    const text = String(input || '').trim();
-    let ref = null;
-    let amount = null;
-
-    // 1. የግብይት ቁጥር መፈለግ (DJ የሚለውን ሳይቆርጥ ሙሉውን ይወስዳል)
-    const djMatch = text.match(/\b(DJ[A-Z0-9]{8,12})\b/i);
-    if (djMatch) {
-        ref = djMatch[1].toUpperCase();
-    } else {
-        const genericMatch = text.match(/transaction\s*(?:number|id|ref|no)?\s*(?:is|:)?\s*([A-Z0-9]{8,14})/i);
-        if (genericMatch) {
-            ref = genericMatch[1].toUpperCase();
-        } else if (/^[A-Z0-9]{8,14}$/i.test(text)) {
-            ref = text.toUpperCase();
-        }
-    }
-
-    // 2. የገንዘብ መጠን መፈለግ
-    const amtMatch = text.match(/(?:ETB|Birr)\s*([0-9]+(?:\.[0-9]{1,2})?)/i) || text.match(/\b([0-9]+(?:\.[0-9]{1,2})?)\s*(?:ETB|Birr)/i);
-    if (amtMatch) {
-        amount = parseFloat(amtMatch[1]);
-    }
-
-    return { ref, amount };
-}
-
-// ================= AGENT STATUS CONTROLLER ================= //
-let agentStatus = {
-    cbe: { name: "Aymen Kemal", handle: "@AymenKemal", account: "1000562339427", isOnline: true },
-    telebirr: { name: "Aymen", handle: "@AymenKemal", account: "0996910607", isOnline: true }
-};
-
-app.get('/api/agents/status', (req, res) => {
-    res.json(agentStatus);
-});
-
-app.post('/api/admin/agents/toggle', checkAdminAuth, (req, res) => {
-    const { agent, isOnline } = req.body;
-    if (agentStatus[agent]) {
-        agentStatus[agent].isOnline = Boolean(isOnline);
-        res.json({ success: true, agentStatus });
-    } else {
-        res.status(400).json({ error: 'Agent not found' });
-    }
-});
-
 // ================= GAME ENGINE ================= //
-const CARD_PRICE = 10; // 10 ETB
-const HOUSE_COMMISSION = 0.20; // 20%
-const SELECTION_SECONDS = 30; // 30s Countdown
+const CARD_PRICE = 10;
+const HOUSE_COMMISSION = 0.20;
+const SELECTION_SECONDS = 30;
 
 let gameState = {
     roundNumber: 1001,
@@ -321,7 +317,7 @@ setInterval(async () => {
         if (winners.length > 0) {
             gameState.status = 'GAME_OVER';
 
-            // 🛡️ Prorated Pot Math (የሂሳብ አደጋ መከላከያ ስሌት)
+            // Prorated Pot Math (የቦነስና የእውነተኛ ብር ድራሽ ስሌት)
             const allCards = Object.values(gameState.selectedCards);
             const totalRealCards = allCards.filter(c => c.isRealMoney).length;
             const totalBonusCards = allCards.filter(c => !c.isRealMoney).length;
@@ -424,7 +420,6 @@ function resetGame() {
 
 // ================= USER & PROFILE REST APIS ================= //
 
-// User Sync API
 app.post('/api/user/sync', async (req, res) => {
     const { telegramId, firstName, username, ref } = req.body;
     if (!telegramId) return res.status(400).json({ error: 'telegramId is required' });
@@ -462,7 +457,7 @@ app.get('/api/user/:telegramId', async (req, res) => {
     }
 });
 
-// 🎁 20 ETB Welcome Bonus (ወደ bonus_balance ብቻ)
+// 🎁 20 ETB Welcome Bonus (ወደ bonus_balance)
 app.post('/api/user/claim-welcome', async (req, res) => {
     const { telegramId, firstName, username } = req.body;
     if (!telegramId) return res.status(400).json({ error: 'telegramId is required' });
@@ -579,7 +574,6 @@ app.post('/api/deposit/telebirr-verify', async (req, res) => {
             return res.status(502).json({ error: 'የቴሌብር ማረጋገጫ ሲስተሙ ለጊዜው አልመለሰም፤ እባክዎ ከጥቂት ሰከንዶች በኋላ እንደገና ይሞክሩ።' });
         }
 
-        // 🔍 ትክክለኛዎቹን 5ቱ የ Verifi V5 ምላሾች መመርመር
         const gStatus = gatewayResponse?.status;
 
         if (gStatus === 'Pending') {
@@ -650,54 +644,11 @@ app.post('/api/deposit/telebirr-verify', async (req, res) => {
     }
 });
 
-// 📥 Fallback Manual Deposit API
-app.post('/api/deposit', async (req, res) => {
-    const { telegramId, firstName, username, method, amount, smsText } = req.body;
-    const depAmount = parseFloat(amount);
-
-    if (isNaN(depAmount) || depAmount <= 0 || !smsText || smsText.trim().length < 20) {
-        return res.status(400).json({ error: 'እባክዎ ትክክለኛ መጠንና ሙሉ የ SMS ጽሁፍ ያስገቡ!' });
-    }
-
-    const normalizedSMS = smsText.replace(/\s+/g, '').toLowerCase();
-    const smsHash = crypto.createHash('sha256').update(normalizedSMS).digest('hex');
-
-    try {
-        const userRes = await pool.query(
-            `INSERT INTO users (telegram_id, first_name, username) 
-             VALUES ($1, $2, $3) 
-             ON CONFLICT (telegram_id) DO UPDATE SET first_name = EXCLUDED.first_name 
-             RETURNING id`,
-            [telegramId, firstName || 'ተጫዋች', username || '']
-        );
-        const userId = userRes.rows[0].id;
-
-        await pool.query(
-            `INSERT INTO transactions (user_id, type, payment_method, amount, sms_text, sms_hash, status) 
-             VALUES ($1, 'DEPOSIT', $2, $3, $4, $5, 'PENDING')`,
-            [userId, method, depAmount, smsText, smsHash]
-        );
-
-        sendTelegramNotification(
-            telegramId,
-            `📥 <b>የማስገቢያ ጥያቄ ደርሶናል</b>\n\nመጠን፡ <b>${depAmount.toFixed(2)} ETB</b> (${method})\nሁኔታ፡ ⏳ በማረጋገጥ ላይ...\n\nኤጀንቱ ሲያረጋግጥ ወዲያውኑ ገቢ ይሆናል።`
-        );
-
-        res.json({ success: true, message: 'የማስገቢያ ጥያቄዎ ደርሶናል! ኤጀንቱ አረጋግጦ ገቢ ያደርግልዎታል።' });
-    } catch (err) {
-        if (err.code === '23505') {
-            return res.status(400).json({ error: 'ይህ SMS ቀደም ሲል ጥቅም ላይ ውሏል! አዲስ የግብይት SMS ያስገቡ።' });
-        }
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// 📤 10ሩን ህጎች ያካተተ የተጠናከረ የገንዘብ ማውጫ API (Withdrawal API)
+// 📤 10ሩን ህጎች ያካተተ የተጠናከረ የገንዘብ ማውጫ API (Telebirr Only)
 app.post('/api/withdraw', async (req, res) => {
-    const { telegramId, method, amount, accountNumber, accountName } = req.body;
+    const { telegramId, amount, accountNumber, accountName } = req.body;
     const withdrawAmount = parseFloat(amount);
 
-    // ህግ 2፡ አነስተኛ ማውጫ 100 ETB፣ ከፍተኛው 5,000 ETB
     if (isNaN(withdrawAmount) || withdrawAmount < 100) {
         return res.status(400).json({ error: 'አነስተኛው የማውጣት መጠን 100 ETB ነው!' });
     }
@@ -705,7 +656,7 @@ app.post('/api/withdraw', async (req, res) => {
         return res.status(400).json({ error: 'በአንድ ጊዜ የሚፈቀደው ከፍተኛው የማውጣት መጠን 5,000 ETB ነው!' });
     }
     if (!accountNumber || !accountName) {
-        return res.status(400).json({ error: 'እባክዎ አካውንት እና ሙሉ ስም በትክክል ያስገቡ!' });
+        return res.status(400).json({ error: 'እባክዎ የቴሌብር ስልክ እና ሙሉ ስም በትክክል ያስገቡ!' });
     }
 
     const client = await pool.connect();
@@ -762,15 +713,15 @@ app.post('/api/withdraw', async (req, res) => {
 
         await client.query(
             `INSERT INTO transactions (user_id, type, payment_method, amount, account_number, account_name, status) 
-             VALUES ($1, 'WITHDRAW', $2, $3, $4, $5, 'PENDING')`,
-            [user.id, method, netPayout, accountNumber, accountName]
+             VALUES ($1, 'WITHDRAW', 'TELEBIRR', $2, $3, $4, 'PENDING')`,
+            [user.id, netPayout, accountNumber, accountName]
         );
 
         await client.query('COMMIT');
 
         sendTelegramNotification(
             telegramId,
-            `📤 <b>የማውጣት ጥያቄ ደርሶናል</b>\n\nየተጠየቀው መጠን፡ <b>${withdrawAmount.toFixed(2)} ETB</b>\nየአገልግሎት ክፍያ (5%)፡ <b>${fee.toFixed(2)} ETB</b>\nየሚደርስዎት የተጣራ ብር፡ <b>${netPayout.toFixed(2)} ETB</b>\nወደ፡ <b>${accountNumber}</b> (${accountName})\n\nኤጀንቱ አረጋግጦ በቅርቡ ይልክልዎታል።`
+            `📤 <b>የማውጣት ጥያቄ ደርሶናል</b>\n\nየተጠየቀው መጠን፡ <b>${withdrawAmount.toFixed(2)} ETB</b>\nየአገልግሎት ክፍያ (5%)፡ <b>${fee.toFixed(2)} ETB</b>\nየሚደርስዎት የተጣራ ብር፡ <b>${netPayout.toFixed(2)} ETB</b>\nወደ ቴሌብር፡ <b>${accountNumber}</b> (${accountName})\n\nኤጀንቱ አረጋግጦ በቅርቡ ይልክልዎታል።`
         );
 
         res.json({ 
@@ -872,7 +823,7 @@ app.get('/api/history/:telegramId', async (req, res) => {
     }
 });
 
-// ================= 📊 ALL-TIME & TIMEFRAME-BASED FINANCIAL AUDIT API ================= //
+// ================= 📊 ALL-TIME & TIMEFRAME-BASED FINANCIAL AUDIT API (TELEBIRR ONLY) ================= //
 app.get('/api/admin/audit', checkAdminAuth, async (req, res) => {
     const timeframe = req.query.timeframe || 'all';
     let timeFilterTx = "";
@@ -893,11 +844,8 @@ app.get('/api/admin/audit', checkAdminAuth, async (req, res) => {
     try {
         const auditQuery = `
             SELECT 
-                COALESCE(SUM(CASE WHEN type = 'DEPOSIT' AND status = 'APPROVED' AND payment_method = 'CBE' THEN amount ELSE 0 END), 0) AS cbe_deposits,
-                COALESCE(SUM(CASE WHEN type = 'DEPOSIT' AND status = 'APPROVED' AND payment_method = 'TELEBIRR' THEN amount ELSE 0 END), 0) AS telebirr_deposits,
-                COALESCE(SUM(CASE WHEN type = 'WITHDRAW' AND status = 'APPROVED' AND payment_method = 'CBE' THEN amount ELSE 0 END), 0) AS cbe_withdrawals,
-                COALESCE(SUM(CASE WHEN type = 'WITHDRAW' AND status = 'APPROVED' AND payment_method = 'TELEBIRR' THEN amount ELSE 0 END), 0) AS telebirr_withdrawals,
-                COALESCE(SUM(CASE WHEN type = 'WITHDRAW' AND status = 'APPROVED' THEN amount ELSE 0 END), 0) AS total_withdrawals,
+                COALESCE(SUM(CASE WHEN type = 'DEPOSIT' AND status = 'APPROVED' THEN amount ELSE 0 END), 0) AS telebirr_deposits,
+                COALESCE(SUM(CASE WHEN type = 'WITHDRAW' AND status = 'APPROVED' THEN amount ELSE 0 END), 0) AS telebirr_withdrawals,
                 COALESCE(SUM(CASE WHEN type = 'WELCOME_BONUS' THEN amount ELSE 0 END), 0) AS welcome_bonus,
                 COALESCE(SUM(CASE WHEN type = 'REFERRAL_BONUS' THEN amount ELSE 0 END), 0) AS referral_bonus,
                 COALESCE(SUM(CASE WHEN type = 'DEPOSIT' AND status = 'PENDING' THEN 1 ELSE 0 END), 0) AS pending_deposits_count,
@@ -912,14 +860,19 @@ app.get('/api/admin/audit', checkAdminAuth, async (req, res) => {
         const periodUsersRes = await pool.query(`SELECT COUNT(*) AS period_users FROM users ${timeFilterUsers}`);
         const roundRes = await pool.query(`SELECT COALESCE(SUM(owner_rake), 0) AS total_rake, COUNT(*) AS round_count FROM bingo_rounds ${timeFilterRounds}`);
 
+        const totalDep = parseFloat(data.telebirr_deposits);
+        const totalWith = parseFloat(data.telebirr_withdrawals);
+        const netCash = totalDep - totalWith;
+
         res.json({
             timeframe,
-            cbeDeposits: parseFloat(data.cbe_deposits),
-            telebirrDeposits: parseFloat(data.telebirr_deposits),
-            totalDeposits: parseFloat(data.cbe_deposits) + parseFloat(data.telebirr_deposits),
-            cbeWithdrawals: parseFloat(data.cbe_withdrawals),
-            telebirrWithdrawals: parseFloat(data.telebirr_withdrawals),
-            totalWithdrawals: parseFloat(data.total_withdrawals),
+            totalDeposits: totalDep,
+            telebirrDeposits: totalDep,
+            totalWithdrawals: totalWith,
+            telebirrWithdrawals: totalWith,
+            netCash,
+            aymenShare: netCash * 0.50,
+            nebyuShare: netCash * 0.50,
             welcomeBonus: parseFloat(data.welcome_bonus),
             referralBonus: parseFloat(data.referral_bonus),
             totalBonus: parseFloat(data.welcome_bonus) + parseFloat(data.referral_bonus),
@@ -938,7 +891,7 @@ app.get('/api/admin/audit', checkAdminAuth, async (req, res) => {
     }
 });
 
-// ⚡ Transactions List (ቦነሶችን አውጥቶ እውነተኛ ገቢዎችን እና ወጪዎችን ብቻ የሚያጣራ API)
+// Transactions List
 app.get('/api/admin/transactions', checkAdminAuth, async (req, res) => {
     const { category, timeframe } = req.query;
     let conditions = ["t.type IN ('DEPOSIT', 'WITHDRAW')"];
@@ -1012,7 +965,7 @@ app.post('/api/admin/approve', checkAdminAuth, async (req, res) => {
         } else {
             sendTelegramNotification(
                 tx.telegram_id,
-                `✅ <b>የማውጣት ጥያቄዎ ተፈጽሟል!</b>\n\nየ <b>${parseFloat(tx.amount).toFixed(2)} ETB</b> የተጣራ ክፍያ ወደ <b>${tx.account_number}</b> ተልኮልዎታል። እናመሰግናለን!`
+                `✅ <b>የማውጣት ጥያቄዎ ተፈጽሟል!</b>\n\nየ <b>${parseFloat(tx.amount).toFixed(2)} ETB</b> የተጣራ ክፍያ ወደ ቴሌብር <b>${tx.account_number}</b> ተልኮልዎታል። እናመሰግናለን!`
             );
         }
 
@@ -1182,7 +1135,7 @@ io.on('connection', (socket) => {
 
             let isRealMoney = false;
 
-            // 💵 የውርርድ ቅድሚያ፦ መጀመሪያ ከ real_balance፣ ካነሰ ከ bonus_balance ይቀነሳል
+            // የውርርድ ቅድሚያ፦ መጀመሪያ ከ real_balance፣ ካነሰ ከ bonus_balance ይቀነሳል
             if (parseFloat(user.real_balance || 0) >= CARD_PRICE) {
                 await client.query(
                     `UPDATE users 
