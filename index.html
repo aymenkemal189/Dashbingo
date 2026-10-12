@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- CDN Socket.io (ከ GitHub Pages ሆነን Renderን ለማግኘት የሚያስፈልገው) -->
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
@@ -27,8 +26,8 @@
 </head>
 <body class="pb-24 select-none">
 
-    <!-- FLOATING TOAST CONTAINER -->
-    <div id="toastContainer" class="fixed top-4 left-4 right-4 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
+    <!-- FAST MICRO-TOAST CONTAINER (1.5s FAST DISMISS) -->
+    <div id="toastContainer" class="fixed top-3 left-4 right-4 z-50 flex flex-col items-center gap-1.5 pointer-events-none"></div>
 
     <!-- WINNER CELEBRATION MODAL -->
     <div id="winnerModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-xl z-50 flex items-center justify-center p-4 hidden">
@@ -46,6 +45,35 @@
             </div>
             <button onclick="closeWinnerModal()" class="w-full gradient-blue text-white font-black py-3 rounded-2xl text-xs shadow-lg active:scale-95 transition">
                 ቀጥል (Continue)
+            </button>
+        </div>
+    </div>
+
+    <!-- 📜 10 RULES MODAL (POPUPS ON DEMAND - CLEAN UX) -->
+    <div id="rulesModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-box p-5 rounded-3xl max-w-sm w-full space-y-3 border border-yellow-500/40 shadow-2xl max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+                <h3 class="text-xs font-black text-yellow-300 flex items-center gap-1.5">
+                    <i class="fa-solid fa-shield-halved"></i> የክፍያና የጨዋታ ደንቦች
+                </h3>
+                <button onclick="toggleRulesModal()" class="w-6 h-6 rounded-lg bg-slate-800 text-slate-400 flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="space-y-2 text-[11px] text-slate-300 leading-relaxed">
+                <p><b>1. የመጀመሪያ ተቀማጭ ግዴታ፦</b> ገንዘብ ለማውጣት ቢያንስ 1 ጊዜ ተቀማጭ (Deposit) ማድረግ ግዴታ ነው።</p>
+                <p><b>2. አነስተኛ ማውጫ፦</b> አነስተኛው የማውጣት መጠን <b>100 ETB</b> ነው።</p>
+                <p><b>3. ከፍተኛ ማውጫ፦</b> በአንድ ጊዜ የሚፈቀደው ከፍተኛው ማውጫ <b>5,000 ETB</b> ነው።</p>
+                <p><b>4. የቦነስ ጨዋታ ግዴታ፦</b> ነፃ ቦነሶችን በቀጥታ ማውጣት አይቻልም፤ ተጫውተውበት ያሸነፉትን ማውጣት ይችላሉ።</p>
+                <p><b>5. የአገልግሎት ክፍያ፦</b> በማንኛውም ዊዝድሮው ላይ የ 5% የኔትወርክና የባንክ ማስተላለፊያ ክፍያ ይቀነሳል።</p>
+                <p><b>6. የማውጣት ድግግሞሽ፦</b> በ 24 ሰዓት ውስጥ ቢበዛ 2 ጊዜ ብቻ ማውጣት ይቻላል።</p>
+                <p><b>7. የማረጋገጫ ጊዜ፦</b> ጥያቄዎ ከ 5 ደቂቃ እስከ 1 ሰዓት ባለው ጊዜ ውስጥ በኤጀንቶቻችን ይፈጸማል።</p>
+                <p><b>8. የተረጋገጠ ሪፈራል፦</b> የ 10 ETB ሪፈራል ቦነስ የሚሰጠው የተጋበዘው ሰው ዴፖዚት አድርጎ ጨዋታ ሲጀምር ነው።</p>
+                <p><b>9. የስም መመሳሰል፦</b> ገንዘብ የሚያወጡበት ስም እና መረጃ ትክክለኛ መሆን አለበት።</p>
+                <p><b>10. ዜሮ ማጭበርበር፦</b> የውሸት SMS መላክ አካውንትን ያሳግዳል፤ ቀሪ ሒሳብም ይሰረዛል።</p>
+            </div>
+            <button onclick="toggleRulesModal()" class="w-full gradient-blue text-white font-black py-2.5 rounded-xl text-xs active:scale-95 transition">
+                ተረድቻለሁ (I Agree)
             </button>
         </div>
     </div>
@@ -191,8 +219,9 @@
             </div>
         </section>
 
-        <!-- ================= TAB 2: WALLET ================= -->
+        <!-- ================= TAB 2: WALLET (AGENT-BASED & STREAMLINED) ================= -->
         <section id="tab-wallet" class="hidden space-y-3">
+            
             <div class="grid grid-cols-2 gap-2 p-1 bg-slate-900 rounded-2xl border border-slate-800">
                 <button onclick="switchWalletView('deposit')" id="btnWalletDep" class="py-2 rounded-xl font-black text-xs gradient-blue text-white shadow-md transition">
                     <i class="fa-solid fa-arrow-down mr-1"></i> ማስገቢያ (Deposit)
@@ -202,87 +231,119 @@
                 </button>
             </div>
 
-            <!-- VIEW A: DEPOSIT -->
+            <!-- VIEW A: DEPOSIT WITH LIVE AGENTS & SMS INPUT -->
             <div id="walletDepositView" class="space-y-3">
+                
+                <!-- Agent Cashier Cards (CBE & Telebirr) -->
                 <div class="glass-box p-3 rounded-2xl space-y-2 border border-blue-500/20">
-                    <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-building-columns text-blue-400"></i>
-                        <h3 class="font-black text-xs text-white">የክፍያ አካውንቶች</h3>
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-black text-xs text-white flex items-center gap-1.5">
+                            <i class="fa-solid fa-user-shield text-blue-400"></i> ይፋዊ የክፍያ ኤጀንቶች (Cashiers)
+                        </h3>
+                        <span class="text-[9px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">
+                            የተረጋገጡ
+                        </span>
                     </div>
 
-                    <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
+                    <!-- Agent 1: Aymen (CBE) -->
+                    <div onclick="selectDepositMethod('CBE')" id="agentCard-CBE" class="p-2.5 bg-slate-950 rounded-xl border-2 border-blue-500 flex justify-between items-center cursor-pointer transition">
                         <div class="flex items-center gap-2.5">
                             <img src="https://i.postimg.cc/Hk1pN2VS/20260805-174301.png" alt="CBE" class="w-8 h-8 rounded-lg object-contain">
                             <div>
-                                <span class="font-black text-xs text-white">CBE (ንግድ ባንክ)</span>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="font-black text-xs text-white">Aymen Kemal (CBE)</span>
+                                    <span class="flex items-center gap-1 text-[8px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.2 rounded-full">
+                                        <span class="w-1 h-1 rounded-full bg-emerald-500 animate-pulse"></span> Online
+                                    </span>
+                                </div>
                                 <p class="text-xs font-mono font-bold text-blue-400">1000562339427</p>
-                                <p class="text-[10px] text-slate-400">Aymen Kemal</p>
                             </div>
                         </div>
-                        <button onclick="copyToClipboard('1000562339427')" class="text-xs gradient-blue text-white font-bold px-3 py-1.5 rounded-lg active:scale-95 transition">
+                        <button onclick="copyToClipboard('1000562339427'); event.stopPropagation();" class="text-xs gradient-blue text-white font-bold px-3 py-1.5 rounded-lg active:scale-95 transition">
                             ኮፒ
                         </button>
                     </div>
 
-                    <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
+                    <!-- Agent 2: Nebyu (Telebirr) -->
+                    <div onclick="selectDepositMethod('TELEBIRR')" id="agentCard-TELEBIRR" class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center cursor-pointer transition">
                         <div class="flex items-center gap-2.5">
                             <img src="https://i.postimg.cc/1zH5wqRj/20260805-174415.png" alt="Telebirr" class="w-8 h-8 rounded-lg object-contain">
                             <div>
-                                <span class="font-black text-xs text-white">Telebirr (ቴሌብር)</span>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="font-black text-xs text-white">Nebyu (Telebirr)</span>
+                                    <span class="flex items-center gap-1 text-[8px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.2 rounded-full">
+                                        <span class="w-1 h-1 rounded-full bg-emerald-500 animate-pulse"></span> Online
+                                    </span>
+                                </div>
                                 <p class="text-xs font-mono font-bold text-blue-400">0968260447</p>
-                                <p class="text-[10px] text-slate-400">Nebyu</p>
                             </div>
                         </div>
-                        <button onclick="copyToClipboard('0968260447')" class="text-xs gradient-blue text-white font-bold px-3 py-1.5 rounded-lg active:scale-95 transition">
+                        <button onclick="copyToClipboard('0968260447'); event.stopPropagation();" class="text-xs gradient-blue text-white font-bold px-3 py-1.5 rounded-lg active:scale-95 transition">
                             ኮፒ
                         </button>
                     </div>
                 </div>
 
-                <div class="glass-box p-3 rounded-2xl space-y-2.5 border border-blue-500/20">
+                <!-- Clean Deposit Form for Database & Audit -->
+                <div class="glass-box p-3 rounded-2xl space-y-2 border border-blue-500/20">
                     <div class="flex justify-between items-center">
-                        <h4 class="font-black text-xs text-white flex items-center gap-1.5">
-                            <i class="fa-solid fa-comment-sms text-green-400"></i> የ SMS ማረጋገጫ ማስገቢያ
-                        </h4>
-                        <span class="text-[9px] text-amber-300 font-bold bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
-                            ⏱ በ 5 ደቂቃ ውስጥ ይላኩ
+                        <h4 class="font-black text-xs text-white">የከፈሉበትን SMS ደረሰኝ ያስገቡ</h4>
+                        <span class="text-[9px] text-yellow-300 font-bold bg-yellow-500/10 px-2 py-0.5 rounded-full border border-yellow-500/20">
+                            የተመረጠው፡ <b id="selectedMethodBadge">CBE</b>
                         </span>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2 p-1 bg-slate-950 rounded-xl border border-slate-800 text-xs font-bold">
-                        <button type="button" onclick="selectDepositMethod('CBE')" id="pill-cbe" class="py-1.5 rounded-lg gradient-blue text-white transition">
-                            CBE (ንግድ ባንክ)
-                        </button>
-                        <button type="button" onclick="selectDepositMethod('TELEBIRR')" id="pill-telebirr" class="py-1.5 rounded-lg text-slate-400 hover:text-white transition">
-                            Telebirr (ቴሌብር)
-                        </button>
-                    </div>
-
-                    <input id="depAmount" type="number" placeholder="ያስገቡት መጠን (ETB)" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-blue-500">
-                    <textarea id="depSms" rows="3" placeholder="ከባንክ ወይም ከቴሌብር የደረሶትን ሙሉ የ SMS ጽሁፍ እዚህ ጋር Paste ያድርጉ..." class="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-blue-500"></textarea>
+                    <input id="depAmount" type="number" placeholder="ያስገቡት የብር መጠን (ETB)" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-blue-500">
+                    <textarea id="depSms" rows="3" placeholder="ከባንክ ወይም ከቴሌብር የደረሶትን ሙሉ የ SMS ጽሁፍ እዚህ Paste ያድርጉ..." class="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-blue-500 leading-relaxed"></textarea>
                     
                     <button onclick="submitDeposit()" class="w-full gradient-blue text-white py-2.5 rounded-xl font-black text-xs shadow-lg shadow-blue-500/20 active:scale-95 transition">
-                        ማረጋገጫ ላክ
+                        ማረጋገጫ ላክ (Submit Deposit)
                     </button>
                 </div>
             </div>
 
-            <!-- VIEW B: WITHDRAW -->
+            <!-- VIEW B: WITHDRAW WITH 5% CALCULATION & 100 ETB MINIMUM -->
             <div id="walletWithdrawView" class="hidden glass-box p-3 rounded-2xl space-y-2.5 border border-blue-500/20">
-                <h4 class="font-black text-xs text-white flex items-center gap-1.5">
-                    <i class="fa-solid fa-money-bill-transfer text-orange-400"></i> ገንዘብ ማውጫ ቅጽ
-                </h4>
+                <div class="flex justify-between items-center">
+                    <h4 class="font-black text-xs text-white flex items-center gap-1.5">
+                        <i class="fa-solid fa-money-bill-transfer text-orange-400"></i> ገንዘብ ማውጫ ቅጽ
+                    </h4>
+                    <span class="text-[9px] text-slate-400">አነስተኛው፡ <b>100 ETB</b></span>
+                </div>
+
+                <!-- Contextual Security Badge -->
+                <div class="p-2 bg-blue-950/40 rounded-xl border border-blue-500/30 text-[10px] text-blue-200 flex items-center gap-1.5">
+                    <i class="fa-solid fa-lock text-yellow-400"></i>
+                    <span>ገንዘብ ለማውጣት ቢያንስ 1 ጊዜ ተቀማጭ ማድረግ ግዴታ ነው።</span>
+                </div>
+
                 <select id="withMethod" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200">
-                    <option value="CBE">CBE (ንግድ ባንክ)</option>
-                    <option value="TELEBIRR">Telebirr (ቴሌብር)</option>
+                    <option value="CBE">CBE (ንግድ ባንክ) - ኤጀንት Aymen</option>
+                    <option value="TELEBIRR">Telebirr (ቴሌብር) - ኤጀንት Nebyu</option>
                 </select>
-                <input id="withAmount" type="number" placeholder="የሚያወጡት መጠን (ዝቅተኛው 50 ETB)" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
+
+                <div>
+                    <input id="withAmount" oninput="calculateWithdrawFee()" type="number" placeholder="የሚያወጡት መጠን (Min 100 ETB)" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
+                    <!-- Real-time 5% Fee Calculation Display -->
+                    <div id="feeCalcBox" class="flex justify-between items-center text-[10px] px-1 mt-1 text-slate-400 hidden">
+                        <span>የ 5% ክፍያ፡ <b id="calcFeeText" class="text-orange-400">0.00 ETB</b></span>
+                        <span>የሚደርስዎት፡ <b id="calcNetText" class="text-emerald-400 font-bold">0.00 ETB</b></span>
+                    </div>
+                </div>
+
                 <input id="withAccount" type="text" placeholder="የአካውንት ወይም የስልክ ቁጥር" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
-                <input id="withName" type="text" placeholder="ሙሉ ስም" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
+                <input id="withName" type="text" placeholder="ሙሉ ስም (የአካውንቱ ባለቤት)" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
+                
                 <button onclick="submitWithdraw()" class="w-full bg-slate-800 hover:bg-slate-700 text-white py-2.5 rounded-xl font-black text-xs shadow-md transition">
-                    ገንዘብ አውጣ
+                    ገንዘብ አውጣ (Withdraw Now)
                 </button>
             </div>
+
+            <!-- RULES POPUP TRIGGER BUTTON (CLEAN UX) -->
+            <button onclick="toggleRulesModal()" class="w-full p-2.5 bg-slate-950 rounded-2xl border border-slate-800 flex justify-between items-center text-xs text-slate-300 hover:text-white transition">
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-book-open text-yellow-400"></i> የክፍያና ማውጣት 10 ደንቦች</span>
+                <i class="fa-solid fa-chevron-right text-[10px] text-slate-500"></i>
+            </button>
         </section>
 
         <!-- ================= TAB 3: LEADERBOARD ================= -->
@@ -306,13 +367,28 @@
             </div>
         </section>
 
-        <!-- ================= TAB 4: PROFILE & HISTORY ================= -->
+        <!-- ================= TAB 4: COMPLETE HISTORY (TRANSACTIONS + BINGO BETS) ================= -->
         <section id="tab-profile" class="hidden space-y-2.5">
-            <h3 class="font-black text-xs text-white px-1">የግብይት ታሪክ (Transaction History)</h3>
-            <div id="historyList" class="space-y-2"></div>
+            <div class="flex justify-between items-center px-1">
+                <h3 class="font-black text-xs text-white">የተሟላ የግብይትና ጨዋታ ታሪክ</h3>
+                <span class="text-[9px] text-blue-400 font-bold">ቀጥታ መዝገብ</span>
+            </div>
+
+            <!-- Sub-Toggles: Transactions vs Bingo Bets -->
+            <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-900 rounded-xl border border-slate-800 text-xs font-bold">
+                <button onclick="switchHistorySubTab('txs')" id="subBtn-txs" class="py-1 rounded-lg gradient-blue text-white transition">
+                    የገንዘብ ዝውውሮች
+                </button>
+                <button onclick="switchHistorySubTab('bets')" id="subBtn-bets" class="py-1 rounded-lg text-slate-400 hover:text-white transition">
+                    የቢንጎ ውርርዶች
+                </button>
+            </div>
+
+            <div id="historyListTxs" class="space-y-2"></div>
+            <div id="historyListBets" class="space-y-2 hidden"></div>
         </section>
 
-        <!-- ================= TAB 5: SETTINGS ================= -->
+        <!-- ================= TAB 5: SETTINGS & PROFILE ================= -->
         <section id="tab-settings" class="hidden space-y-3">
             <div class="glass-box p-4 rounded-3xl space-y-3 border border-blue-500/30">
                 <div class="flex items-center gap-3 pb-3 border-b border-slate-800">
@@ -396,6 +472,7 @@
                 </div>
             </div>
 
+            <!-- Official Channels -->
             <div class="glass-box p-3 rounded-2xl space-y-2 border border-slate-800">
                 <a href="https://t.me/DashBingo" target="_blank" class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800 hover:border-blue-500 transition">
                     <div class="flex items-center gap-2">
@@ -440,7 +517,7 @@
         </button>
     </nav>
 
-    <!-- TOAST ENGINE -->
+    <!-- FAST 1.5s MICRO-TOAST ENGINE -->
     <script>
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
@@ -457,21 +534,27 @@
                 icon = '<i class="fa-solid fa-circle-exclamation text-red-400"></i>';
             }
 
-            toast.className = `flex items-center gap-2 px-4 py-2.5 rounded-2xl border shadow-2xl text-xs font-bold pointer-events-auto transform transition duration-300 translate-y-[-10px] opacity-0 ${bgClass}`;
+            toast.className = `flex items-center gap-2 px-3 py-1.5 rounded-xl border shadow-xl text-[11px] font-bold pointer-events-auto transform transition-all duration-200 translate-y-[-8px] opacity-0 ${bgClass}`;
             toast.innerHTML = `${icon} <span>${message}</span>`;
             
             container.appendChild(toast);
 
             requestAnimationFrame(() => {
-                toast.classList.remove('translate-y-[-10px]', 'opacity-0');
+                toast.classList.remove('translate-y-[-8px]', 'opacity-0');
                 toast.classList.add('translate-y-0', 'opacity-100');
             });
 
+            // Fast 1.5s Dismissal
             setTimeout(() => {
                 toast.classList.remove('opacity-100');
-                toast.classList.add('opacity-0', 'translate-y-[-10px]');
-                setTimeout(() => toast.remove(), 300);
-            }, 3500);
+                toast.classList.add('opacity-0', 'translate-y-[-8px]');
+                setTimeout(() => toast.remove(), 200);
+            }, 1500);
+        }
+
+        function toggleRulesModal() {
+            const modal = document.getElementById('rulesModal');
+            modal.classList.toggle('hidden');
         }
     </script>
 
@@ -571,9 +654,8 @@
         }
     </script>
 
-    <!-- ================= CLIENT CORE ENGINE (DIRECT RENDER BACKEND URL) ================= -->
+    <!-- ================= CLIENT CORE ENGINE ================= -->
     <script>
-        // ⚡ ዋናው የ Render ሰርቨር አድራሻ (ከ GitHub Pages በቀጥታ እንዲነጋገር የሚያደርገው)
         const BACKEND_URL = "https://dashbingo.onrender.com";
 
         const tg = window.Telegram?.WebApp;
@@ -595,7 +677,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         const refPayload = urlParams.get('tgWebAppStartParam') || urlParams.get('startapp') || urlParams.get('ref') || '';
 
-        // ⚡ Socket.io በቀጥታ ወደ Render እንዲገናኝ ማድረግ
         const socket = io(BACKEND_URL, {
             transports: ['websocket', 'polling']
         });
@@ -604,6 +685,10 @@
         let currentCardViewIndex = 0;
         let selectedDepMethod = 'CBE';
         let currentCalledNumbers = [];
+        let activeRoundNumber = 1001;
+
+        // Local bet history storage for complete user transparency
+        let myBetHistory = JSON.parse(localStorage.getItem(`bets_${user.id}`) || '[]');
 
         async function syncUser() {
             try {
@@ -692,18 +777,38 @@
             }
         }
 
+        // Clean Agent Cashier Selection
         function selectDepositMethod(method) {
             playTouchBeep();
             selectedDepMethod = method;
-            if (method === 'CBE') {
-                document.getElementById('pill-cbe').className = "py-1.5 rounded-lg gradient-blue text-white transition";
-                document.getElementById('pill-telebirr').className = "py-1.5 rounded-lg text-slate-400 hover:text-white transition";
+
+            document.getElementById('agentCard-CBE').className = (method === 'CBE')
+                ? "p-2.5 bg-slate-950 rounded-xl border-2 border-blue-500 flex justify-between items-center cursor-pointer transition shadow-md"
+                : "p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center cursor-pointer transition";
+
+            document.getElementById('agentCard-TELEBIRR').className = (method === 'TELEBIRR')
+                ? "p-2.5 bg-slate-950 rounded-xl border-2 border-blue-500 flex justify-between items-center cursor-pointer transition shadow-md"
+                : "p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center cursor-pointer transition";
+
+            document.getElementById('selectedMethodBadge').innerText = method;
+        }
+
+        // 5% Real-Time Withdrawal Fee Calculation
+        function calculateWithdrawFee() {
+            const inputVal = parseFloat(document.getElementById('withAmount').value);
+            const feeBox = document.getElementById('feeCalcBox');
+            if (!isNaN(inputVal) && inputVal >= 100) {
+                const fee = inputVal * 0.05;
+                const net = inputVal - fee;
+                document.getElementById('calcFeeText').innerText = `${fee.toFixed(2)} ETB`;
+                document.getElementById('calcNetText').innerText = `${net.toFixed(2)} ETB`;
+                feeBox.classList.remove('hidden');
             } else {
-                document.getElementById('pill-telebirr').className = "py-1.5 rounded-lg gradient-blue text-white transition";
-                document.getElementById('pill-cbe').className = "py-1.5 rounded-lg text-slate-400 hover:text-white transition";
+                feeBox.classList.add('hidden');
             }
         }
 
+        // Render 999 Cards
         const cardGrid = document.getElementById('cardGrid');
         for (let i = 1; i <= 999; i++) {
             const btn = document.createElement('button');
@@ -775,7 +880,8 @@
         socket.on('game_init', (data) => {
             document.getElementById('poolPrize').innerHTML = `<span class="text-yellow-400">${data.totalPrize.toFixed(2)}</span> <span class="text-[10px] text-slate-300">ETB</span>`;
             document.getElementById('takenCardsCount').innerText = data.totalCards || 0;
-            document.getElementById('roundNumberDisplay').innerText = data.roundNumber || 1001;
+            activeRoundNumber = data.roundNumber || 1001;
+            document.getElementById('roundNumberDisplay').innerText = activeRoundNumber;
 
             if (data.selectedCards && Array.isArray(data.selectedCards)) {
                 data.selectedCards.forEach(cIdx => {
@@ -842,9 +948,21 @@
             document.getElementById('takenCardsCount').innerText = data.totalCards;
         });
 
+        // 🎟 Multi-Card Purchase with Bet History Registration
         socket.on('my_card', (data) => {
             myCards.push({ cardIndex: data.cardIndex, numbers: data.numbers });
             
+            // Save bet to history
+            myBetHistory.unshift({
+                round: activeRoundNumber,
+                cardIndex: data.cardIndex,
+                stake: 10,
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                status: 'ተጫውተዋል'
+            });
+            if (myBetHistory.length > 30) myBetHistory.pop();
+            localStorage.setItem(`bets_${user.id}`, JSON.stringify(myBetHistory));
+
             const btn = document.getElementById(`btn-card-${data.cardIndex}`);
             if (btn) {
                 btn.className = "h-8 rounded-xl text-xs font-black bg-emerald-600 text-white border-2 border-emerald-300 shadow-md shadow-emerald-500/40 flex items-center justify-center";
@@ -982,6 +1100,7 @@
             renderCurrentActiveCard();
         });
 
+        // CELEBRATION MODAL & CONFETTI
         socket.on('round_won', (data) => {
             bgPlayingAudio.pause();
 
@@ -1033,6 +1152,7 @@
             }
         });
 
+        // 📥 Submit Deposit directly to Database for Audit
         async function submitDeposit() {
             playTouchBeep();
             const amount = document.getElementById('depAmount').value;
@@ -1062,6 +1182,7 @@
             }
         }
 
+        // 📤 Submit Withdraw with 5% Fee deduction
         async function submitWithdraw() {
             playTouchBeep();
             const method = document.getElementById('withMethod').value;
@@ -1069,7 +1190,7 @@
             const accountNumber = document.getElementById('withAccount').value;
             const accountName = document.getElementById('withName').value;
 
-            if (!amount || !accountNumber) return showToast("መረጃዎችን በትክክል ይሙሉ!", "error");
+            if (!amount || !accountNumber || !accountName) return showToast("መረጃዎችን በትክክል ይሙሉ!", "error");
 
             const res = await fetch(`${BACKEND_URL}/api/withdraw`, {
                 method: 'POST',
@@ -1079,6 +1200,10 @@
             const data = await res.json();
             if (data.success) {
                 showToast(data.message, "success");
+                document.getElementById('withAmount').value = '';
+                document.getElementById('withAccount').value = '';
+                document.getElementById('withName').value = '';
+                document.getElementById('feeCalcBox').classList.add('hidden');
                 syncUser();
             } else {
                 showToast(data.error || "ማውጣት አልተቻለም", "error");
@@ -1135,10 +1260,28 @@
             `).join('');
         }
 
+        // ================= COMPLETE HISTORY LOGIC ================= //
+        function switchHistorySubTab(tab) {
+            playTouchBeep();
+            if (tab === 'txs') {
+                document.getElementById('historyListTxs').classList.remove('hidden');
+                document.getElementById('historyListBets').classList.add('hidden');
+                document.getElementById('subBtn-txs').className = "py-1 rounded-lg gradient-blue text-white transition";
+                document.getElementById('subBtn-bets').className = "py-1 rounded-lg text-slate-400 hover:text-white transition";
+            } else {
+                document.getElementById('historyListTxs').classList.add('hidden');
+                document.getElementById('historyListBets').classList.remove('hidden');
+                document.getElementById('subBtn-bets').className = "py-1 rounded-lg gradient-blue text-white transition";
+                document.getElementById('subBtn-txs').className = "py-1 rounded-lg text-slate-400 hover:text-white transition";
+                renderBetHistory();
+            }
+        }
+
         async function loadHistory() {
+            // 1. Load Financial Transactions
             const res = await fetch(`${BACKEND_URL}/api/history/${user.id}`);
             const data = await res.json();
-            const list = document.getElementById('historyList');
+            const list = document.getElementById('historyListTxs');
             list.innerHTML = data.map(t => `
                 <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
                     <div>
@@ -1150,7 +1293,23 @@
                         <span class="text-[9px] px-2 py-0.5 rounded-full font-bold ${t.status === 'APPROVED' ? 'bg-green-500/20 text-green-400' : t.status === 'REJECTED' ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400'}">${t.status}</span>
                     </div>
                 </div>
-            `).join('');
+            `).join('') || '<p class="text-xs text-slate-500 text-center py-4">ምንም አይነት የገንዘብ ዝውውር የለም</p>';
+        }
+
+        function renderBetHistory() {
+            const list = document.getElementById('historyListBets');
+            list.innerHTML = myBetHistory.map(b => `
+                <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                    <div>
+                        <span class="font-black text-blue-400">ዙር #${b.round} (ካርድ #${b.cardIndex})</span>
+                        <p class="text-[9px] text-slate-500">ሰዓት: ${b.time}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-black text-white">${b.stake} ETB</p>
+                        <span class="text-[9px] px-2 py-0.5 rounded-full font-bold bg-blue-500/20 text-blue-300">${b.status}</span>
+                    </div>
+                </div>
+            `).join('') || '<p class="text-xs text-slate-500 text-center py-4">ምንም አይነት የጨዋታ ውርርድ የለም</p>';
         }
 
         function copyToClipboard(txt) {
