@@ -246,7 +246,7 @@
                     </div>
 
                     <!-- Agent 1: Aymen (CBE) -->
-                    <div onclick="selectDepositMethod('CBE')" id="agentCard-CBE" class="p-2.5 bg-slate-950 rounded-xl border-2 border-blue-500 flex justify-between items-center cursor-pointer transition">
+                    <div onclick="selectDepositMethod('CBE')" id="agentCard-CBE" class="p-2.5 bg-slate-950 rounded-xl border-2 border-blue-500 flex justify-between items-center cursor-pointer transition shadow-md">
                         <div class="flex items-center gap-2.5">
                             <img src="https://i.postimg.cc/Hk1pN2VS/20260805-174301.png" alt="CBE" class="w-8 h-8 rounded-lg object-contain">
                             <div>
@@ -259,9 +259,15 @@
                                 <p class="text-xs font-mono font-bold text-blue-400">1000562339427</p>
                             </div>
                         </div>
-                        <button onclick="copyToClipboard('1000562339427'); event.stopPropagation();" class="text-xs gradient-blue text-white font-bold px-3 py-1.5 rounded-lg active:scale-95 transition">
-                            ኮፒ
-                        </button>
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="copyToClipboard('1000562339427'); event.stopPropagation();" class="text-xs gradient-blue text-white font-bold px-2.5 py-1.5 rounded-lg active:scale-95 transition">
+                                ኮፒ
+                            </button>
+                            <!-- 👉 የአይመን የቴሌግራም ሊንክ እዚህ ጋር ተጨምሯል -->
+                            <a href="https://t.me/Dashagent1" target="_blank" onclick="event.stopPropagation();" class="text-xs bg-blue-600 hover:bg-blue-500 text-white font-bold px-2.5 py-1.5 rounded-lg active:scale-95 transition flex items-center gap-1">
+                                <i class="fa-brands fa-telegram"></i> አናግር
+                            </a>
+                        </div>
                     </div>
 
                     <!-- Agent 2: Nebyu (Telebirr) -->
@@ -278,11 +284,16 @@
                                 <p class="text-xs font-mono font-bold text-blue-400">0968260447</p>
                             </div>
                         </div>
-                        <button onclick="copyToClipboard('0968260447'); event.stopPropagation();" class="text-xs gradient-blue text-white font-bold px-3 py-1.5 rounded-lg active:scale-95 transition">
-                            ኮፒ
-                        </button>
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="copyToClipboard('0968260447'); event.stopPropagation();" class="text-xs gradient-blue text-white font-bold px-2.5 py-1.5 rounded-lg active:scale-95 transition">
+                                ኮፒ
+                            </button>
+                            <!-- 👉 የነብዩ የቴሌግራም ሊንክ እዚህ ጋር ተጨምሯል -->
+                            <a href="https://t.me/Dashagent1" target="_blank" onclick="event.stopPropagation();" class="text-xs bg-blue-600 hover:bg-blue-500 text-white font-bold px-2.5 py-1.5 rounded-lg active:scale-95 transition flex items-center gap-1">
+                                <i class="fa-brands fa-telegram"></i> አናግር
+                            </a>
+                        </div>
                     </div>
-                </div>
 
                 <!-- Clean Deposit Form for Database & Audit -->
                 <div class="glass-box p-3 rounded-2xl space-y-2 border border-blue-500/20">
