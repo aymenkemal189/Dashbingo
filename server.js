@@ -75,8 +75,8 @@ async function sendTelegramNotification(telegramId, message) {
 
 // ================= 🟢🔴 AGENT STATUS ENGINE ================= //
 let agentStatus = {
-    cbe: { name: "Aymen Kemal", handle: "@AymenKemal", account: "1000562339427", isOnline: true },
-    telebirr: { name: "Nebyu", handle: "@Nebyu_Dash", account: "0968260447", isOnline: true }
+    cbe: { name: "Aymen Kemal", handle: "@Dashagent1", account: "1000562339427", isOnline: true },
+    telebirr: { name: "Nebyu", handle: "@Dashagent1", account: "0968260447", isOnline: true }
 };
 
 // የኤጀንቶች የቀጥታ ሁኔታ መረጃ ለአፑ
