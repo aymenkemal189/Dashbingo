@@ -10,11 +10,11 @@
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
-        body { background-color: #07090e; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+        body { background-color: #060911; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
         .gradient-blue { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #38bdf8 100%); }
         .gradient-header { background: linear-gradient(135deg, #090d16 0%, #1e40af 60%, #3b82f6 100%); }
         .glass-box { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(59, 130, 246, 0.25); }
-        .gold-btn { background: #b38b2d; background: linear-gradient(135deg, #d4af37 0%, #b38b2d 100%); color: #000; }
+        .gold-btn { background: linear-gradient(135deg, #d4af37 0%, #b38b2d 100%); color: #000; font-weight: 900; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
@@ -224,7 +224,7 @@
             </div>
         </section>
 
-        <!-- ================= TAB 2: WALLET (3-STEP CHECKOUT MATCHING YOUR SCREENSHOTS) ================= -->
+        <!-- ================= TAB 2: WALLET (3-STEP CHECKOUT) ================= -->
         <section id="tab-wallet" class="hidden space-y-3">
             
             <div class="grid grid-cols-2 gap-2 p-1 bg-slate-900 rounded-2xl border border-slate-800">
@@ -236,13 +236,12 @@
                 </button>
             </div>
 
-            <!-- ================= VIEW A: 3-STEP DEPOSIT CHECKOUT FLOW ================= -->
+            <!-- VIEW A: 3-STEP CHECKOUT DEPOSIT -->
             <div id="walletDepositView" class="space-y-3">
 
-                <!-- ── SCREEN 1: DEPOSIT MONEY (MATCHING SCREENSHOT 1) ── -->
+                <!-- ── SCREEN 1: DEPOSIT MONEY ── -->
                 <div id="checkoutStep1" class="space-y-3">
                     <div class="glass-box p-4 rounded-3xl space-y-3 border border-slate-800">
-                        <!-- Top Method Type Pill -->
                         <div class="grid grid-cols-2 gap-2 p-1 bg-slate-950 rounded-2xl border border-slate-800 text-xs font-bold text-center">
                             <div class="py-2 rounded-xl bg-slate-900 text-white flex items-center justify-center gap-1.5 border border-slate-700">
                                 <span>Mobile money</span>
@@ -253,47 +252,24 @@
                             </div>
                         </div>
 
-                        <!-- Tutorial Banner -->
-                        <div class="p-3 bg-amber-950/20 rounded-2xl border border-amber-500/30 flex items-center justify-between text-xs text-amber-200">
-                            <div class="flex items-center gap-2">
-                                <span class="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 text-[10px]"><i class="fa-solid fa-play"></i></span>
-                                <span class="font-bold">Watch the deposit tutorial</span>
-                            </div>
-                            <span class="text-slate-500 text-xs"><i class="fa-solid fa-xmark"></i></span>
-                        </div>
-
-                        <!-- Payment Method Selector -->
                         <div class="space-y-2">
                             <span class="text-[11px] font-bold text-slate-400">Select Payment Method</span>
-                            
-                            <!-- CBE Option (Disabled notice) -->
-                            <div class="p-3 bg-slate-950/50 rounded-2xl border border-slate-800/80 flex items-center justify-between text-xs opacity-40 cursor-not-allowed">
-                                <div class="flex items-center gap-2.5">
-                                    <img src="https://i.postimg.cc/Hk1pN2VS/20260805-174301.png" class="w-5 h-5 object-contain">
-                                    <span class="font-bold text-slate-300">Commercial Bank of Ethiopia</span>
-                                </div>
-                                <span class="text-[9px] text-slate-500 font-bold">Unavailable</span>
-                            </div>
-
-                            <!-- Telebirr Option (Active Selected) -->
                             <div class="p-3 bg-slate-950 rounded-2xl border-2 border-emerald-500 flex items-center justify-between text-xs shadow-md">
                                 <div class="flex items-center gap-2.5">
                                     <img src="https://i.postimg.cc/1zH5wqRj/20260805-174415.png" class="w-5 h-5 object-contain">
-                                    <span class="font-black text-white">Telebirr</span>
+                                    <span class="font-black text-white">Telebirr (Instant Verify)</span>
                                 </div>
                                 <span class="text-emerald-400 text-sm font-black"><i class="fa-solid fa-check"></i></span>
                             </div>
                         </div>
 
-                        <!-- Amount Section (Required) -->
                         <div class="space-y-2 pt-1">
                             <div class="flex justify-between items-center">
                                 <span class="text-[11px] font-black text-slate-300">Amount (ETB) <span class="text-red-500">*</span></span>
                                 <span class="text-[10px] text-slate-400">(50 - 10000 ብር)</span>
                             </div>
-                            <input id="depositStep1Amount" oninput="validateStep1Amount()" type="number" min="50" max="10000" placeholder="Enter Amount" class="w-full text-sm font-black p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-yellow-300 outline-none focus:border-yellow-500">
+                            <input id="depositStep1Amount" oninput="validateStep1Amount()" type="number" min="50" max="10000" placeholder="የብር መጠን ይጻፉ (ምሳሌ: 100)" class="w-full text-sm font-black p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-yellow-300 outline-none focus:border-yellow-500">
                             
-                            <!-- Quick Chips (Matching Screenshot 1) -->
                             <div class="grid grid-cols-6 gap-1 text-[11px] font-black pt-1">
                                 <button type="button" onclick="selectQuickChip(100)" class="quick-chip py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-yellow-400 transition">100</button>
                                 <button type="button" onclick="selectQuickChip(300)" class="quick-chip py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-yellow-400 transition">300</button>
@@ -304,18 +280,15 @@
                             </div>
                         </div>
 
-                        <!-- Primary CTA Button (Screenshot 1: Yellow "Deposit") -->
                         <button onclick="goToStep2()" id="btnDepositStep1" class="w-full gold-btn py-3.5 rounded-2xl font-black text-sm shadow-xl active:scale-95 transition mt-2">
                             Deposit
                         </button>
                     </div>
                 </div>
 
-                <!-- ── SCREEN 2: PAYMENT DETAILS (MATCHING SCREENSHOT 2) ── -->
+                <!-- ── SCREEN 2: PAYMENT DETAILS ── -->
                 <div id="checkoutStep2" class="hidden space-y-3">
                     <div class="glass-box p-4 rounded-3xl space-y-3.5 border border-slate-800">
-                        
-                        <!-- Top Nav inside checkout -->
                         <div class="flex items-center justify-between pb-2 border-b border-slate-800">
                             <button onclick="goToStep1()" class="text-slate-400 text-xs font-bold flex items-center gap-1 hover:text-white">
                                 <i class="fa-solid fa-arrow-left"></i> Back
@@ -326,13 +299,11 @@
                             </button>
                         </div>
 
-                        <!-- Important Warning Notice -->
                         <div class="p-3 bg-amber-950/30 rounded-2xl border border-amber-500/40 text-[10px] text-amber-200 leading-relaxed flex items-start gap-2">
                             <i class="fa-solid fa-triangle-exclamation text-amber-400 text-sm mt-0.5"></i>
                             <span><b>IMPORTANT:</b> Send payment only to the account number shown below. Sending to a different account will result in loss of funds.</span>
                         </div>
 
-                        <!-- Amount & 10-Minute Countdown Box -->
                         <div class="p-3 bg-slate-950 rounded-2xl border border-slate-800 flex justify-between items-center">
                             <div>
                                 <span class="text-[9px] text-slate-400 uppercase font-bold">Amount to Pay</span>
@@ -347,13 +318,11 @@
                             </div>
                         </div>
 
-                        <!-- Live Telebirr QR Code Scan Area -->
                         <div class="bg-black p-4 rounded-2xl border border-slate-800 flex flex-col items-center justify-center space-y-2">
                             <img id="checkoutQrImg" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=0996910607&bgcolor=000000&color=ffffff" alt="Telebirr QR" class="w-36 h-36 rounded-xl border border-slate-800 p-1">
                             <span class="text-[9px] text-slate-500 font-bold">Scan to pay with Telebirr App</span>
                         </div>
 
-                        <!-- Payment Details List (Matching Screenshot 2) -->
                         <div class="space-y-2 text-xs">
                             <div class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800">
                                 <span class="text-slate-400">Account Number</span>
@@ -379,7 +348,6 @@
                             </div>
                         </div>
 
-                        <!-- Action Buttons (Screenshot 2: Yellow "I've Paid") -->
                         <button onclick="goToStep3()" class="w-full gold-btn py-3.5 rounded-2xl font-black text-sm shadow-xl active:scale-95 transition flex items-center justify-center gap-2">
                             <i class="fa-solid fa-check text-xs"></i> I've Paid
                         </button>
@@ -393,11 +361,9 @@
                     </div>
                 </div>
 
-                <!-- ── SCREEN 3: VERIFY PAYMENT (MATCHING SCREENSHOT 3) ── -->
+                <!-- ── SCREEN 3: VERIFY PAYMENT ── -->
                 <div id="checkoutStep3" class="hidden space-y-3">
                     <div class="glass-box p-4 rounded-3xl space-y-3.5 border border-slate-800">
-                        
-                        <!-- Top Nav -->
                         <div class="flex items-center justify-between pb-2 border-b border-slate-800">
                             <button onclick="goToStep2()" class="text-slate-400 text-xs font-bold flex items-center gap-1 hover:text-white">
                                 <i class="fa-solid fa-arrow-left"></i> Back
@@ -408,7 +374,6 @@
                             </button>
                         </div>
 
-                        <!-- Deposit Amount Banner (Screenshot 3) -->
                         <div class="p-3 bg-slate-950 rounded-2xl border border-slate-800 flex justify-between items-center">
                             <div>
                                 <span class="text-[9px] text-slate-400 uppercase font-bold">Deposit Amount</span>
@@ -417,19 +382,16 @@
                             <img src="https://i.postimg.cc/1zH5wqRj/20260805-174415.png" class="w-6 h-6 object-contain">
                         </div>
 
-                        <!-- SMS or Ref Input Field (Screenshot 3) -->
                         <div class="space-y-1.5">
                             <label class="text-[11px] font-black text-slate-300">Telebirr Transaction ID / Reference / SMS</label>
                             <textarea id="checkoutVerifyInput" oninput="autoExtractRefAndAmount()" rows="5" placeholder="Enter telebirr transaction ID, SMS code, or receipt reference" class="w-full text-xs p-3 rounded-2xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-yellow-500 font-mono leading-relaxed"></textarea>
                             <p class="text-[10px] text-slate-500 italic">Tip: Paste the entire SMS from your payment</p>
                         </div>
 
-                        <!-- Extracted Ref Indicator Badge -->
                         <div id="checkoutExtractedBadge" class="hidden text-[10px] text-emerald-400 font-bold bg-emerald-950/60 p-2.5 rounded-xl border border-emerald-500/40">
                             ✅ የተገኘው የግብይት ቁጥር (Ref)፦ <span id="checkoutExtractedText" class="font-mono text-white"></span>
                         </div>
 
-                        <!-- Submit CTA Button (Screenshot 3: Yellow "Submit Verification") -->
                         <button onclick="submitFinalVerification()" id="btnSubmitVerification" class="w-full gold-btn py-3.5 rounded-2xl font-black text-sm shadow-xl active:scale-95 transition flex items-center justify-center gap-2 mt-2">
                             <i class="fa-solid fa-check text-xs"></i> Submit Verification
                         </button>
@@ -437,7 +399,7 @@
                 </div>
             </div>
 
-            <!-- ================= VIEW B: WITHDRAWAL SECTION ================= -->
+            <!-- ================= VIEW B: WITHDRAWAL ================= -->
             <div id="walletWithdrawView" class="hidden glass-box p-4 rounded-3xl space-y-3 border border-slate-800">
                 <div class="flex justify-between items-center pb-2 border-b border-slate-800">
                     <h4 class="font-black text-xs text-white flex items-center gap-1.5">
@@ -446,7 +408,6 @@
                     <span class="text-[9px] text-slate-400 font-bold">Min: <b>100 ETB</b></span>
                 </div>
 
-                <!-- First Deposit Requirement Lock Notice -->
                 <div id="withdrawLockNotice" class="p-2.5 bg-blue-950/40 rounded-xl border border-blue-500/30 text-[10px] text-blue-200 flex items-center gap-2">
                     <i class="fa-solid fa-lock text-yellow-400 text-sm"></i>
                     <span>ገንዘብ ለማውጣት ቢያንስ 1 ጊዜ <b>50 ETB</b> ተቀማጭ ማድረግ ግዴታ ነው። ማውጣት የሚቻለው ከ <b>Real Wallet</b> ብቻ ነው።</span>
@@ -460,14 +421,13 @@
                     </div>
                 </div>
 
-                <input id="withAccount" type="text" placeholder="የቴሌብር ስልክ ቁጥር (09...)" class="w-full text-xs font-bold p-3 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
-                <input id="withName" type="text" placeholder="ሙሉ ስም (በቴሌብር የተመዘገበ)" class="w-full text-xs font-bold p-3 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
+                <input id="withAccount" type="text" placeholder="የቴሌብር ስልክ ቁጥር (09...)" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
+                <input id="withName" type="text" placeholder="ሙሉ ስም (በቴሌብር የተመዘገበ)" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
                 
                 <button onclick="submitWithdraw()" id="btnSubmitWithdraw" class="w-full bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-xl font-black text-xs shadow-md transition">
                     ገንዘብ አውጣ (Withdraw to Telebirr)
                 </button>
 
-                <!-- Agent Contact Banner on Withdrawal -->
                 <div class="p-3 bg-blue-950/40 rounded-2xl border border-blue-500/30 flex justify-between items-center mt-2">
                     <div>
                         <span class="text-xs font-black text-white flex items-center gap-1">
@@ -832,7 +792,7 @@
         let userData = { real_balance: 0, bonus_balance: 0, total_deposited: 0 };
         let myBetHistory = JSON.parse(localStorage.getItem(`bets_${user.id}`) || '[]');
 
-        // CHECKOUT STATE (MATCHING SCREENSHOTS)
+        // CHECKOUT FLOW STATE
         let checkoutAmount = 100;
         let checkoutTimerSeconds = 600; // 10 minutes
         let checkoutTimerInterval = null;
@@ -948,7 +908,7 @@
             }
         }
 
-        // ================= ⚡ THE 3-STEP CHECKOUT ENGINE (EXACT SCREENSHOTS) ================= //
+        // ================= ⚡ THE 3-STEP CHECKOUT ENGINE ================= //
 
         function selectQuickChip(amount) {
             playTouchBeep();
@@ -966,7 +926,6 @@
             checkoutAmount = !isNaN(val) ? val : 0;
         }
 
-        // STEP 1 -> STEP 2
         function goToStep2() {
             playTouchBeep();
             validateStep1Amount();
@@ -977,7 +936,6 @@
             document.getElementById('checkoutDisplayAmount').innerText = `${checkoutAmount} ETB`;
             document.getElementById('verifyDisplayAmount').innerText = `${checkoutAmount} ETB`;
 
-            // Start 10-Minute Expiration Timer
             startCheckoutTimer();
 
             document.getElementById('checkoutStep1').classList.add('hidden');
@@ -985,7 +943,6 @@
             document.getElementById('checkoutStep3').classList.add('hidden');
         }
 
-        // STEP 2 -> STEP 1
         function goToStep1() {
             playTouchBeep();
             stopCheckoutTimer();
@@ -994,7 +951,6 @@
             document.getElementById('checkoutStep3').classList.add('hidden');
         }
 
-        // STEP 2 -> STEP 3 ("I've Paid")
         function goToStep3() {
             playTouchBeep();
             document.getElementById('checkoutStep1').classList.add('hidden');
@@ -1053,7 +1009,6 @@
                 return;
             }
 
-            // Extract Ref (DJ...)
             const refMatch = val.match(/(?:transaction\s*(?:number|no|id)\s*(?:is)?[\s:]*|DJ)([A-Z0-9]{8,14})/i) || val.match(/\b(DJ[A-Z0-9]{8,12})\b/i);
             if (refMatch) {
                 textEl.innerText = refMatch[1].toUpperCase();
@@ -1066,7 +1021,7 @@
             }
         }
 
-        // ⚡ FINAL SUBMIT VERIFICATION (FLOW A TO RENDER BACKEND -> VERIFI)
+        // ⚡ SUBMIT VERIFICATION CALLING RENDER BACKEND -> VERIFI NODE MICROSERVICE
         async function submitFinalVerification() {
             playTouchBeep();
             const rawInput = document.getElementById('checkoutVerifyInput').value.trim();
@@ -1081,7 +1036,7 @@
 
             const btn = document.getElementById('btnSubmitVerification');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> በቴሌብር በማረጋገጥ ላይ...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> በማረጋገጥ ላይ...';
 
             try {
                 const res = await fetch(`${BACKEND_URL}/api/deposit/telebirr-verify`, {
@@ -1112,7 +1067,6 @@
             }
         }
 
-        // Withdrawal calculation
         function calculateWithdrawFee() {
             const inputVal = parseFloat(document.getElementById('withAmount').value);
             const feeBox = document.getElementById('feeCalcBox');
@@ -1127,7 +1081,6 @@
             }
         }
 
-        // Submit Withdrawal
         async function submitWithdraw() {
             playTouchBeep();
             const amount = parseFloat(document.getElementById('withAmount').value);
@@ -1173,7 +1126,6 @@
             }
         }
 
-        // Promo
         async function redeemPromo() {
             playTouchBeep();
             const code = document.getElementById('promoInput').value;
@@ -1194,7 +1146,7 @@
             }
         }
 
-        // Cards 1 - 999 Render
+        // Cards 1 to 999
         const cardGrid = document.getElementById('cardGrid');
         for (let i = 1; i <= 999; i++) {
             const btn = document.createElement('button');
@@ -1484,7 +1436,6 @@
             renderCurrentActiveCard();
         });
 
-        // Celebration
         socket.on('round_won', (data) => {
             bgPlayingAudio.pause();
 
@@ -1536,7 +1487,7 @@
             }
         });
 
-        // Safe Loaders
+        // ================= 🏆 SAFE LEADERBOARD LOADERS ================= //
         async function loadWeeklyTop() {
             const list = document.getElementById('weeklyTopList');
             if (!list) return;
@@ -1585,6 +1536,7 @@
             }
         }
 
+        // ================= 📜 SAFE HISTORY LOADERS ================= //
         function switchHistorySubTab(tab) {
             playTouchBeep();
             if (tab === 'txs') {
