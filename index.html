@@ -999,6 +999,7 @@
         }
 
         // 🔍 Smart Auto Extraction in Step 3
+        // 🔍 Smart Auto Extraction (DJ ተቆርጦ እንዳይቀር የተስተካከለ)
         function autoExtractRefAndAmount() {
             const val = document.getElementById('checkoutVerifyInput').value.trim();
             const badge = document.getElementById('checkoutExtractedBadge');
@@ -1009,19 +1010,26 @@
                 return;
             }
 
-            const refMatch = val.match(/(?:transaction\s*(?:number|no|id)\s*(?:is)?[\s:]*|DJ)([A-Z0-9]{8,14})/i) || val.match(/\b(DJ[A-Z0-9]{8,12})\b/i);
-            if (refMatch) {
-                textEl.innerText = refMatch[1].toUpperCase();
-                badge.classList.remove('hidden');
-            } else if (/^[A-Z0-9]{8,14}$/i.test(val)) {
-                textEl.innerText = val.toUpperCase();
+            // 1. DJ ጨምሮ ሙሉውን 10-12 ፊደል ማውጣት
+            const djMatch = val.match(/(DJ[A-Z0-9]{8,12})/i);
+            if (djMatch) {
+                textEl.innerText = djMatch[1].toUpperCase();
                 badge.classList.remove('hidden');
             } else {
-                badge.classList.add('hidden');
+                const genericMatch = val.match(/(?:የሂሳብ\s*እንቅስቃሴ\s*ቁጥርዎ|transaction\s*(?:number|no|id|ref)?)\s*[:፡]?\s*([A-Z0-9]{8,14})/i);
+                if (genericMatch) {
+                    textEl.innerText = genericMatch[1].toUpperCase();
+                    badge.classList.remove('hidden');
+                } else if (/^[A-Z0-9]{8,14}$/i.test(val)) {
+                    textEl.innerText = val.toUpperCase();
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
             }
         }
 
-        // ⚡ SUBMIT VERIFICATION CALLING RENDER BACKEND -> VERIFI NODE MICROSERVICE
+        // ⚡ SUBMIT VERIFICATION CALLING RENDER BACKEND -> VERIFI
         async function submitFinalVerification() {
             playTouchBeep();
             const rawInput = document.getElementById('checkoutVerifyInput').value.trim();
@@ -1034,6 +1042,13 @@
                 return showToast("የተሳሳተ መጠን! እባክዎ እንደገና ይሞክሩ።", "error");
             }
 
+            // ⚡ ንጹህ DJ ያለበትን Ref ከባጁ ማውጣት
+            const textEl = document.getElementById('checkoutExtractedText');
+            const badge = document.getElementById('checkoutExtractedBadge');
+            const cleanRef = (textEl && badge && !badge.classList.contains('hidden')) 
+                ? textEl.innerText.trim() 
+                : rawInput;
+
             const btn = document.getElementById('btnSubmitVerification');
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> በማረጋገጥ ላይ...';
@@ -1044,7 +1059,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         telegramId: user.id,
-                        rawInput: rawInput,
+                        rawInput: cleanRef, // ⚡ ንጹሁ DJ ያለበት Ref ይላካል
                         typedAmount: checkoutAmount
                     })
                 });
@@ -1066,6 +1081,7 @@
                 btn.innerHTML = '<i class="fa-solid fa-check text-xs"></i> Submit Verification';
             }
         }
+        
 
         function calculateWithdrawFee() {
             const inputVal = parseFloat(document.getElementById('withAmount').value);
