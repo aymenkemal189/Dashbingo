@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="am" class="dark">
 <head>
@@ -224,7 +226,7 @@
             </div>
         </section>
 
-        <!-- ================= TAB 2: WALLET (3-STEP CHECKOUT MATCHING YOUR SCREENSHOTS) ================= -->
+        <!-- ================= TAB 2: WALLET (3-STEP CHECKOUT) ================= -->
         <section id="tab-wallet" class="hidden space-y-3">
             
             <div class="grid grid-cols-2 gap-2 p-1 bg-slate-900 rounded-2xl border border-slate-800">
@@ -239,10 +241,9 @@
             <!-- ================= VIEW A: 3-STEP DEPOSIT CHECKOUT FLOW ================= -->
             <div id="walletDepositView" class="space-y-3">
 
-                <!-- ── SCREEN 1: DEPOSIT MONEY (MATCHING SCREENSHOT 1) ── -->
+                <!-- ── SCREEN 1: DEPOSIT MONEY ── -->
                 <div id="checkoutStep1" class="space-y-3">
                     <div class="glass-box p-4 rounded-3xl space-y-3 border border-slate-800">
-                        <!-- Top Method Type Pill -->
                         <div class="grid grid-cols-2 gap-2 p-1 bg-slate-950 rounded-2xl border border-slate-800 text-xs font-bold text-center">
                             <div class="py-2 rounded-xl bg-slate-900 text-white flex items-center justify-center gap-1.5 border border-slate-700">
                                 <span>Mobile money</span>
@@ -266,7 +267,6 @@
                         <div class="space-y-2">
                             <span class="text-[11px] font-bold text-slate-400">Select Payment Method</span>
                             
-                            <!-- CBE Option (Disabled notice) -->
                             <div class="p-3 bg-slate-950/50 rounded-2xl border border-slate-800/80 flex items-center justify-between text-xs opacity-40 cursor-not-allowed">
                                 <div class="flex items-center gap-2.5">
                                     <img src="https://i.postimg.cc/Hk1pN2VS/20260805-174301.png" class="w-5 h-5 object-contain">
@@ -275,7 +275,6 @@
                                 <span class="text-[9px] text-slate-500 font-bold">Unavailable</span>
                             </div>
 
-                            <!-- Telebirr Option (Active Selected) -->
                             <div class="p-3 bg-slate-950 rounded-2xl border-2 border-emerald-500 flex items-center justify-between text-xs shadow-md">
                                 <div class="flex items-center gap-2.5">
                                     <img src="https://i.postimg.cc/1zH5wqRj/20260805-174415.png" class="w-5 h-5 object-contain">
@@ -285,7 +284,7 @@
                             </div>
                         </div>
 
-                        <!-- Amount Section (Required) -->
+                        <!-- Amount Section -->
                         <div class="space-y-2 pt-1">
                             <div class="flex justify-between items-center">
                                 <span class="text-[11px] font-black text-slate-300">Amount (ETB) <span class="text-red-500">*</span></span>
@@ -293,29 +292,26 @@
                             </div>
                             <input id="depositStep1Amount" oninput="validateStep1Amount()" type="number" min="50" max="10000" placeholder="Enter Amount" class="w-full text-sm font-black p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-yellow-300 outline-none focus:border-yellow-500">
                             
-                            <!-- Quick Chips (Matching Screenshot 1) -->
+                            <!-- Quick Chips -->
                             <div class="grid grid-cols-6 gap-1 text-[11px] font-black pt-1">
-                                <button type="button" onclick="selectQuickChip(100)" class="quick-chip py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-yellow-400 transition">100</button>
-                                <button type="button" onclick="selectQuickChip(300)" class="quick-chip py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-yellow-400 transition">300</button>
-                                <button type="button" onclick="selectQuickChip(500)" class="quick-chip py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-yellow-400 transition">500</button>
-                                <button type="button" onclick="selectQuickChip(1000)" class="quick-chip py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-yellow-400 transition">1000</button>
-                                <button type="button" onclick="selectQuickChip(3000)" class="quick-chip py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-yellow-400 transition">3000</button>
-                                <button type="button" onclick="selectQuickChip(5000)" class="quick-chip py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-yellow-400 transition">5000</button>
+                                <button type="button" onclick="selectQuickChip(100, this)" class="quick-chip py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-yellow-400 transition">100</button>
+                                <button type="button" onclick="selectQuickChip(300, this)" class="quick-chip py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-yellow-400 transition">300</button>
+                                <button type="button" onclick="selectQuickChip(500, this)" class="quick-chip py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-yellow-400 transition">500</button>
+                                <button type="button" onclick="selectQuickChip(1000, this)" class="quick-chip py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-yellow-400 transition">1000</button>
+                                <button type="button" onclick="selectQuickChip(3000, this)" class="quick-chip py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-yellow-400 transition">3000</button>
+                                <button type="button" onclick="selectQuickChip(5000, this)" class="quick-chip py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-yellow-400 transition">5000</button>
                             </div>
                         </div>
 
-                        <!-- Primary CTA Button (Screenshot 1: Yellow "Deposit") -->
                         <button onclick="goToStep2()" id="btnDepositStep1" class="w-full gold-btn py-3.5 rounded-2xl font-black text-sm shadow-xl active:scale-95 transition mt-2">
                             Deposit
                         </button>
                     </div>
                 </div>
 
-                <!-- ── SCREEN 2: PAYMENT DETAILS (MATCHING SCREENSHOT 2) ── -->
+                <!-- ── SCREEN 2: PAYMENT DETAILS ── -->
                 <div id="checkoutStep2" class="hidden space-y-3">
                     <div class="glass-box p-4 rounded-3xl space-y-3.5 border border-slate-800">
-                        
-                        <!-- Top Nav inside checkout -->
                         <div class="flex items-center justify-between pb-2 border-b border-slate-800">
                             <button onclick="goToStep1()" class="text-slate-400 text-xs font-bold flex items-center gap-1 hover:text-white">
                                 <i class="fa-solid fa-arrow-left"></i> Back
@@ -326,13 +322,11 @@
                             </button>
                         </div>
 
-                        <!-- Important Warning Notice -->
                         <div class="p-3 bg-amber-950/30 rounded-2xl border border-amber-500/40 text-[10px] text-amber-200 leading-relaxed flex items-start gap-2">
                             <i class="fa-solid fa-triangle-exclamation text-amber-400 text-sm mt-0.5"></i>
                             <span><b>IMPORTANT:</b> Send payment only to the account number shown below. Sending to a different account will result in loss of funds.</span>
                         </div>
 
-                        <!-- Amount & 10-Minute Countdown Box -->
                         <div class="p-3 bg-slate-950 rounded-2xl border border-slate-800 flex justify-between items-center">
                             <div>
                                 <span class="text-[9px] text-slate-400 uppercase font-bold">Amount to Pay</span>
@@ -347,19 +341,19 @@
                             </div>
                         </div>
 
-                        <!-- Live Telebirr QR Code Scan Area -->
+                        <!-- Live Dynamic Telebirr QR Code Scan Area -->
                         <div class="bg-black p-4 rounded-2xl border border-slate-800 flex flex-col items-center justify-center space-y-2">
                             <img id="checkoutQrImg" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=0996910607&bgcolor=000000&color=ffffff" alt="Telebirr QR" class="w-36 h-36 rounded-xl border border-slate-800 p-1">
                             <span class="text-[9px] text-slate-500 font-bold">Scan to pay with Telebirr App</span>
                         </div>
 
-                        <!-- Payment Details List (Matching Screenshot 2) -->
+                        <!-- Dynamic Account Details -->
                         <div class="space-y-2 text-xs">
                             <div class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800">
                                 <span class="text-slate-400">Account Number</span>
                                 <div class="flex items-center gap-2">
-                                    <span class="font-mono font-black text-white text-sm">0996910607</span>
-                                    <button onclick="copyToClipboard('0996910607')" class="text-slate-400 hover:text-white text-xs">
+                                    <span id="displayAgentPhone" class="font-mono font-black text-white text-sm">0996910607</span>
+                                    <button onclick="copyToClipboard(document.getElementById('displayAgentPhone').innerText)" class="text-slate-400 hover:text-white text-xs">
                                         <i class="fa-regular fa-copy"></i>
                                     </button>
                                 </div>
@@ -367,7 +361,7 @@
 
                             <div class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800">
                                 <span class="text-slate-400">Account Name</span>
-                                <span class="font-black text-white">Aymen</span>
+                                <span id="displayAgentName" class="font-black text-white">Aymen</span>
                             </div>
 
                             <div class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800">
@@ -379,7 +373,6 @@
                             </div>
                         </div>
 
-                        <!-- Action Buttons (Screenshot 2: Yellow "I've Paid") -->
                         <button onclick="goToStep3()" class="w-full gold-btn py-3.5 rounded-2xl font-black text-sm shadow-xl active:scale-95 transition flex items-center justify-center gap-2">
                             <i class="fa-solid fa-check text-xs"></i> I've Paid
                         </button>
@@ -393,11 +386,9 @@
                     </div>
                 </div>
 
-                <!-- ── SCREEN 3: VERIFY PAYMENT (MATCHING SCREENSHOT 3) ── -->
+                <!-- ── SCREEN 3: VERIFY PAYMENT ── -->
                 <div id="checkoutStep3" class="hidden space-y-3">
                     <div class="glass-box p-4 rounded-3xl space-y-3.5 border border-slate-800">
-                        
-                        <!-- Top Nav -->
                         <div class="flex items-center justify-between pb-2 border-b border-slate-800">
                             <button onclick="goToStep2()" class="text-slate-400 text-xs font-bold flex items-center gap-1 hover:text-white">
                                 <i class="fa-solid fa-arrow-left"></i> Back
@@ -408,7 +399,6 @@
                             </button>
                         </div>
 
-                        <!-- Deposit Amount Banner (Screenshot 3) -->
                         <div class="p-3 bg-slate-950 rounded-2xl border border-slate-800 flex justify-between items-center">
                             <div>
                                 <span class="text-[9px] text-slate-400 uppercase font-bold">Deposit Amount</span>
@@ -417,19 +407,16 @@
                             <img src="https://i.postimg.cc/1zH5wqRj/20260805-174415.png" class="w-6 h-6 object-contain">
                         </div>
 
-                        <!-- SMS or Ref Input Field (Screenshot 3) -->
                         <div class="space-y-1.5">
                             <label class="text-[11px] font-black text-slate-300">Telebirr Transaction ID / Reference / SMS</label>
                             <textarea id="checkoutVerifyInput" oninput="autoExtractRefAndAmount()" rows="5" placeholder="Enter telebirr transaction ID, SMS code, or receipt reference" class="w-full text-xs p-3 rounded-2xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-yellow-500 font-mono leading-relaxed"></textarea>
                             <p class="text-[10px] text-slate-500 italic">Tip: Paste the entire SMS from your payment</p>
                         </div>
 
-                        <!-- Extracted Ref Indicator Badge -->
                         <div id="checkoutExtractedBadge" class="hidden text-[10px] text-emerald-400 font-bold bg-emerald-950/60 p-2.5 rounded-xl border border-emerald-500/40">
                             ✅ የተገኘው የግብይት ቁጥር (Ref)፦ <span id="checkoutExtractedText" class="font-mono text-white"></span>
                         </div>
 
-                        <!-- Submit CTA Button (Screenshot 3: Yellow "Submit Verification") -->
                         <button onclick="submitFinalVerification()" id="btnSubmitVerification" class="w-full gold-btn py-3.5 rounded-2xl font-black text-sm shadow-xl active:scale-95 transition flex items-center justify-center gap-2 mt-2">
                             <i class="fa-solid fa-check text-xs"></i> Submit Verification
                         </button>
@@ -446,7 +433,6 @@
                     <span class="text-[9px] text-slate-400 font-bold">Min: <b>100 ETB</b></span>
                 </div>
 
-                <!-- First Deposit Requirement Lock Notice -->
                 <div id="withdrawLockNotice" class="p-2.5 bg-blue-950/40 rounded-xl border border-blue-500/30 text-[10px] text-blue-200 flex items-center gap-2">
                     <i class="fa-solid fa-lock text-yellow-400 text-sm"></i>
                     <span>ገንዘብ ለማውጣት ቢያንስ 1 ጊዜ <b>50 ETB</b> ተቀማጭ ማድረግ ግዴታ ነው። ማውጣት የሚቻለው ከ <b>Real Wallet</b> ብቻ ነው።</span>
@@ -467,7 +453,6 @@
                     ገንዘብ አውጣ (Withdraw to Telebirr)
                 </button>
 
-                <!-- Agent Contact Banner on Withdrawal -->
                 <div class="p-3 bg-blue-950/40 rounded-2xl border border-blue-500/30 flex justify-between items-center mt-2">
                     <div>
                         <span class="text-xs font-black text-white flex items-center gap-1">
@@ -475,8 +460,8 @@
                         </span>
                         <p class="text-[9px] text-slate-400">ጥያቄ ካስገቡ በኋላ ያነጋግሩ</p>
                     </div>
-                    <a href="https://t.me/Dashagent1" target="_blank" class="px-3 py-1.5 rounded-xl gradient-blue text-white font-black text-xs shadow-md active:scale-95 transition flex items-center gap-1">
-                        <i class="fa-brands fa-telegram"></i> @Dashagent1
+                    <a id="agentHandleLink" href="https://t.me/Dashagent1" target="_blank" class="px-3 py-1.5 rounded-xl gradient-blue text-white font-black text-xs shadow-md active:scale-95 transition flex items-center gap-1">
+                        <i class="fa-brands fa-telegram"></i> <span id="agentHandleText">@Dashagent1</span>
                     </a>
                 </div>
             </div>
@@ -694,7 +679,7 @@
                 toast.classList.remove('opacity-100');
                 toast.classList.add('opacity-0', 'translate-y-[-8px]');
                 setTimeout(() => toast.remove(), 200);
-            }, 1500);
+            }, 1800);
         }
 
         function toggleRulesModal() {
@@ -800,10 +785,16 @@
 
     <!-- ================= CLIENT CORE ENGINE ================= -->
     <script>
-        const BACKEND_URL = "https://dashbingo.onrender.com";
+        // Automatic Backend URL Selector (Works on Render or Local)
+        const BACKEND_URL = window.location.origin.includes('http') && !window.location.origin.includes('file')
+            ? window.location.origin
+            : "https://dashbingo.onrender.com";
 
         const tg = window.Telegram?.WebApp;
-        if (tg) tg.expand();
+        if (tg) {
+            tg.expand();
+            if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
+        }
 
         const user = tg?.initDataUnsafe?.user || { id: 9876543, first_name: "ሙከራ ተጫዋች", username: "" };
         document.getElementById('playerName').innerText = user.first_name;
@@ -832,7 +823,27 @@
         let userData = { real_balance: 0, bonus_balance: 0, total_deposited: 0 };
         let myBetHistory = JSON.parse(localStorage.getItem(`bets_${user.id}`) || '[]');
 
-        // CHECKOUT STATE (MATCHING SCREENSHOTS)
+        // Dynamic Agent Status Fetcher
+        async function loadAgentStatus() {
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/agents/status`);
+                const data = await res.json();
+                if (data.telebirr) {
+                    const agent = data.telebirr;
+                    document.getElementById('displayAgentPhone').innerText = agent.account;
+                    document.getElementById('displayAgentName').innerText = agent.name;
+                    document.getElementById('checkoutQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(agent.account)}&bgcolor=000000&color=ffffff`;
+                    
+                    if (agent.handle) {
+                        document.getElementById('agentHandleText').innerText = agent.handle;
+                        document.getElementById('agentHandleLink').href = `https://t.me/${agent.handle.replace('@', '')}`;
+                    }
+                }
+            } catch (e) {}
+        }
+        loadAgentStatus();
+
+        // CHECKOUT STATE
         let checkoutAmount = 100;
         let checkoutTimerSeconds = 600; // 10 minutes
         let checkoutTimerInterval = null;
@@ -948,9 +959,9 @@
             }
         }
 
-        // ================= ⚡ THE 3-STEP CHECKOUT ENGINE (EXACT SCREENSHOTS) ================= //
+        // ================= ⚡ THE 3-STEP CHECKOUT ENGINE ================= //
 
-        function selectQuickChip(amount) {
+        function selectQuickChip(amount, btnEl) {
             playTouchBeep();
             document.getElementById('depositStep1Amount').value = amount;
             validateStep1Amount();
@@ -958,7 +969,9 @@
             document.querySelectorAll('.quick-chip').forEach(c => {
                 c.className = "quick-chip py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-yellow-400 transition";
             });
-            event.target.className = "quick-chip py-1.5 rounded-xl bg-yellow-500 border border-yellow-400 text-black font-black transition shadow-sm";
+            if (btnEl) {
+                btnEl.className = "quick-chip py-1.5 rounded-xl bg-yellow-500 border border-yellow-400 text-black font-black transition shadow-sm";
+            }
         }
 
         function validateStep1Amount() {
@@ -966,7 +979,6 @@
             checkoutAmount = !isNaN(val) ? val : 0;
         }
 
-        // STEP 1 -> STEP 2
         function goToStep2() {
             playTouchBeep();
             validateStep1Amount();
@@ -977,7 +989,6 @@
             document.getElementById('checkoutDisplayAmount').innerText = `${checkoutAmount} ETB`;
             document.getElementById('verifyDisplayAmount').innerText = `${checkoutAmount} ETB`;
 
-            // Start 10-Minute Expiration Timer
             startCheckoutTimer();
 
             document.getElementById('checkoutStep1').classList.add('hidden');
@@ -985,7 +996,6 @@
             document.getElementById('checkoutStep3').classList.add('hidden');
         }
 
-        // STEP 2 -> STEP 1
         function goToStep1() {
             playTouchBeep();
             stopCheckoutTimer();
@@ -994,7 +1004,6 @@
             document.getElementById('checkoutStep3').classList.add('hidden');
         }
 
-        // STEP 2 -> STEP 3 ("I've Paid")
         function goToStep3() {
             playTouchBeep();
             document.getElementById('checkoutStep1').classList.add('hidden');
@@ -1042,7 +1051,6 @@
             document.getElementById('checkoutTimerDisplay').innerText = str;
         }
 
-        // 🔍 Smart Auto Extraction in Step 3
         function autoExtractRefAndAmount() {
             const val = document.getElementById('checkoutVerifyInput').value.trim();
             const badge = document.getElementById('checkoutExtractedBadge');
@@ -1053,20 +1061,25 @@
                 return;
             }
 
-            // Extract Ref (DJ...)
-            const refMatch = val.match(/(?:transaction\s*(?:number|no|id)\s*(?:is)?[\s:]*|DJ)([A-Z0-9]{8,14})/i) || val.match(/\b(DJ[A-Z0-9]{8,12})\b/i);
-            if (refMatch) {
-                textEl.innerText = refMatch[1].toUpperCase();
-                badge.classList.remove('hidden');
-            } else if (/^[A-Z0-9]{8,14}$/i.test(val)) {
-                textEl.innerText = val.toUpperCase();
+            const djMatch = val.match(/\b(DJ[A-Z0-9]{7,13})\b/i);
+            if (djMatch) {
+                textEl.innerText = djMatch[1].toUpperCase();
                 badge.classList.remove('hidden');
             } else {
-                badge.classList.add('hidden');
+                const match = val.match(/(?:transaction\s*(?:number|no|id)?|የግብይት\s*ቁጥር)\s*[:፡]?\s*([A-Z0-9]{8,14})/i);
+                if (match) {
+                    textEl.innerText = match[1].toUpperCase();
+                    badge.classList.remove('hidden');
+                } else if (/^[A-Z0-9]{8,14}$/i.test(val)) {
+                    textEl.innerText = val.toUpperCase();
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
             }
         }
 
-        // ⚡ FINAL SUBMIT VERIFICATION (FLOW A TO RENDER BACKEND -> VERIFI)
+        // ⚡ SUBMIT FINAL VERIFICATION (RENDER MICROSERVICE)
         async function submitFinalVerification() {
             playTouchBeep();
             const rawInput = document.getElementById('checkoutVerifyInput').value.trim();
@@ -1112,7 +1125,6 @@
             }
         }
 
-        // Withdrawal calculation
         function calculateWithdrawFee() {
             const inputVal = parseFloat(document.getElementById('withAmount').value);
             const feeBox = document.getElementById('feeCalcBox');
@@ -1127,7 +1139,6 @@
             }
         }
 
-        // Submit Withdrawal
         async function submitWithdraw() {
             playTouchBeep();
             const amount = parseFloat(document.getElementById('withAmount').value);
@@ -1173,7 +1184,6 @@
             }
         }
 
-        // Promo
         async function redeemPromo() {
             playTouchBeep();
             const code = document.getElementById('promoInput').value;
@@ -1279,6 +1289,9 @@
                 });
             }
 
+            // የኔን ካርዶች በድጋሚ ጠይቆ ለማምጣት
+            socket.emit('request_my_cards', { telegramId: user.id });
+
             if (data.status === 'SELECTION') {
                 document.getElementById('cardPickerSection').classList.remove('hidden');
                 document.getElementById('playingBoardContainer').classList.add('hidden');
@@ -1311,6 +1324,25 @@
                 if (bgMusicEnabled) {
                     bgSelectionAudio.pause();
                     bgPlayingAudio.play().catch(() => {});
+                }
+            }
+        });
+
+        // ካርዶች ከሪፍሬሽ በኋላ ሲመለሱ
+        socket.on('sync_my_cards', (data) => {
+            if (data && Array.isArray(data.cards)) {
+                myCards = data.cards;
+                data.cards.forEach(c => {
+                    const btn = document.getElementById(`btn-card-${c.cardIndex}`);
+                    if (btn) {
+                        btn.className = "h-8 rounded-xl text-xs font-black bg-emerald-600 text-white border-2 border-emerald-300 shadow-md shadow-emerald-500/40 flex items-center justify-center";
+                    }
+                });
+                if (myCards.length > 0) {
+                    document.getElementById('myMultiCardSection').classList.remove('hidden');
+                    if (myCards.length > 1) document.getElementById('cardNavControls').classList.remove('hidden');
+                    currentCardViewIndex = 0;
+                    renderCurrentActiveCard();
                 }
             }
         });
@@ -1484,7 +1516,6 @@
             renderCurrentActiveCard();
         });
 
-        // Celebration
         socket.on('round_won', (data) => {
             bgPlayingAudio.pause();
 
@@ -1536,7 +1567,6 @@
             }
         });
 
-        // Safe Loaders
         async function loadWeeklyTop() {
             const list = document.getElementById('weeklyTopList');
             if (!list) return;
