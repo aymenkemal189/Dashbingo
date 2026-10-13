@@ -1,3 +1,4 @@
+
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
@@ -138,26 +139,28 @@ const TELEBIRR_SECRET_TOKEN = process.env.TELEBIRR_SECRET_TOKEN || 'Verifi_Prod_
 const MERCHANT_TELEBIRR_PHONE = '0996910607'; // Aymen
 const MINIMUM_DEPOSIT = 50; // ዝቅተኛው ዴፖዚት 50 ETB
 
+// 🔍 የተጠናከረ የቴሌብር SMS እና Ref መለያ (አማርኛ እና እንግሊዝኛ)
 function parseTelebirrInput(input) {
     const text = String(input || '').trim();
     let ref = null;
     let amount = null;
 
-    // 1. የግብይት ቁጥር መፈለግ (DJ የሚለውን ጨምሮ ሙሉውን ይወስዳል)
-    const djMatch = text.match(/\b(DJ[A-Z0-9]{8,12})\b/i);
+    // 1. የግብይት ቁጥር መፈለግ (DJ የሚጀምር ወይም በቁጥር የሚገለጽ)
+    const djMatch = text.match(/\b(DJ[A-Z0-9]{7,13})\b/i);
     if (djMatch) {
         ref = djMatch[1].toUpperCase();
     } else {
-        const genericMatch = text.match(/transaction\s*(?:number|id|ref|no)?\s*(?:is|:)?\s*([A-Z0-9]{8,14})/i);
-        if (genericMatch) {
-            ref = genericMatch[1].toUpperCase();
+        const amharicOrEngMatch = text.match(/(?:የግብይት\s*ቁጥር|የግብይት\s*መለያ|ትራንዛክሽን\s*(?:ቁጥር|መለያ)?|transaction\s*(?:number|id|ref|no)?)\s*[:፡]?\s*([A-Z0-9]{8,14})/i);
+        if (amharicOrEngMatch) {
+            ref = amharicOrEngMatch[1].toUpperCase();
         } else if (/^[A-Z0-9]{8,14}$/i.test(text)) {
             ref = text.toUpperCase();
         }
     }
 
-    // 2. የገንዘብ መጠን መፈለግ
-    const amtMatch = text.match(/(?:ETB|Birr)\s*([0-9]+(?:\.[0-9]{1,2})?)/i) || text.match(/\b([0-9]+(?:\.[0-9]{1,2})?)\s*(?:ETB|Birr)/i);
+    // 2. የገንዘብ መጠን መፈለግ (ETB, Birr ወይም ብር)
+    const amtMatch = text.match(/(?:ETB|Birr|ብር)\s*([0-9]+(?:\.[0-9]{1,2})?)/i) || 
+                     text.match(/\b([0-9]+(?:\.[0-9]{1,2})?)\s*(?:ETB|Birr|ብር)/i);
     if (amtMatch) {
         amount = parseFloat(amtMatch[1]);
     }
@@ -167,7 +170,7 @@ function parseTelebirrInput(input) {
 
 // ================= TELEBIRR AGENT STATUS CONTROLLER ================= //
 let agentStatus = {
-    telebirr: { name: "Dash Cashier", handle: "@Dashagent1", account: "0996910607", isOnline: true }
+    telebirr: { name: "Aymen", handle: "@Dashagent1", account: "0996910607", isOnline: true }
 };
 
 app.get('/api/agents/status', (req, res) => {
@@ -175,8 +178,11 @@ app.get('/api/agents/status', (req, res) => {
 });
 
 app.post('/api/admin/agents/toggle', checkAdminAuth, (req, res) => {
-    const { isOnline } = req.body;
-    agentStatus.telebirr.isOnline = Boolean(isOnline);
+    const { isOnline, account, name, handle } = req.body;
+    if (isOnline !== undefined) agentStatus.telebirr.isOnline = Boolean(isOnline);
+    if (account) agentStatus.telebirr.account = String(account).trim();
+    if (name) agentStatus.telebirr.name = String(name).trim();
+    if (handle) agentStatus.telebirr.handle = String(handle).trim();
     res.json({ success: true, agentStatus });
 });
 
@@ -225,7 +231,7 @@ let gameState = {
     roundNumber: 1001,
     status: 'SELECTION',
     countdown: SELECTION_SECONDS,
-    selectedCards: {}, // { cardIndex: { userId, userName, numbers, isRealMoney } }
+    selectedCards: {}, // { cardIndex: { userId, telegramId, userName, numbers, isRealMoney } }
     calledNumbers: [],
     currentNumber: null,
     totalPrize: 0,
@@ -309,7 +315,7 @@ setInterval(async () => {
 
         let winners = [];
         for (const [cardIndex, cardData] of Object.entries(gameState.selectedCards)) {
-            if (checkWinner(cardData.numbers, gameState.calledNumbers)) {
+            if (cardData && cardData.numbers && checkWinner(cardData.numbers, gameState.calledNumbers)) {
                 winners.push({ cardIndex: parseInt(cardIndex), ...cardData });
             }
         }
@@ -394,9 +400,10 @@ setInterval(async () => {
                 calledNumbers: gameState.calledNumbers
             });
 
+            // 🎉 ለደስታና ውጤቱን ለማየት በቂ 8 ሰከንድ ይሰጣል
             setTimeout(() => {
                 resetGame();
-            }, 3000);
+            }, 8000);
         } else {
             io.emit('number_called', {
                 number: nextNum,
@@ -554,7 +561,7 @@ app.post('/api/deposit/telebirr-verify', async (req, res) => {
 
         const orderId = `DEP_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
         
-        // 🚀 አዲሱ የ Render Microservice ጥሪ
+        // 🚀 የ Render Microservice ጥሪ
         const verifyUrl = `${TELEBIRR_API_URL}?token=${encodeURIComponent(TELEBIRR_SECRET_TOKEN)}&ref=${encodeURIComponent(ref)}&amount=${encodeURIComponent(finalAmount)}`;
         
         let gatewayResponse;
@@ -1092,7 +1099,7 @@ app.post('/api/admin/create-promocode', checkAdminAuth, async (req, res) => {
     }
 });
 
-// ================= SOCKET.IO: BUY CARD & QUALIFIED REFERRAL ================= //
+// ================= SOCKET.IO: BUY CARD & REAL-TIME STATE ================= //
 io.on('connection', (socket) => {
     socket.emit('game_init', {
         roundNumber: gameState.roundNumber,
@@ -1103,6 +1110,20 @@ io.on('connection', (socket) => {
         totalPrize: gameState.totalPrize,
         totalCards: Object.keys(gameState.selectedCards).length,
         selectedCards: Object.keys(gameState.selectedCards).map(Number)
+    });
+
+    // 🔄 ተጫዋቹ ፔጁን ሪፍሬሽ ሲያደርግ የቆረጣቸውን ካርዶች መመለሻ
+    socket.on('request_my_cards', ({ telegramId }) => {
+        if (!telegramId) return;
+        const myActive = [];
+        for (const [cardIndex, data] of Object.entries(gameState.selectedCards)) {
+            if (data && String(data.telegramId) === String(telegramId)) {
+                myActive.push({ cardIndex: parseInt(cardIndex), numbers: data.numbers });
+            }
+        }
+        if (myActive.length > 0) {
+            socket.emit('sync_my_cards', { cards: myActive });
+        }
     });
 
     socket.on('buy_card', async ({ telegramId, cardIndex }) => {
@@ -1116,10 +1137,15 @@ io.on('connection', (socket) => {
             socket.emit('error_msg', 'የካርድ መቁረጫ ሰዓቱ አልቋል!');
             return;
         }
+
+        // 🛡️ RACE CONDITION FIX: ካርዱ አስቀድሞ ከተያዘ ወዲያው ማገድ
         if (gameState.selectedCards[cIndex]) {
             socket.emit('error_msg', `ካርድ #${cIndex} ቀደም ሲል ተይዟል! እባክዎ ሌላ ይምረጡ።`);
             return;
         }
+
+        // 🔒 ጊዜያዊ Lock መያዝ (ሌላ ሰው እንዳይነካው)
+        gameState.selectedCards[cIndex] = { isPending: true };
 
         const client = await pool.connect();
         try {
@@ -1130,7 +1156,9 @@ io.on('connection', (socket) => {
                 [telegramId]
             );
             if (userRes.rows.length === 0) {
+                delete gameState.selectedCards[cIndex];
                 await client.query('ROLLBACK');
+                socket.emit('error_msg', 'ተጠቃሚው አልተገኘም');
                 return;
             }
             const user = userRes.rows[0];
@@ -1142,7 +1170,7 @@ io.on('connection', (socket) => {
                 await client.query(
                     `UPDATE users 
                      SET real_balance = real_balance - $1, 
-                         balance = (real_balance - $1) + bonus_balance,
+                         balance = balance - $1,
                          cards_bought_this_week = cards_bought_this_week + 1 
                      WHERE id = $2`, 
                     [CARD_PRICE, user.id]
@@ -1152,19 +1180,20 @@ io.on('connection', (socket) => {
                 await client.query(
                     `UPDATE users 
                      SET bonus_balance = bonus_balance - $1, 
-                         balance = real_balance + (bonus_balance - $1),
+                         balance = balance - $1,
                          cards_bought_this_week = cards_bought_this_week + 1 
                      WHERE id = $2`, 
                     [CARD_PRICE, user.id]
                 );
                 isRealMoney = false;
             } else {
+                delete gameState.selectedCards[cIndex];
                 await client.query('ROLLBACK');
                 socket.emit('error_msg', `ሒሳብዎ በቂ አይደለም! ካርድ ለመቁረጥ ቢያንስ ${CARD_PRICE} ETB ያስፈልጋል።`);
                 return;
             }
 
-            // 🎁 ሪፈራል ቦነስ (ተጫዋቹ ቢያንስ 50 ETB እውነተኛ ዴፖዚት ካለው ብቻ ይሰጣል)
+            // 🎁 ሪፈራል ቦነስ
             if (user.referred_by && !user.referral_rewarded && parseFloat(user.total_deposited || 0) >= MINIMUM_DEPOSIT) {
                 await client.query(
                     `UPDATE users 
@@ -1189,6 +1218,7 @@ io.on('connection', (socket) => {
             const generatedCard = generateBingoCard();
             gameState.selectedCards[cIndex] = {
                 userId: user.id,
+                telegramId: telegramId,
                 userName: user.first_name,
                 numbers: generatedCard,
                 isRealMoney
@@ -1210,6 +1240,7 @@ io.on('connection', (socket) => {
 
             socket.emit('my_card', { cardIndex: cIndex, numbers: generatedCard });
         } catch (e) {
+            delete gameState.selectedCards[cIndex];
             await client.query('ROLLBACK');
             console.error("Card purchase error:", e);
         } finally {
@@ -1234,3 +1265,10 @@ server.listen(PORT, async () => {
 
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
+
+
+
+
+
+
+
