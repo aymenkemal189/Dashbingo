@@ -132,8 +132,8 @@ async function sendTelegramNotification(telegramId, message) {
     }
 }
 
-// ================= "VERIFI" V5 GATEWAY CREDENTIALS ================= //
-const TELEBIRR_API_URL = process.env.TELEBIRR_API_URL || 'https://script.google.com/macros/s/AKfycbwuyYvDk0w_YvmIHq0_QIdysYpmizrJrCKhNUIKeMhOdaxslASsv2VJPMgWUs0zOcD7xQ/exec';
+// ================= ⚡ "VERIFI" NODE.JS MICROSERVICE GATEWAY CREDENTIALS ================= //
+const TELEBIRR_API_URL = process.env.TELEBIRR_API_URL || 'https://verifi-server.onrender.com/api/verify';
 const TELEBIRR_SECRET_TOKEN = process.env.TELEBIRR_SECRET_TOKEN || 'Verifi_Prod_9842_Aymen_X9!2026';
 const MERCHANT_TELEBIRR_PHONE = '0996910607'; // Aymen
 const MINIMUM_DEPOSIT = 50; // ዝቅተኛው ዴፖዚት 50 ETB
@@ -167,7 +167,7 @@ function parseTelebirrInput(input) {
 
 // ================= TELEBIRR AGENT STATUS CONTROLLER ================= //
 let agentStatus = {
-    telebirr: { name: "Aymen", handle: "@AymenKemal", account: "0996910607", isOnline: true }
+    telebirr: { name: "Dash Cashier", handle: "@Dashagent1", account: "0996910607", isOnline: true }
 };
 
 app.get('/api/agents/status', (req, res) => {
@@ -514,7 +514,7 @@ app.post('/api/user/claim-welcome', async (req, res) => {
     }
 });
 
-// ================= ⚡ "VERIFI" V5 AUTOMATED TELEBIRR DEPOSIT (FLOW A) ================= //
+// ================= ⚡ VERIFI MICROSERVICE DEPOSIT API (RENDER GATEWAY) ================= //
 app.post('/api/deposit/telebirr-verify', async (req, res) => {
     const { telegramId, rawInput, typedAmount } = req.body;
 
@@ -545,6 +545,7 @@ app.post('/api/deposit/telebirr-verify', async (req, res) => {
         }
         const user = userRes.rows[0];
 
+        // በዳታቤዝ ውስጥ ይሄ Ref ቀደም ሲል ጥቅም ላይ መዋሉን ማረጋገጥ
         const refCheck = await client.query('SELECT id FROM transactions WHERE trx_ref = $1', [ref]);
         if (refCheck.rows.length > 0) {
             await client.query('ROLLBACK');
@@ -552,51 +553,52 @@ app.post('/api/deposit/telebirr-verify', async (req, res) => {
         }
 
         const orderId = `DEP_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-        const verifyUrl = `${TELEBIRR_API_URL}?ref=${encodeURIComponent(ref)}&amount=${encodeURIComponent(finalAmount)}&order=${encodeURIComponent(orderId)}&token=${encodeURIComponent(TELEBIRR_SECRET_TOKEN)}`;
+        
+        // 🚀 አዲሱ የ Render Microservice ጥሪ
+        const verifyUrl = `${TELEBIRR_API_URL}?token=${encodeURIComponent(TELEBIRR_SECRET_TOKEN)}&ref=${encodeURIComponent(ref)}&amount=${encodeURIComponent(finalAmount)}`;
         
         let gatewayResponse;
         try {
             const resp = await fetch(verifyUrl, {
                 method: 'GET',
-                redirect: 'follow',
                 headers: { 'Accept': 'application/json' }
             });
-            const rawText = await resp.text();
-            try {
-                gatewayResponse = JSON.parse(rawText);
-            } catch (jsonErr) {
-                console.error("Non-JSON Apps Script response:", rawText);
-                throw new Error("Invalid response from verification gateway");
-            }
+            gatewayResponse = await resp.json();
         } catch (fetchErr) {
             await client.query('ROLLBACK');
-            console.error('Verifi Gateway Fetch Error:', fetchErr);
-            return res.status(502).json({ error: 'የቴሌብር ማረጋገጫ ሲስተሙ ለጊዜው አልመለሰም፤ እባክዎ ከጥቂት ሰከንዶች በኋላ እንደገና ይሞክሩ።' });
+            console.error('Verifi Microservice Fetch Error:', fetchErr);
+            return res.status(502).json({ error: 'የቴሌብር ማረጋገጫ ሲስተሙ ለጊዜው አልመለሰም፤ እባክዎ ጥቂት ሰከንዶች ጠብቀው እንደገና ይሞክሩ።' });
         }
 
         const gStatus = gatewayResponse?.status;
 
+        // 1. ⏳ ገና በሰርቨሩ ያልተመዘገበ ከሆነ
         if (gStatus === 'Pending') {
             await client.query('ROLLBACK');
-            return res.status(400).json({ error: 'ክፍያው በቴሌብር ገና አልተመዘገበም። እባክዎ ጥቂት ሰከንዶች ጠብቀው እንደገና ይሞክሩ።' });
+            return res.status(400).json({ error: 'ክፍያው ገና አልደረሰም፤ እባክዎ ጥቂት ሰከንዶች ጠብቀው እንደገና ይሞክሩ።' });
         }
 
+        // 2. ❌ ቀደም ሲል ጥቅም ላይ የዋለ ከሆነ
         if (gStatus === 'AlreadyUsed') {
             await client.query('ROLLBACK');
             return res.status(400).json({ error: 'ይህ የግብይት ቁጥር ቀደም ሲል ጥቅም ላይ ውሏል!' });
         }
 
+        // 3. ❌ መጠኑ ካልተመሳከረ
         if (gStatus === 'InvalidAmount') {
             await client.query('ROLLBACK');
             return res.status(400).json({ error: 'የተላከው የገንዘብ መጠን ከተጠየቀው መጠን ጋር አይዛመድም።' });
         }
 
+        // 4. ❌ የወጪ ማስተላለፊያ ደረሰኝ ከሆነ
         if (gStatus === 'Invalid_Transaction_Type') {
             await client.query('ROLLBACK');
             return res.status(400).json({ error: 'ይህ የገንዘብ መቀበያ ሳይሆን የወጪ ማስተላለፊያ ደረሰኝ ነው፤ ውድቅ ተደርጓል።' });
         }
 
-        if (gStatus !== 'Verified') {
+        // 5. ✅ የተረጋገጠ ክፍያ (Verified ወይም success)
+        const isVerified = (gStatus === 'Verified' || gStatus === 'success' || gatewayResponse?.verified === true);
+        if (!isVerified) {
             await client.query('ROLLBACK');
             return res.status(400).json({ error: gatewayResponse?.message || 'ክፍያውን ማረጋገጥ አልተቻለም።' });
         }
