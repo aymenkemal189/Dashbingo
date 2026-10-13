@@ -1,4 +1,3 @@
-
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
@@ -30,7 +29,7 @@ pool.on('error', (err) => {
     console.error('Neon DB Pool Error:', err);
 });
 
-// Auto-run DB Migrations
+// Auto-run DB Migrations (አዳዲስ አምዶችንና ቴብሎችን በራስ-ሰር ያረጋግጣል)
 (async () => {
     try {
         await pool.query(`
@@ -97,7 +96,7 @@ pool.on('error', (err) => {
                 UNIQUE(user_id, promo_id)
             );
         `);
-        console.log('✅ Database Schema verified successfully (Telebirr Only)');
+        console.log('✅ Database Schema verified successfully (Telebirr Only & Dual-Wallet)');
     } catch (e) {
         console.error('Migration notice:', e.message);
     }
@@ -133,34 +132,33 @@ async function sendTelegramNotification(telegramId, message) {
     }
 }
 
-// ================= ⚡ "VERIFI" NODE.JS MICROSERVICE GATEWAY CREDENTIALS ================= //
+// ================= ⚡ "VERIFI" V5 GATEWAY CREDENTIALS ================= //
 const TELEBIRR_API_URL = process.env.TELEBIRR_API_URL || 'https://verifi-server.onrender.com/api/verify';
 const TELEBIRR_SECRET_TOKEN = process.env.TELEBIRR_SECRET_TOKEN || 'Verifi_Prod_9842_Aymen_X9!2026';
 const MERCHANT_TELEBIRR_PHONE = '0996910607'; // Aymen
 const MINIMUM_DEPOSIT = 50; // ዝቅተኛው ዴፖዚት 50 ETB
 
-// 🔍 የተጠናከረ የቴሌብር SMS እና Ref መለያ (አማርኛ እና እንግሊዝኛ)
+// 🔍 ከሙሉ SMS ወይም ከጽሁፍ ውስጥ Ref እና Amount ማውጫ ፈንክሽን
 function parseTelebirrInput(input) {
     const text = String(input || '').trim();
     let ref = null;
     let amount = null;
 
-    // 1. የግብይት ቁጥር መፈለግ (DJ የሚጀምር ወይም በቁጥር የሚገለጽ)
-    const djMatch = text.match(/\b(DJ[A-Z0-9]{7,13})\b/i);
+    // 1. የግብይት ቁጥር መፈለግ (DJ የሚለውን ጨምሮ ሙሉውን ይወስዳል)
+    const djMatch = text.match(/\b(DJ[A-Z0-9]{8,12})\b/i);
     if (djMatch) {
         ref = djMatch[1].toUpperCase();
     } else {
-        const amharicOrEngMatch = text.match(/(?:የግብይት\s*ቁጥር|የግብይት\s*መለያ|ትራንዛክሽን\s*(?:ቁጥር|መለያ)?|transaction\s*(?:number|id|ref|no)?)\s*[:፡]?\s*([A-Z0-9]{8,14})/i);
-        if (amharicOrEngMatch) {
-            ref = amharicOrEngMatch[1].toUpperCase();
+        const genericMatch = text.match(/transaction\s*(?:number|id|ref|no)?\s*(?:is|:)?\s*([A-Z0-9]{8,14})/i);
+        if (genericMatch) {
+            ref = genericMatch[1].toUpperCase();
         } else if (/^[A-Z0-9]{8,14}$/i.test(text)) {
             ref = text.toUpperCase();
         }
     }
 
-    // 2. የገንዘብ መጠን መፈለግ (ETB, Birr ወይም ብር)
-    const amtMatch = text.match(/(?:ETB|Birr|ብር)\s*([0-9]+(?:\.[0-9]{1,2})?)/i) || 
-                     text.match(/\b([0-9]+(?:\.[0-9]{1,2})?)\s*(?:ETB|Birr|ብር)/i);
+    // 2. የገንዘብ መጠን መፈለግ
+    const amtMatch = text.match(/(?:ETB|Birr)\s*([0-9]+(?:\.[0-9]{1,2})?)/i) || text.match(/\b([0-9]+(?:\.[0-9]{1,2})?)\s*(?:ETB|Birr)/i);
     if (amtMatch) {
         amount = parseFloat(amtMatch[1]);
     }
@@ -170,7 +168,7 @@ function parseTelebirrInput(input) {
 
 // ================= TELEBIRR AGENT STATUS CONTROLLER ================= //
 let agentStatus = {
-    telebirr: { name: "Aymen", handle: "@Dashagent1", account: "0996910607", isOnline: true }
+    telebirr: { name: "Dash Cashier", handle: "@Dashagent1", account: "0996910607", isOnline: true }
 };
 
 app.get('/api/agents/status', (req, res) => {
@@ -178,15 +176,12 @@ app.get('/api/agents/status', (req, res) => {
 });
 
 app.post('/api/admin/agents/toggle', checkAdminAuth, (req, res) => {
-    const { isOnline, account, name, handle } = req.body;
-    if (isOnline !== undefined) agentStatus.telebirr.isOnline = Boolean(isOnline);
-    if (account) agentStatus.telebirr.account = String(account).trim();
-    if (name) agentStatus.telebirr.name = String(name).trim();
-    if (handle) agentStatus.telebirr.handle = String(handle).trim();
+    const { isOnline } = req.body;
+    agentStatus.telebirr.isOnline = Boolean(isOnline);
     res.json({ success: true, agentStatus });
 });
 
-// Telegram Bot Start
+// Telegram Bot Start with Referral Deep-Link
 bot.start(async (ctx) => {
     const { id, first_name, username } = ctx.from;
     const startPayload = ctx.startPayload || '';
@@ -231,7 +226,7 @@ let gameState = {
     roundNumber: 1001,
     status: 'SELECTION',
     countdown: SELECTION_SECONDS,
-    selectedCards: {}, // { cardIndex: { userId, telegramId, userName, numbers, isRealMoney } }
+    selectedCards: {}, // { cardIndex: { userId, userName, numbers, isRealMoney } }
     calledNumbers: [],
     currentNumber: null,
     totalPrize: 0,
@@ -276,7 +271,7 @@ function checkWinner(card, called) {
     return diag1 || diag2;
 }
 
-// Master Real-Time Game Loop
+// Master Game Loop
 setInterval(async () => {
     if (gameState.status === 'SELECTION') {
         gameState.countdown--;
@@ -315,7 +310,7 @@ setInterval(async () => {
 
         let winners = [];
         for (const [cardIndex, cardData] of Object.entries(gameState.selectedCards)) {
-            if (cardData && cardData.numbers && checkWinner(cardData.numbers, gameState.calledNumbers)) {
+            if (checkWinner(cardData.numbers, gameState.calledNumbers)) {
                 winners.push({ cardIndex: parseInt(cardIndex), ...cardData });
             }
         }
@@ -323,7 +318,7 @@ setInterval(async () => {
         if (winners.length > 0) {
             gameState.status = 'GAME_OVER';
 
-            // Prorated Pot Math (የቦነስና የእውነተኛ ብር ድራሽ ስሌት)
+            // 🛡️ Prorated Pot Math (የቦነስና የእውነተኛ ገንዘብ ድራሽ ስሌት)
             const allCards = Object.values(gameState.selectedCards);
             const totalRealCards = allCards.filter(c => c.isRealMoney).length;
             const totalBonusCards = allCards.filter(c => !c.isRealMoney).length;
@@ -400,10 +395,9 @@ setInterval(async () => {
                 calledNumbers: gameState.calledNumbers
             });
 
-            // 🎉 ለደስታና ውጤቱን ለማየት በቂ 8 ሰከንድ ይሰጣል
             setTimeout(() => {
                 resetGame();
-            }, 8000);
+            }, 3000);
         } else {
             io.emit('number_called', {
                 number: nextNum,
@@ -464,7 +458,7 @@ app.get('/api/user/:telegramId', async (req, res) => {
     }
 });
 
-// 🎁 20 ETB Welcome Bonus (ወደ bonus_balance)
+// 🎁 20 ETB Welcome Bonus (ወደ bonus_balance ብቻ)
 app.post('/api/user/claim-welcome', async (req, res) => {
     const { telegramId, firstName, username } = req.body;
     if (!telegramId) return res.status(400).json({ error: 'telegramId is required' });
@@ -521,7 +515,7 @@ app.post('/api/user/claim-welcome', async (req, res) => {
     }
 });
 
-// ================= ⚡ VERIFI MICROSERVICE DEPOSIT API (RENDER GATEWAY) ================= //
+// ================= ⚡ "VERIFI" AUTOMATED TELEBIRR DEPOSIT (EXACT VERIFI SERVER API) ================= //
 app.post('/api/deposit/telebirr-verify', async (req, res) => {
     const { telegramId, rawInput, typedAmount } = req.body;
 
@@ -560,8 +554,8 @@ app.post('/api/deposit/telebirr-verify', async (req, res) => {
         }
 
         const orderId = `DEP_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-        
-        // 🚀 የ Render Microservice ጥሪ
+
+        // 🚀 አዲሱ የ Verifi Render Microservice ጥሪ
         const verifyUrl = `${TELEBIRR_API_URL}?token=${encodeURIComponent(TELEBIRR_SECRET_TOKEN)}&ref=${encodeURIComponent(ref)}&amount=${encodeURIComponent(finalAmount)}`;
         
         let gatewayResponse;
@@ -579,31 +573,26 @@ app.post('/api/deposit/telebirr-verify', async (req, res) => {
 
         const gStatus = gatewayResponse?.status;
 
-        // 1. ⏳ ገና በሰርቨሩ ያልተመዘገበ ከሆነ
         if (gStatus === 'Pending') {
             await client.query('ROLLBACK');
             return res.status(400).json({ error: 'ክፍያው ገና አልደረሰም፤ እባክዎ ጥቂት ሰከንዶች ጠብቀው እንደገና ይሞክሩ።' });
         }
 
-        // 2. ❌ ቀደም ሲል ጥቅም ላይ የዋለ ከሆነ
         if (gStatus === 'AlreadyUsed') {
             await client.query('ROLLBACK');
             return res.status(400).json({ error: 'ይህ የግብይት ቁጥር ቀደም ሲል ጥቅም ላይ ውሏል!' });
         }
 
-        // 3. ❌ መጠኑ ካልተመሳከረ
         if (gStatus === 'InvalidAmount') {
             await client.query('ROLLBACK');
             return res.status(400).json({ error: 'የተላከው የገንዘብ መጠን ከተጠየቀው መጠን ጋር አይዛመድም።' });
         }
 
-        // 4. ❌ የወጪ ማስተላለፊያ ደረሰኝ ከሆነ
         if (gStatus === 'Invalid_Transaction_Type') {
             await client.query('ROLLBACK');
             return res.status(400).json({ error: 'ይህ የገንዘብ መቀበያ ሳይሆን የወጪ ማስተላለፊያ ደረሰኝ ነው፤ ውድቅ ተደርጓል።' });
         }
 
-        // 5. ✅ የተረጋገጠ ክፍያ (Verified ወይም success)
         const isVerified = (gStatus === 'Verified' || gStatus === 'success' || gatewayResponse?.verified === true);
         if (!isVerified) {
             await client.query('ROLLBACK');
@@ -730,7 +719,7 @@ app.post('/api/withdraw', async (req, res) => {
 
         sendTelegramNotification(
             telegramId,
-            `📤 <b>የማውጣት ጥያቄ ደርሶናል</b>\n\nየተጠየቀው መጠን፡ <b>${withdrawAmount.toFixed(2)} ETB</b>\nየአገልግሎት ክፍያ (5%)፡ <b>${fee.toFixed(2)} ETB</b>\nየሚደርስዎት የተጣራ ብር፡ <b>${netPayout.toFixed(2)} ETB</b>\nወደ ቴሌብር፡ <b>${accountNumber}</b> (${accountName})\n\nኤጀንቱ አረጋግጦ በቅርቡ ይልክልዎታል።`
+            `📤 <b>የማውጣት ጥያቄ ደርሶናል</b>\n\nየተጠየቀው መጠን፡ <b>${withdrawAmount.toFixed(2)} ETB</b>\nየአገልግሎት ክፍያ (5%)፡ <b>${fee.toFixed(2)} ETB</b>\nየሚደርስዎት የተጣራ ብር፡ <b>${netPayout.toFixed(2)} ETB</b>\nወደ ቴሌብር፡ <b>${accountNumber}</b> (${accountName})\n\nኤጀንቱን ያነጋግሩ፡ @Dashagent1`
         );
 
         res.json({ 
@@ -832,7 +821,7 @@ app.get('/api/history/:telegramId', async (req, res) => {
     }
 });
 
-// ================= 📊 ALL-TIME & TIMEFRAME-BASED FINANCIAL AUDIT API (TELEBIRR ONLY) ================= //
+// ================= 📊 ALL-TIME & TIMEFRAME-BASED FINANCIAL AUDIT API ================= //
 app.get('/api/admin/audit', checkAdminAuth, async (req, res) => {
     const timeframe = req.query.timeframe || 'all';
     let timeFilterTx = "";
@@ -900,7 +889,7 @@ app.get('/api/admin/audit', checkAdminAuth, async (req, res) => {
     }
 });
 
-// Transactions List
+// Transactions List API (300 Rows)
 app.get('/api/admin/transactions', checkAdminAuth, async (req, res) => {
     const { category, timeframe } = req.query;
     let conditions = ["t.type IN ('DEPOSIT', 'WITHDRAW')"];
@@ -1099,7 +1088,7 @@ app.post('/api/admin/create-promocode', checkAdminAuth, async (req, res) => {
     }
 });
 
-// ================= SOCKET.IO: BUY CARD & REAL-TIME STATE ================= //
+// ================= SOCKET.IO: BUY CARD & QUALIFIED REFERRAL ================= //
 io.on('connection', (socket) => {
     socket.emit('game_init', {
         roundNumber: gameState.roundNumber,
@@ -1110,20 +1099,6 @@ io.on('connection', (socket) => {
         totalPrize: gameState.totalPrize,
         totalCards: Object.keys(gameState.selectedCards).length,
         selectedCards: Object.keys(gameState.selectedCards).map(Number)
-    });
-
-    // 🔄 ተጫዋቹ ፔጁን ሪፍሬሽ ሲያደርግ የቆረጣቸውን ካርዶች መመለሻ
-    socket.on('request_my_cards', ({ telegramId }) => {
-        if (!telegramId) return;
-        const myActive = [];
-        for (const [cardIndex, data] of Object.entries(gameState.selectedCards)) {
-            if (data && String(data.telegramId) === String(telegramId)) {
-                myActive.push({ cardIndex: parseInt(cardIndex), numbers: data.numbers });
-            }
-        }
-        if (myActive.length > 0) {
-            socket.emit('sync_my_cards', { cards: myActive });
-        }
     });
 
     socket.on('buy_card', async ({ telegramId, cardIndex }) => {
@@ -1137,15 +1112,10 @@ io.on('connection', (socket) => {
             socket.emit('error_msg', 'የካርድ መቁረጫ ሰዓቱ አልቋል!');
             return;
         }
-
-        // 🛡️ RACE CONDITION FIX: ካርዱ አስቀድሞ ከተያዘ ወዲያው ማገድ
         if (gameState.selectedCards[cIndex]) {
             socket.emit('error_msg', `ካርድ #${cIndex} ቀደም ሲል ተይዟል! እባክዎ ሌላ ይምረጡ።`);
             return;
         }
-
-        // 🔒 ጊዜያዊ Lock መያዝ (ሌላ ሰው እንዳይነካው)
-        gameState.selectedCards[cIndex] = { isPending: true };
 
         const client = await pool.connect();
         try {
@@ -1156,9 +1126,7 @@ io.on('connection', (socket) => {
                 [telegramId]
             );
             if (userRes.rows.length === 0) {
-                delete gameState.selectedCards[cIndex];
                 await client.query('ROLLBACK');
-                socket.emit('error_msg', 'ተጠቃሚው አልተገኘም');
                 return;
             }
             const user = userRes.rows[0];
@@ -1170,7 +1138,7 @@ io.on('connection', (socket) => {
                 await client.query(
                     `UPDATE users 
                      SET real_balance = real_balance - $1, 
-                         balance = balance - $1,
+                         balance = (real_balance - $1) + bonus_balance,
                          cards_bought_this_week = cards_bought_this_week + 1 
                      WHERE id = $2`, 
                     [CARD_PRICE, user.id]
@@ -1180,20 +1148,19 @@ io.on('connection', (socket) => {
                 await client.query(
                     `UPDATE users 
                      SET bonus_balance = bonus_balance - $1, 
-                         balance = balance - $1,
+                         balance = real_balance + (bonus_balance - $1),
                          cards_bought_this_week = cards_bought_this_week + 1 
                      WHERE id = $2`, 
                     [CARD_PRICE, user.id]
                 );
                 isRealMoney = false;
             } else {
-                delete gameState.selectedCards[cIndex];
                 await client.query('ROLLBACK');
                 socket.emit('error_msg', `ሒሳብዎ በቂ አይደለም! ካርድ ለመቁረጥ ቢያንስ ${CARD_PRICE} ETB ያስፈልጋል።`);
                 return;
             }
 
-            // 🎁 ሪፈራል ቦነስ
+            // 🎁 ሪፈራል ቦነስ (ተጫዋቹ ቢያንስ 50 ETB እውነተኛ ዴፖዚት ካለው ብቻ ይሰጣል)
             if (user.referred_by && !user.referral_rewarded && parseFloat(user.total_deposited || 0) >= MINIMUM_DEPOSIT) {
                 await client.query(
                     `UPDATE users 
@@ -1218,7 +1185,6 @@ io.on('connection', (socket) => {
             const generatedCard = generateBingoCard();
             gameState.selectedCards[cIndex] = {
                 userId: user.id,
-                telegramId: telegramId,
                 userName: user.first_name,
                 numbers: generatedCard,
                 isRealMoney
@@ -1240,7 +1206,6 @@ io.on('connection', (socket) => {
 
             socket.emit('my_card', { cardIndex: cIndex, numbers: generatedCard });
         } catch (e) {
-            delete gameState.selectedCards[cIndex];
             await client.query('ROLLBACK');
             console.error("Card purchase error:", e);
         } finally {
@@ -1265,10 +1230,3 @@ server.listen(PORT, async () => {
 
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
-
-
-
-
-
-
-
