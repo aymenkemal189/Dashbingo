@@ -138,18 +138,23 @@ const TELEBIRR_SECRET_TOKEN = process.env.TELEBIRR_SECRET_TOKEN || 'Verifi_Prod_
 const MERCHANT_TELEBIRR_PHONE = '0996910607'; // Aymen
 const MINIMUM_DEPOSIT = 50; // ዝቅተኛው ዴፖዚት 50 ETB
 
+
+
+
+
 // 🔍 ከሙሉ SMS ወይም ከጽሁፍ ውስጥ Ref እና Amount ማውጫ ፈንክሽን
+// 🔍 100% አስተማማኝ የቴሌብር SMS/Ref ማጣሪያ (DJ እንዳይቆረጥ የተስተካከለ)
 function parseTelebirrInput(input) {
     const text = String(input || '').trim();
     let ref = null;
     let amount = null;
 
     // 1. የግብይት ቁጥር መፈለግ (DJ የሚለውን ጨምሮ ሙሉውን ይወስዳል)
-    const djMatch = text.match(/\b(DJ[A-Z0-9]{8,12})\b/i);
+    const djMatch = text.match(/(DJ[A-Z0-9]{8,12})/i);
     if (djMatch) {
         ref = djMatch[1].toUpperCase();
     } else {
-        const genericMatch = text.match(/transaction\s*(?:number|id|ref|no)?\s*(?:is|:)?\s*([A-Z0-9]{8,14})/i);
+        const genericMatch = text.match(/(?:የሂሳብ\s*እንቅስቃሴ\s*ቁጥርዎ|transaction\s*(?:number|id|ref|no)?)\s*[:፡]?\s*([A-Z0-9]{8,14})/i);
         if (genericMatch) {
             ref = genericMatch[1].toUpperCase();
         } else if (/^[A-Z0-9]{8,14}$/i.test(text)) {
@@ -157,14 +162,15 @@ function parseTelebirrInput(input) {
         }
     }
 
-    // 2. የገንዘብ መጠን መፈለግ
-    const amtMatch = text.match(/(?:ETB|Birr)\s*([0-9]+(?:\.[0-9]{1,2})?)/i) || text.match(/\b([0-9]+(?:\.[0-9]{1,2})?)\s*(?:ETB|Birr)/i);
+    // 2. የገንዘብ መጠን መፈለግ (በ ETB፣ Birr ወይም በብር)
+    const amtMatch = text.match(/([0-9]+(?:\.[0-9]{1,2})?)\s*(?:ETB|Birr|ብር)/i) || text.match(/(?:ETB|Birr)\s*([0-9]+(?:\.[0-9]{1,2})?)/i);
     if (amtMatch) {
         amount = parseFloat(amtMatch[1]);
     }
 
     return { ref, amount };
 }
+
 
 // ================= TELEBIRR AGENT STATUS CONTROLLER ================= //
 let agentStatus = {
