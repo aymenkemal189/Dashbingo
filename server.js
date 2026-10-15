@@ -1010,7 +1010,6 @@ app.get('/api/admin/cashback/candidates', checkAdminAuth, async (req, res) => {
             WHERE t.type = 'WITHDRAW' AND t.status = 'REJECTED'
             GROUP BY t.user_id, u.telegram_id, u.first_name, u.username
             ORDER BY total_rejected DESC
-            LIMIT 200
         `);
         res.json(rows);
     } catch (err) {
@@ -1365,6 +1364,134 @@ io.on('connection', (socket) => {
 });
 
 // ================= START SERVER ================= //
+// 🔍 1. እውነተኛ ዴፖዚት ኖሯቸው ዊዝድሮው ሪጀክት የተደረገባቸውን እጩዎች ማምጫ
+app.get('/api/admin/cashback/real-candidates', checkAdminAuth, async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                u.id as user_id, 
+                u.telegram_id, 
+                u.first_name, 
+                u.username,
+                COALESCE(dep.total_dep, 0) as total_deposited,
+                COALESCE(w.total_rejected, 0) as total_rejected
+            FROM users u
+            INNER JOIN (
+                SELECT user_id, SUM(amount) as total_dep
+                FROM transactions
+                WHERE type = 'DEPOSIT' AND status = 'APPROVED'
+                GROUP BY user_id
+                HAVING SUM(amount) > 0
+            ) dep ON dep.user_id = u.id
+            INNER JOIN (
+                SELECT user_id, SUM(amount) as total_rejected
+                FROM transactions
+                WHERE type = 'WITHDRAW' AND status = 'REJECTED'
+                GROUP BY user_id
+                HAVING SUM(amount) > 0
+            ) w ON w.user_id = u.id
+            ORDER BY total_deposited DESC;
+        `;
+        const { rows } = await pool.query(query);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 🚀 2. ለእነዚህ ሰዎች ብቻ በዴፖዚታቸው መጠን ወደ Real Wallet ካሽባክ መላኪያ
+app.post('/api/admin/cashback/process-real', checkAdminAuth, async (req, res) => {
+    const { userIds, selectAll, percentage } = req.body;
+    const pct = parseFloat(percentage) || 100; // ዲፎልት 100% (ሙሉ ዴፖዚታቸውን ለመመለስ)
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        let query = `
+            SELECT 
+                u.id as user_id, 
+                u.telegram_id, 
+                u.first_name, 
+                dep.total_dep
+            FROM users u
+            INNER JOIN (
+                SELECT user_id, SUM(amount) as total_dep
+                FROM transactions
+                WHERE type = 'DEPOSIT' AND status = 'APPROVED'
+                GROUP BY user_id
+                HAVING SUM(amount) > 0
+            ) dep ON dep.user_id = u.id
+            INNER JOIN (
+                SELECT user_id
+                FROM transactions
+                WHERE type = 'WITHDRAW' AND status = 'REJECTED'
+                GROUP BY user_id
+            ) w ON w.user_id = u.id
+            WHERE 1=1
+        `;
+
+        if (!selectAll && Array.isArray(userIds) && userIds.length > 0) {
+            query += ` AND u.id = ANY($1::int[])`;
+        }
+
+        const { rows } = await client.query(query, (!selectAll && userIds?.length) ? [userIds] : []);
+
+        if (rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'ምንም እውነተኛ ዴፖዚት ኖሯቸው Reject የተደረገባቸው ተጫዋቾች አልተገኙም!' });
+        }
+
+        let totalGiven = 0;
+        let count = 0;
+
+        for (const user of rows) {
+            // በዴፖዚት ባደረጉት መጠን ልክ ፐርሰንቱን ማስላት
+            const realCashbackAmount = (parseFloat(user.total_dep) * pct) / 100;
+
+            if (realCashbackAmount > 0) {
+                // 💵 በቀጥታ ወደ REAL BALANCE መደመር!
+                await client.query(
+                    `UPDATE users 
+                     SET real_balance = real_balance + $1, 
+                         balance = balance + $1 
+                     WHERE id = $2`,
+                    [realCashbackAmount, user.user_id]
+                );
+
+                // ግብይቱን መመዝገብ
+                await client.query(
+                    `INSERT INTO transactions (user_id, type, payment_method, amount, sms_text, status) 
+                     VALUES ($1, 'CASHBACK', 'REAL', $2, 'ለእውነተኛ ዴፖዚት የተመለሰ Real Cash', 'APPROVED')`,
+                    [user.user_id, realCashbackAmount]
+                );
+
+                totalGiven += realCashbackAmount;
+                count++;
+
+                // 💌 ለተጠቃሚው በቴሌግራም ቦት የሚላክ ልዩ ማብራሪያ
+                sendTelegramNotification(
+                    user.telegram_id,
+                    `💵 <b>ውድ ${user.first_name}፣ እውነተኛ ተቀማጭዎ ወደ Real Wallet ተመልሷል!</b> ✅\n\nቀደም ሲል ያደረጉት ተቀማጭ (Deposit) ከቦነስ ጋር ተቀላቅሎ በነበረው የሲስተም ማሻሻያ ምክንያት ለተፈጠረው መስተጓጎል የ <b>${pct}% ተመላሽ</b> (<b>${realCashbackAmount.toFixed(2)} ETB</b>) በቀጥታ ወደ <b>Real Walletዎ (ሊያወጡት ወደሚችሉት ሒሳብ)</b> ገቢ ተደርጓል! 🎉\n\nአሁኑኑ ገብተው መጫወት ወይም ማውጣት ይችላሉ።\n\nስለ ታማኝነትዎና ትዕግስትዎ ከልብ እናመሰግናለን! 🙏⚡\n@DashBingo`
+                );
+            }
+        }
+
+        await client.query('COMMIT');
+        res.json({
+            success: true,
+            message: `ለ ${count} እውነተኛ ዴፖዚተሮች በድምሩ ${totalGiven.toFixed(2)} ETB ወደ Real Wallet ገቢ ተደርጓል!`
+        });
+
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error("Real cashback error:", err);
+        res.status(500).json({ error: err.message });
+    } finally {
+        client.release();
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, async () => {
     console.log(`⚡ Dash Bingo Ultra-Server running on port ${PORT}`);
