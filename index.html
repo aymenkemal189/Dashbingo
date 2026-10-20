@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dash Bingo ⚡</title>
+    <title>Dash Bingo ⚡ & Fast Keno</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -23,6 +23,13 @@
             50% { box-shadow: 0 0 30px rgba(234, 179, 8, 0.9); border-color: rgba(250, 204, 21, 1); }
         }
         .one-away-glow { animation: oneAwayPulse 1s infinite alternate; }
+
+        /* FAST KENO GLOW & SHINE ANIMATION */
+        @keyframes kenoPulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.35); border-color: rgba(16, 185, 129, 0.6); }
+            50% { box-shadow: 0 0 25px rgba(16, 185, 129, 0.7); border-color: rgba(52, 211, 153, 1); }
+        }
+        .keno-promo-card { animation: kenoPulse 2.5s infinite ease-in-out; }
     </style>
 </head>
 <body class="pb-24 select-none">
@@ -65,7 +72,7 @@
                 <p><b>1. የመጀመሪያ ተቀማጭ ግዴታ፦</b> ገንዘብ ለማውጣት ቢያንስ 1 ጊዜ 50 ETB ተቀማጭ (Deposit) ማድረግ ግዴታ ነው።</p>
                 <p><b>2. አነስተኛ ማውጫ፦</b> አነስተኛው የማውጣት መጠን <b>100 ETB</b> ነው።</p>
                 <p><b>3. ከፍተኛ ማውጫ፦</b> በአንድ ጊዜ የሚፈቀደው ከፍተኛው ማውጫ <b>5,000 ETB</b> ነው።</p>
-                <p><b>4. የቦነስ ጨዋታ ግዴታ፦</b> ነፃ ቦነሶችን በቀጥታ ማውጣት አይቻልም፤ ተጫውተውበት ያሸነፉትን ማውጣት ይችላሉ።</p>
+                <p><b>4. አንድ ወጥ ዋሌት፦</b> አሸናፊ ገንዘብዎን በማንኛውም ሰዓት በቴሌብር ማውጣት ይችላሉ።</p>
                 <p><b>5. የአገልግሎት ክፍያ፦</b> በማንኛውም ዊዝድሮው ላይ የ 5% የኔትወርክ ማስተላለፊያ ክፍያ ይቀነሳል።</p>
                 <p><b>6. የማውጣት ድግግሞሽ፦</b> በ 24 ሰዓት ውስጥ ቢበዛ 2 ጊዜ ብቻ ማውጣት ይቻላል።</p>
                 <p><b>7. የማረጋገጫ ጊዜ፦</b> ዴፖዚት በ Verifi አውቶማቲክ ወዲያውኑ ይገባል፤ ዊዝድሮው ደግሞ በኤጀንት @Dashagent1 ይፈጸማል።</p>
@@ -79,7 +86,37 @@
         </div>
     </div>
 
-    <!-- TOP FIXED HEADER WITH DUAL WALLET BADGES -->
+    <!-- 🎮 FAST KENO FULLSCREEN IFRAME MODAL CONTAINER -->
+    <div id="kenoModalContainer" class="fixed inset-0 z-50 bg-[#12181c] hidden flex flex-col">
+        <!-- Close / Top Bar inside Keno Overlay -->
+        <div class="bg-[#172127] border-b border-[#2a3a45] px-3 py-2 flex justify-between items-center z-20">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+                <span class="text-xs font-black text-emerald-300 tracking-wider">FAST KENO LIVE 🎱</span>
+            </div>
+            <button onclick="closeKenoGame()" class="px-3 py-1 bg-red-600/20 hover:bg-red-600/40 text-red-300 border border-red-500/40 rounded-xl text-xs font-black flex items-center gap-1 active:scale-95 transition">
+                <i class="fa-solid fa-arrow-left"></i> ወደ ቢንጎ ተመለስ
+            </button>
+        </div>
+
+        <!-- Animated Loader -->
+        <div id="kenoLoader" class="absolute inset-0 flex flex-col items-center justify-center bg-[#12181c] z-10">
+            <div class="w-12 h-12 border-4 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-xs font-black text-emerald-400 mt-3 tracking-wide">Fast Keno በመጫን ላይ...</p>
+            <span class="text-[10px] text-slate-400 mt-1">በየ 80 ሰከንዱ የቀጥታ እጣ</span>
+        </div>
+
+        <!-- The Keno Iframe -->
+        <iframe 
+            id="kenoIframe" 
+            src="about:blank" 
+            class="w-full h-full border-0 flex-1" 
+            allow="autoplay; vibration"
+            loading="lazy">
+        </iframe>
+    </div>
+
+    <!-- TOP FIXED HEADER WITH SINGLE UNIFIED WALLET (BONUS REMOVED) -->
     <header class="gradient-header text-white p-3 sticky top-0 z-40 shadow-xl border-b border-blue-500/30">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2.5">
@@ -92,35 +129,61 @@
                 </div>
             </div>
 
-            <!-- Dual Wallet Quick Badges -->
-            <div class="flex items-center gap-1.5">
-                <div class="bg-emerald-950/80 px-2.5 py-1 rounded-xl flex items-center gap-1 border border-emerald-500/40 shadow-sm">
-                    <span class="text-[9px] text-emerald-400 font-bold uppercase">Real:</span>
-                    <span id="playerRealBalance" class="font-black text-xs text-white">0.00</span>
+            <!-- Single Unified Wallet Badge -->
+            <div class="flex items-center gap-2">
+                <div class="bg-gradient-to-r from-slate-950 via-emerald-950/80 to-slate-950 px-3 py-1.5 rounded-2xl flex items-center gap-1.5 border border-emerald-500/50 shadow-md">
+                    <span class="text-[10px] text-emerald-400 font-extrabold uppercase tracking-wide">ሒሳብ:</span>
+                    <span id="playerRealBalance" class="font-black text-sm text-yellow-300">0.00</span>
+                    <span class="text-[10px] text-slate-300 font-bold">ETB</span>
+                    <!-- Hidden element to maintain backwards JS compatibility -->
+                    <span id="playerBonusBalance" class="hidden">0.00</span>
                 </div>
-                <div class="bg-purple-950/80 px-2 py-1 rounded-xl flex items-center gap-1 border border-purple-500/40 shadow-sm">
-                    <span class="text-[9px] text-yellow-300 font-bold uppercase">Bonus:</span>
-                    <span id="playerBonusBalance" class="font-black text-xs text-yellow-300">0.00</span>
-                </div>
+                <button onclick="switchTab('wallet'); switchWalletView('deposit');" class="w-7 h-7 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 flex items-center justify-center text-xs font-black shadow-md active:scale-95 transition" title="ገንዘብ አስገባ">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
             </div>
         </div>
     </header>
 
     <main class="max-w-md mx-auto p-3 space-y-2.5">
 
-        <!-- 🎁 20 ETB WELCOME BONUS BANNER -->
-        <div id="welcomeBonusBanner" class="p-3 bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-500/20 rounded-2xl border border-yellow-500/40 flex justify-between items-center shadow-md">
-            <div class="flex items-center gap-2.5">
-                <span class="text-2xl animate-bounce">🎁</span>
-                <div>
-                    <h4 class="font-black text-xs text-yellow-300">የ 20 ETB ነፃ ቦነስ!</h4>
-                    <p class="text-[10px] text-slate-300">አሁኑኑ ይውሰዱና 2 ዙር በነፃ ይጫወቱ</p>
+        <!-- ================= 🎱 FAST KENO SPECIAL PROMOTIONAL BANNER ================= -->
+        <div onclick="openKenoGame()" class="keno-promo-card rounded-3xl border-2 border-emerald-500/70 p-3 bg-gradient-to-br from-emerald-950/90 via-slate-950 to-slate-900 shadow-2xl relative overflow-hidden cursor-pointer active:scale-[0.98] transition-all group">
+            <!-- Glow background overlay -->
+            <div class="absolute -right-10 -bottom-10 w-36 h-36 bg-emerald-500/20 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div class="flex gap-3 items-center">
+                <!-- Promo Image -->
+                <div class="w-24 h-20 rounded-2xl overflow-hidden flex-shrink-0 border border-emerald-400/50 shadow-lg relative bg-slate-900">
+                    <img src="https://i.postimg.cc/598fKqX8/Screenshot-20261020-164447-Chrome(1)(1).jpg" alt="Fast Keno" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                    <span class="absolute top-1 left-1 bg-red-600 text-white text-[8px] font-black px-1.5 py-0.2 rounded-md shadow">NEW</span>
+                </div>
+
+                <!-- Promo Info -->
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-black text-white flex items-center gap-1.5 tracking-tight">
+                            FAST KENO <span class="text-emerald-400">🎱</span>
+                        </h3>
+                        <span class="text-[9px] font-black text-emerald-400 bg-emerald-950/90 border border-emerald-500/50 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <i class="fa-solid fa-shield-halved text-[8px]"></i> FAIRNESS ✅
+                        </span>
+                    </div>
+                    <p class="text-[10px] text-slate-300 font-medium mt-1 leading-snug">
+                        በየ 80 ሰከንዱ 20 ቁጥሮች የሚወጡበት ፈጣን ጨዋታ!
+                    </p>
+                    <div class="flex items-center justify-between mt-2">
+                        <span class="text-[10px] font-black text-yellow-300">እስከ 30,000 ETB አሸንፉ</span>
+                        <span class="bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-black text-[10px] px-2.5 py-1 rounded-xl shadow-md flex items-center gap-1 group-hover:brightness-110">
+                            ተጫወት <i class="fa-solid fa-play text-[8px]"></i>
+                        </span>
+                    </div>
                 </div>
             </div>
-            <button onclick="claimWelcomeBonus()" class="gradient-blue text-white px-3.5 py-1.5 rounded-xl font-black text-xs shadow-md active:scale-95 transition">
-                ውሰድ
-            </button>
         </div>
+
+        <!-- 🎁 20 ETB WELCOME GIFT BANNER -->
+      
 
         <!-- ================= TAB 1: BINGO ARENA ================= -->
         <section id="tab-game" class="space-y-2.5">
@@ -410,7 +473,7 @@
 
                 <div id="withdrawLockNotice" class="p-2.5 bg-blue-950/40 rounded-xl border border-blue-500/30 text-[10px] text-blue-200 flex items-center gap-2">
                     <i class="fa-solid fa-lock text-yellow-400 text-sm"></i>
-                    <span>ገንዘብ ለማውጣት ቢያንስ 1 ጊዜ <b>50 ETB</b> ተቀማጭ ማድረግ ግዴታ ነው። ማውጣት የሚቻለው ከ <b>Real Wallet</b> ብቻ ነው።</span>
+                    <span>ገንዘብ ለማውጣት ቢያንስ 1 ጊዜ <b>50 ETB</b> ተቀማጭ ማድረግ ግዴታ ነው። ማውጣት የሚቻለው ከ <b>ዋና ሒሳብዎ</b> ብቻ ነው።</span>
                 </div>
 
                 <div>
@@ -455,7 +518,7 @@
                     <i class="fa-solid fa-fire text-yellow-300 text-base"></i>
                     <h3 class="font-black text-xs">የሳምንቱ ከፍተኛ ተጫዋቾች ሽልማት 🔥</h3>
                 </div>
-                <p class="text-[10px] text-blue-100 leading-relaxed">በየሳምንቱ ብዙ ካርድ ለቆረጡ 10 ምርጥ ተጫዋቾች ከ 200 - 300 ETB ቦነስ ይሰጣቸዋል!</p>
+                <p class="text-[10px] text-blue-100 leading-relaxed">በየሳምንቱ ብዙ ካርድ ለቆረጡ 10 ምርጥ ተጫዋቾች ከ 200 - 300 ETB ሽልማት ይሰጣቸዋል!</p>
             </div>
 
             <div class="glass-box p-3 rounded-2xl space-y-2 border border-slate-800">
@@ -510,11 +573,11 @@
 
                 <div class="grid grid-cols-3 gap-1.5 text-center">
                     <div class="p-2 bg-slate-950 rounded-xl border border-slate-800">
-                        <span class="text-[8px] text-emerald-400 font-bold uppercase">Real ሒሳብ</span>
+                        <span class="text-[8px] text-emerald-400 font-bold uppercase">ዋና ሒሳብ</span>
                         <h4 id="profileRealBal" class="text-xs font-black text-emerald-400 mt-0.5">0.00</h4>
                     </div>
                     <div class="p-2 bg-slate-950 rounded-xl border border-slate-800">
-                        <span class="text-[8px] text-yellow-400 font-bold uppercase">Bonus ሒሳብ</span>
+                        <span class="text-[8px] text-yellow-400 font-bold uppercase">የተቀመጠ ድምር</span>
                         <h4 id="profileBonusBal" class="text-xs font-black text-yellow-400 mt-0.5">0.00</h4>
                     </div>
                     <div class="p-2 bg-slate-950 rounded-xl border border-slate-800">
@@ -758,6 +821,98 @@
         }
     </script>
 
+    <!-- ================= 🎱 FAST KENO LAUNCHER & BRIDGE ================= -->
+    <script>
+        const FAST_KENO_URL = "https://hulubetsupport.github.io/Keno-fast/";
+
+        function openKenoGame() {
+            playTouchBeep();
+            
+            // የቢንጎ ድምጽ ከኬኖ ጋር እንዳይጋጭ እናቆመዋለን
+            bgSelectionAudio.pause();
+            bgPlayingAudio.pause();
+
+            const modal = document.getElementById('kenoModalContainer');
+            const iframe = document.getElementById('kenoIframe');
+            const loader = document.getElementById('kenoLoader');
+
+            modal.classList.remove('hidden');
+            loader.style.display = 'flex';
+
+            // በአንድ ጊዜ ብቻ እንዲጫን (Fast Lazy Load)
+            if (iframe.src === "about:blank" || !iframe.src || iframe.src === "") {
+                iframe.src = FAST_KENO_URL;
+            } else {
+                // ቀደም ሲል ተጭኖ ከሆነ ባላንስ እንዲያድስ ትዕዛዝ እንልካለን
+                try {
+                    iframe.contentWindow.postMessage({ type: 'UPDATE_BALANCE' }, '*');
+                } catch(e) {}
+                loader.style.display = 'none';
+            }
+
+            iframe.onload = () => {
+                loader.style.display = 'none';
+                const tgInitData = window.Telegram?.WebApp?.initData || "";
+                iframe.contentWindow.postMessage({
+                    type: 'INIT',
+                    initData: tgInitData
+                }, '*');
+            };
+        }
+
+        function closeKenoGame() {
+            playTouchBeep();
+            const modal = document.getElementById('kenoModalContainer');
+            modal.classList.add('hidden');
+
+            // ከኬኖ ሲወጣ የቢንጎ ሙዚቃን መልሶ ማስጀመር
+            if (bgMusicEnabled) {
+                bgSelectionAudio.currentTime = 0;
+                bgSelectionAudio.play().catch(() => {});
+            }
+
+            // ባላንሱን በቅጽበት ማደስ
+            syncUser();
+        }
+
+        // ከ Keno የሚመጡ የ postMessage ትዕዛዞች ማስተናገጃ
+        window.addEventListener('message', (event) => {
+            const data = event.data;
+            if (!data || typeof data !== 'object') return;
+
+            switch (data.type) {
+                case 'GAME_READY':
+                    const iframe = document.getElementById('kenoIframe');
+                    if (iframe && iframe.contentWindow) {
+                        iframe.contentWindow.postMessage({
+                            type: 'INIT',
+                            initData: window.Telegram?.WebApp?.initData || ""
+                        }, '*');
+                    }
+                    break;
+
+                case 'EXIT_GAME':
+                    closeKenoGame();
+                    break;
+
+                case 'OPEN_DEPOSIT':
+                    closeKenoGame();
+                    switchTab('wallet');
+                    switchWalletView('deposit');
+                    showToast("እባክዎ መጀመሪያ ሂሳብዎን ይሙሉ", "info");
+                    break;
+
+                case 'OPEN_SUPPORT':
+                    window.open('https://t.me/DashBingoo', '_blank');
+                    break;
+
+                case 'BALANCE_UPDATE':
+                    syncUser();
+                    break;
+            }
+        });
+    </script>
+
     <!-- ================= CLIENT CORE ENGINE ================= -->
     <script>
         const BACKEND_URL = "https://dashserver-c9w5.onrender.com";
@@ -774,7 +929,7 @@
         document.getElementById('refLinkInput').value = refLink;
 
         function shareReferralToTelegram() {
-            const shareText = encodeURIComponent(`⚡ Dash Bingo ላይ አሁኑኑ ተቀላቀሉኝና 20 ETB ነፃ ቦነስ ይውሰዱ! 👇\n${refLink}`);
+            const shareText = encodeURIComponent(`⚡ Dash Bingo እና Fast Keno ላይ አሁኑኑ ተቀላቀሉኝና 20 ETB ነፃ ስጦታ ይውሰዱ! 👇\n${refLink}`);
             window.open(`https://t.me/share/url?url=${refLink}&text=${shareText}`, '_blank');
         }
 
@@ -789,7 +944,7 @@
         let currentCardViewIndex = 0;
         let currentCalledNumbers = [];
         let activeRoundNumber = 1001;
-        let userData = { real_balance: 0, bonus_balance: 0, total_deposited: 0 };
+        let userData = { balance: 0, real_balance: 0, total_deposited: 0 };
         let myBetHistory = JSON.parse(localStorage.getItem(`bets_${user.id}`) || '[]');
 
         // CHECKOUT FLOW STATE
@@ -812,19 +967,18 @@
                 const data = await res.json();
                 if (data.id) {
                     userData = data;
-                    const realBal = parseFloat(data.real_balance || 0).toFixed(2);
-                    const bonusBal = parseFloat(data.bonus_balance || 0).toFixed(2);
+                    // ወጥ የሆነ ነጠላ Balance ማሳያ
+                    const bal = parseFloat(data.balance ?? data.real_balance ?? 0).toFixed(2);
                     
-                    document.getElementById('playerRealBalance').innerText = realBal;
-                    document.getElementById('playerBonusBalance').innerText = bonusBal;
-                    document.getElementById('profileRealBal').innerText = realBal;
-                    document.getElementById('profileBonusBal').innerText = bonusBal;
+                    document.getElementById('playerRealBalance').innerText = bal;
+                    document.getElementById('profileRealBal').innerText = bal;
+                    document.getElementById('profileBonusBal').innerText = parseFloat(data.total_deposited || 0).toFixed(2);
                     document.getElementById('profileWinBal').innerText = parseFloat(data.total_won || 0).toFixed(2);
 
                     const lockNotice = document.getElementById('withdrawLockNotice');
                     if (parseFloat(data.total_deposited || 0) >= 50) {
                         lockNotice.className = "p-2.5 bg-emerald-950/40 rounded-xl border border-emerald-500/30 text-[10px] text-emerald-200 flex items-center gap-2";
-                        lockNotice.innerHTML = '<i class="fa-solid fa-lock-open text-emerald-400 text-sm"></i> <span>የመጀመሪያ ተቀማጭ ተረጋግጧል! ከ Real Walletዎ ገንዘብ ማውጣት ይችላሉ።</span>';
+                        lockNotice.innerHTML = '<i class="fa-solid fa-lock-open text-emerald-400 text-sm"></i> <span>የመጀመሪያ ተቀማጭ ተረጋግጧል! ከሒሳብዎ ገንዘብ ማውጣት ይችላሉ።</span>';
                     }
                 }
             } catch (e) {}
@@ -850,7 +1004,7 @@
                     localStorage.setItem(`claimed_welcome_${user.id}`, 'true');
                     syncUser();
                 } else {
-                    showToast(data.error || "ቦነስ መውሰድ አልተቻለም", "error");
+                    showToast(data.error || "ስጦታውን መውሰድ አልተቻለም", "error");
                     document.getElementById('welcomeBonusBanner').classList.add('hidden');
                 }
             } catch (e) {
@@ -998,8 +1152,7 @@
             document.getElementById('checkoutTimerDisplay').innerText = str;
         }
 
-        // 🔍 Smart Auto Extraction in Step 3
-        // 🔍 Smart Auto Extraction (DJ ተቆርጦ እንዳይቀር የተስተካከለ)
+        // 🔍 Smart Auto Extraction
         function autoExtractRefAndAmount() {
             const val = document.getElementById('checkoutVerifyInput').value.trim();
             const badge = document.getElementById('checkoutExtractedBadge');
@@ -1010,7 +1163,6 @@
                 return;
             }
 
-            // 1. DJ ጨምሮ ሙሉውን 10-12 ፊደል ማውጣት
             const djMatch = val.match(/(DJ[A-Z0-9]{8,12})/i);
             if (djMatch) {
                 textEl.innerText = djMatch[1].toUpperCase();
@@ -1042,7 +1194,6 @@
                 return showToast("የተሳሳተ መጠን! እባክዎ እንደገና ይሞክሩ።", "error");
             }
 
-            // ⚡ ንጹህ DJ ያለበትን Ref ከባጁ ማውጣት
             const textEl = document.getElementById('checkoutExtractedText');
             const badge = document.getElementById('checkoutExtractedBadge');
             const cleanRef = (textEl && badge && !badge.classList.contains('hidden')) 
@@ -1059,7 +1210,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         telegramId: user.id,
-                        rawInput: cleanRef, // ⚡ ንጹሁ DJ ያለበት Ref ይላካል
+                        rawInput: cleanRef,
                         typedAmount: checkoutAmount
                     })
                 });
@@ -1081,7 +1232,6 @@
                 btn.innerHTML = '<i class="fa-solid fa-check text-xs"></i> Submit Verification';
             }
         }
-        
 
         function calculateWithdrawFee() {
             const inputVal = parseFloat(document.getElementById('withAmount').value);
@@ -1111,8 +1261,9 @@
                 return showToast("ገንዘብ ለማውጣት ቢያንስ 1 ጊዜ 50 ETB ተቀማጭ ማድረግ ግዴታ ነው!", "error");
             }
 
-            if (parseFloat(userData.real_balance || 0) < amount) {
-                return showToast(`በቂ Real Balance የለዎትም! (ያለዎት Real: ${(userData.real_balance || 0)} ETB)`, "error");
+            const currentBal = parseFloat(userData.balance ?? userData.real_balance ?? 0);
+            if (currentBal < amount) {
+                return showToast(`በቂ ሒሳብ የለዎትም! (ያለዎት ሒሳብ: ${currentBal} ETB)`, "error");
             }
 
             if (!accountNumber || !accountName) {
@@ -1503,7 +1654,7 @@
             }
         });
 
-        // ================= 🏆 SAFE LEADERBOARD LOADERS ================= //
+        // ================= 🏆 LEADERBOARD LOADERS ================= //
         async function loadWeeklyTop() {
             const list = document.getElementById('weeklyTopList');
             if (!list) return;
@@ -1552,7 +1703,7 @@
             }
         }
 
-        // ================= 📜 SAFE HISTORY LOADERS ================= //
+        // ================= 📜 HISTORY LOADERS ================= //
         function switchHistorySubTab(tab) {
             playTouchBeep();
             if (tab === 'txs') {
