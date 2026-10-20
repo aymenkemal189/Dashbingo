@@ -825,8 +825,38 @@
     <script>
         const FAST_KENO_URL = "https://hulubetsupport.github.io/Keno-fast/";
 
-        function openKenoGame() {
-            playTouchBeep();
+        // በ Dash Bingo index.html ውስጥ openKenoGame ፈንክሽንን እንዲህ ያድርጉት፡
+function openKenoGame() {
+    playTouchBeep();
+    bgSelectionAudio.pause();
+    bgPlayingAudio.pause();
+
+    const modal = document.getElementById('kenoModalContainer');
+    const iframe = document.getElementById('kenoIframe');
+    const loader = document.getElementById('kenoLoader');
+
+    modal.classList.remove('hidden');
+
+    const currentRealBal = parseFloat(userData.real_balance || 0);
+
+    const sendInit = () => {
+        if (loader) loader.style.display = 'none';
+        const tgInitData = window.Telegram?.WebApp?.initData || "";
+        iframe.contentWindow.postMessage({
+            type: 'INIT',
+            initData: tgInitData,
+            instantBalance: currentRealBal // ⚡ ባላንሱን በቅጽበት ይልካል
+        }, '*');
+    };
+
+    if (iframe.src === "about:blank" || !iframe.src || iframe.src === "") {
+        if (loader) loader.style.display = 'flex';
+        iframe.src = FAST_KENO_URL;
+        iframe.onload = sendInit;
+    } else {
+        sendInit();
+    }
+}
             
             // የቢንጎ ድምጽ ከኬኖ ጋር እንዳይጋጭ እናቆመዋለን
             bgSelectionAudio.pause();
