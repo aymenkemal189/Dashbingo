@@ -822,90 +822,72 @@
     </script>
 
     <!-- ================= 🎱 FAST KENO LAUNCHER & BRIDGE ================= -->
+
+    <!-- ================= 🎱 FAST KENO LAUNCHER & BRIDGE ================= -->
     <script>
         const FAST_KENO_URL = "https://hulubetsupport.github.io/Keno-fast/";
 
-        // በ Dash Bingo index.html ውስጥ openKenoGame ፈንክሽንን እንዲህ ያድርጉት፡
-function openKenoGame() {
-    playTouchBeep();
-    bgSelectionAudio.pause();
-    bgPlayingAudio.pause();
-
-    const modal = document.getElementById('kenoModalContainer');
-    const iframe = document.getElementById('kenoIframe');
-    const loader = document.getElementById('kenoLoader');
-
-    modal.classList.remove('hidden');
-
-    const currentRealBal = parseFloat(userData.real_balance || 0);
-
-    const sendInit = () => {
-        if (loader) loader.style.display = 'none';
-        const tgInitData = window.Telegram?.WebApp?.initData || "";
-        iframe.contentWindow.postMessage({
-            type: 'INIT',
-            initData: tgInitData,
-            instantBalance: currentRealBal // ⚡ ባላንሱን በቅጽበት ይልካል
-        }, '*');
-    };
-
-    if (iframe.src === "about:blank" || !iframe.src || iframe.src === "") {
-        if (loader) loader.style.display = 'flex';
-        iframe.src = FAST_KENO_URL;
-        iframe.onload = sendInit;
-    } else {
-        sendInit();
-    }
-}
+        function openKenoGame() {
+            try { if (typeof playTouchBeep === 'function') playTouchBeep(); } catch(e) {}
             
-            // የቢንጎ ድምጽ ከኬኖ ጋር እንዳይጋጭ እናቆመዋለን
-            bgSelectionAudio.pause();
-            bgPlayingAudio.pause();
+            // የቢንጎ ሙዚቃን ፀጥ ማድረግ
+            try {
+                if (typeof bgSelectionAudio !== 'undefined') bgSelectionAudio.pause();
+                if (typeof bgPlayingAudio !== 'undefined') bgPlayingAudio.pause();
+            } catch(e) {}
 
             const modal = document.getElementById('kenoModalContainer');
             const iframe = document.getElementById('kenoIframe');
             const loader = document.getElementById('kenoLoader');
 
-            modal.classList.remove('hidden');
-            loader.style.display = 'flex';
+            if (!modal || !iframe) return;
 
-            // በአንድ ጊዜ ብቻ እንዲጫን (Fast Lazy Load)
+            modal.classList.remove('hidden');
+
+            const sendTelegramInit = () => {
+                if (loader) loader.style.display = 'none';
+                try {
+                    const tgInitData = window.Telegram?.WebApp?.initData || "";
+                    iframe.contentWindow.postMessage({
+                        type: 'INIT',
+                        initData: tgInitData
+                    }, '*');
+                } catch(e) {}
+            };
+
+            // የመጀመሪያ ጭነት ከሆነ
             if (iframe.src === "about:blank" || !iframe.src || iframe.src === "") {
+                if (loader) loader.style.display = 'flex';
                 iframe.src = FAST_KENO_URL;
+                iframe.onload = sendTelegramInit;
             } else {
-                // ቀደም ሲል ተጭኖ ከሆነ ባላንስ እንዲያድስ ትዕዛዝ እንልካለን
+                // ቀደም ሲል ተጭኖ ከነበረ
+                if (loader) loader.style.display = 'none';
                 try {
                     iframe.contentWindow.postMessage({ type: 'UPDATE_BALANCE' }, '*');
                 } catch(e) {}
-                loader.style.display = 'none';
+                sendTelegramInit();
             }
-
-            iframe.onload = () => {
-                loader.style.display = 'none';
-                const tgInitData = window.Telegram?.WebApp?.initData || "";
-                iframe.contentWindow.postMessage({
-                    type: 'INIT',
-                    initData: tgInitData
-                }, '*');
-            };
         }
 
         function closeKenoGame() {
-            playTouchBeep();
+            try { if (typeof playTouchBeep === 'function') playTouchBeep(); } catch(e) {}
             const modal = document.getElementById('kenoModalContainer');
-            modal.classList.add('hidden');
+            if (modal) modal.classList.add('hidden');
 
             // ከኬኖ ሲወጣ የቢንጎ ሙዚቃን መልሶ ማስጀመር
-            if (bgMusicEnabled) {
-                bgSelectionAudio.currentTime = 0;
-                bgSelectionAudio.play().catch(() => {});
-            }
+            try {
+                if (typeof bgMusicEnabled !== 'undefined' && bgMusicEnabled) {
+                    bgSelectionAudio.currentTime = 0;
+                    bgSelectionAudio.play().catch(() => {});
+                }
+            } catch(e) {}
 
             // ባላንሱን በቅጽበት ማደስ
-            syncUser();
+            if (typeof syncUser === 'function') syncUser();
         }
 
-        // ከ Keno የሚመጡ የ postMessage ትዕዛዞች ማስተናገጃ
+        // ከ Keno Iframe የሚመጡ ትዕዛዞች ማስተናገጃ
         window.addEventListener('message', (event) => {
             const data = event.data;
             if (!data || typeof data !== 'object') return;
@@ -927,9 +909,9 @@ function openKenoGame() {
 
                 case 'OPEN_DEPOSIT':
                     closeKenoGame();
-                    switchTab('wallet');
-                    switchWalletView('deposit');
-                    showToast("እባክዎ መጀመሪያ ሂሳብዎን ይሙሉ", "info");
+                    if (typeof switchTab === 'function') switchTab('wallet');
+                    if (typeof switchWalletView === 'function') switchWalletView('deposit');
+                    if (typeof showToast === 'function') showToast("እባክዎ መጀመሪያ ሂሳብዎን ይሙሉ", "info");
                     break;
 
                 case 'OPEN_SUPPORT':
@@ -937,12 +919,11 @@ function openKenoGame() {
                     break;
 
                 case 'BALANCE_UPDATE':
-                    syncUser();
+                    if (typeof syncUser === 'function') syncUser();
                     break;
             }
         });
     </script>
-
     <!-- ================= CLIENT CORE ENGINE ================= -->
     <script>
         const BACKEND_URL = "https://dashserver-c9w5.onrender.com";
