@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="am" class="dark">
 <head>
@@ -35,6 +36,52 @@
 
     <!-- FAST MICRO-TOAST CONTAINER -->
     <div id="toastContainer" class="fixed top-3 left-4 right-4 z-50 flex flex-col items-center gap-1.5 pointer-events-none"></div>
+
+    <!-- 🔊 QUICK SOUND CONTROLLER MODAL (POPUP) -->
+    <div id="quickSoundModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-box p-4 rounded-3xl max-w-xs w-full space-y-3.5 border border-blue-500/40 shadow-2xl">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+                <h3 class="text-xs font-black text-white flex items-center gap-2">
+                    <i class="fa-solid fa-volume-high text-yellow-400"></i> የድምጽ ቅንብሮች (Audio)
+                </h3>
+                <button onclick="toggleQuickSoundModal()" class="w-6 h-6 rounded-lg bg-slate-800 text-slate-400 flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Background Music Toggle -->
+            <div class="flex justify-between items-center p-2.5 bg-slate-950 rounded-2xl border border-slate-800">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-music text-blue-400 text-xs"></i>
+                    <div>
+                        <p class="font-bold text-xs text-white leading-none">የጀርባ ሙዚቃ</p>
+                        <span class="text-[9px] text-slate-400">Lobby BG Music</span>
+                    </div>
+                </div>
+                <button onclick="toggleBgMusic()" id="btnQuickBgMusic" class="px-3 py-1 rounded-xl font-black text-[11px] transition">
+                    --
+                </button>
+            </div>
+
+            <!-- Voice Caller Toggle -->
+            <div class="flex justify-between items-center p-2.5 bg-slate-950 rounded-2xl border border-slate-800">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-bullhorn text-yellow-400 text-xs"></i>
+                    <div>
+                        <p class="font-bold text-xs text-white leading-none">የቁጥር ጥሪ ድምጽ</p>
+                        <span class="text-[9px] text-slate-400">Amharic Caller</span>
+                    </div>
+                </div>
+                <button onclick="toggleVoiceCaller()" id="btnQuickCaller" class="px-3 py-1 rounded-xl font-black text-[11px] transition">
+                    --
+                </button>
+            </div>
+
+            <button onclick="toggleQuickSoundModal()" class="w-full gradient-blue text-white font-black py-2.5 rounded-xl text-xs active:scale-95 transition">
+                እሺ (Done)
+            </button>
+        </div>
+    </div>
 
     <!-- WINNER CELEBRATION MODAL -->
     <div id="winnerModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-xl z-50 flex items-center justify-center p-4 hidden">
@@ -112,10 +159,10 @@
         </iframe>
     </div>
 
-    <!-- TOP FIXED HEADER -->
+    <!-- TOP FIXED HEADER WITH SOUND POPUP BUTTON -->
     <header class="gradient-header text-white p-3 sticky top-0 z-40 shadow-xl border-b border-blue-500/30">
         <div class="max-w-md mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-2.5">
+            <div class="flex items-center gap-2">
                 <img src="https://i.postimg.cc/Bv4zLkh5/20261005-200757.jpg" alt="Dash Bingo" class="w-9 h-9 rounded-2xl object-cover border-2 border-white/60 shadow-lg shadow-blue-500/40">
                 <div>
                     <h1 class="text-sm font-black tracking-tight leading-tight flex items-center gap-1 text-white">
@@ -125,11 +172,18 @@
                 </div>
             </div>
 
-            <div class="flex items-center gap-2">
-                <div class="bg-gradient-to-r from-slate-950 via-emerald-950/80 to-slate-950 px-3 py-1.5 rounded-2xl flex items-center gap-1.5 border border-emerald-500/50 shadow-md">
-                    <span class="text-[10px] text-emerald-400 font-extrabold uppercase tracking-wide">ሒሳብ:</span>
-                    <span id="playerRealBalance" class="font-black text-sm text-yellow-300">0.00</span>
-                    <span class="text-[10px] text-slate-300 font-bold">ETB</span>
+            <!-- Controls: Sound Toggle + Wallet Badge -->
+            <div class="flex items-center gap-1.5">
+                <!-- 🔊 Sound Control Button -->
+                <button onclick="toggleQuickSoundModal()" id="btnHeaderSound" class="w-8 h-8 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-yellow-400 border border-yellow-400/30 flex items-center justify-center text-xs shadow-md transition active:scale-95" title="ድምጽ ቀይር">
+                    <i id="headerSoundIcon" class="fa-solid fa-volume-high"></i>
+                </button>
+
+                <!-- Single Unified Wallet Badge -->
+                <div class="bg-gradient-to-r from-slate-950 via-emerald-950/80 to-slate-950 px-2.5 py-1.5 rounded-2xl flex items-center gap-1 border border-emerald-500/50 shadow-md">
+                    <span class="text-[9px] text-emerald-400 font-extrabold uppercase">ሒሳብ:</span>
+                    <span id="playerRealBalance" class="font-black text-xs text-yellow-300">0.00</span>
+                    <span class="text-[9px] text-slate-300 font-bold">ETB</span>
                     <span id="playerBonusBalance" class="hidden">0.00</span>
                 </div>
                 <button onclick="switchTab('wallet'); switchWalletView('deposit');" class="w-7 h-7 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 flex items-center justify-center text-xs font-black shadow-md active:scale-95 transition" title="ገንዘብ አስገባ">
@@ -299,14 +353,12 @@
                             
                             <!-- Payment Options Grid: Telebirr & CBE -->
                             <div class="grid grid-cols-2 gap-2">
-                                <!-- Telebirr Selection -->
                                 <div onclick="selectPaymentMethod('TELEBIRR')" id="methodCardTelebirr" class="p-3 bg-slate-950 rounded-2xl border-2 border-emerald-500 cursor-pointer flex flex-col items-center justify-center gap-1.5 shadow-md transition active:scale-95">
                                     <img src="https://i.postimg.cc/1zH5wqRj/20260805-174415.png" class="w-8 h-8 object-contain">
                                     <span class="font-black text-white text-xs">ቴሌብር (Telebirr)</span>
                                     <span id="badgeTelebirr" class="text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded-full font-bold">ተመርጧል ✅</span>
                                 </div>
 
-                                <!-- CBE Bank Selection -->
                                 <div onclick="selectPaymentMethod('CBE')" id="methodCardCbe" class="p-3 bg-slate-950 rounded-2xl border border-slate-800 cursor-pointer flex flex-col items-center justify-center gap-1.5 shadow-md transition active:scale-95 hover:border-slate-600">
                                     <img src="https://i.postimg.cc/Hk1pN2VS/20260805-174301.png" class="w-8 h-8 object-contain">
                                     <span class="font-black text-white text-xs">ንግድ ባንክ (CBE)</span>
@@ -371,7 +423,6 @@
                             </div>
                         </div>
 
-                        <!-- Dynamic Bank / Wallet Account Card -->
                         <div class="space-y-2 text-xs">
                             <div class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800">
                                 <span class="text-slate-400">የክፍያ ዘዴ (Method)</span>
@@ -397,7 +448,6 @@
                             </div>
                         </div>
 
-                        <!-- QR for Telebirr / Instructions for CBE -->
                         <div id="checkoutQrContainer" class="bg-black p-3 rounded-2xl border border-slate-800 flex flex-col items-center justify-center space-y-1.5">
                             <img id="checkoutQrImg" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=0996910607&bgcolor=000000&color=ffffff" alt="Payment QR" class="w-32 h-32 rounded-xl border border-slate-800 p-1">
                             <span id="checkoutQrText" class="text-[9px] text-slate-400 font-bold">በቴሌብር መተግበሪያ Scan አድርገው ይክፈሉ</span>
@@ -441,7 +491,7 @@
                             <label id="verifyInputLabel" class="text-[11px] font-black text-slate-300">
                                 የግብይት ቁጥር (Ref ቁጥር) ወይም ሙሉ SMS ያስገቡ፦
                             </label>
-                            <textarea id="checkoutVerifyInput" oninput="autoExtractRefAndAmount()" rows="5" placeholder="የደረሰዎት የክፍያ መልእክት (ሙሉውን SMS) ወይም የግብይት ቁጥር (ለምሳሌ DJ... ወይም FT...) እዚህ ጋር Paste ያድርጉ" class="w-full text-xs p-3 rounded-2xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-yellow-500 font-mono leading-relaxed"></textarea>
+                            <textarea id="checkoutVerifyInput" oninput="autoExtractRefAndAmount()" rows="5" placeholder="የደረሰዎት የክፍያ መልእክት (ሙሉውን SMS) ወይም የግብይት ቁጥር (ለምሳሌ DJ...፣ DK... ወይም FT...) እዚህ ጋር Paste ያድርጉ" class="w-full text-xs p-3 rounded-2xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-yellow-500 font-mono leading-relaxed"></textarea>
                             <p class="text-[10px] text-slate-400 italic">ጠቃሚ ምክር፡ ከቴሌብር ወይም ከባንክ የደረሰዎትን ሙሉውን SMS እዚህ ኮፒ አድርገው ቢያስገቡ በቀላሉ ይረጋገጣል።</p>
                         </div>
 
@@ -470,7 +520,6 @@
                     <span>ገንዘብ ለማውጣት ቢያንስ 1 ጊዜ <b>50 ETB</b> ተቀማጭ ማድረግ ግዴታ ነው። ማውጣት የሚቻለው ከ <b>ዋና ሒሳብዎ</b> ብቻ ነው።</span>
                 </div>
 
-                <!-- Withdraw Method Selection -->
                 <div class="space-y-1">
                     <label class="text-[10px] font-bold text-slate-400">የማውጫ መንገድ ይምረጡ</label>
                     <div class="grid grid-cols-2 gap-2">
@@ -493,7 +542,7 @@
                     </div>
                 </div>
 
-                <input id="withAccount" type="text" placeholder="የቴሌብር ስልክ ወይም የ CBE አካውንት ቁጥር" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
+                <input id="withAccount" type="text" placeholder="የቴሌብር ስልክ ቁጥር (09...)" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
                 <input id="withName" type="text" placeholder="ሙሉ ስም (በአካውንቱ የተመዘገበ)" class="w-full text-xs font-bold p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none">
                 
                 <button onclick="submitWithdraw()" id="btnSubmitWithdraw" class="w-full bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-xl font-black text-xs shadow-md transition">
@@ -606,7 +655,7 @@
                 </div>
             </div>
 
-            <!-- Audio Toggles -->
+            <!-- Settings Audio Toggles -->
             <div class="glass-box p-3.5 rounded-3xl space-y-2.5 border border-slate-800">
                 <h3 class="font-black text-xs text-white flex items-center gap-2">
                     <i class="fa-solid fa-sliders text-blue-400"></i> የድምጽ ቅንብሮች
@@ -616,17 +665,8 @@
                     <div>
                         <p class="font-bold text-xs text-white">የጀርባ ሙዚቃ (Lobby BG Music)</p>
                     </div>
-                    <button onclick="toggleBgMusic()" id="btnBgMusicToggle" class="px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30">
-                        በርቷል (ON)
-                    </button>
-                </div>
-
-                <div class="flex justify-between items-center p-2.5 bg-slate-950 rounded-xl border border-slate-800">
-                    <div>
-                        <p class="font-bold text-xs text-white">የስክሪን ንክኪ ድምጽ (Touch Sounds)</p>
-                    </div>
-                    <button onclick="toggleTouchSound()" id="btnTouchToggle" class="px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30">
-                        በርቷል (ON)
+                    <button onclick="toggleBgMusic()" id="btnSettingsBgMusic" class="px-3 py-1 rounded-lg font-black text-xs transition">
+                        --
                     </button>
                 </div>
 
@@ -634,8 +674,8 @@
                     <div>
                         <p class="font-bold text-xs text-white">የቁጥር ጥሪ ድምጽ (Amharic Caller)</p>
                     </div>
-                    <button onclick="toggleVoiceCaller()" id="btnVoiceToggle" class="px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30">
-                        በርቷል (ON)
+                    <button onclick="toggleVoiceCaller()" id="btnSettingsCaller" class="px-3 py-1 rounded-lg font-black text-xs transition">
+                        --
                     </button>
                 </div>
             </div>
@@ -722,13 +762,17 @@
         function toggleRulesModal() {
             document.getElementById('rulesModal').classList.toggle('hidden');
         }
+
+        function toggleQuickSoundModal() {
+            document.getElementById('quickSoundModal').classList.toggle('hidden');
+        }
     </script>
 
-    <!-- AUDIO ENGINE -->
+    <!-- ================= 🔊 PERSISTENT AUDIO ENGINE (RELOAD RESISTANT & NO TOUCH SOUND) ================= -->
     <script>
-        let bgMusicEnabled = true;
-        let touchSoundEnabled = true;
-        let voiceCallerEnabled = true;
+        // Read saved settings or default to true
+        let bgMusicEnabled = localStorage.getItem('dash_bg_music') !== 'false';
+        let voiceCallerEnabled = localStorage.getItem('dash_voice_caller') !== 'false';
 
         const bgSelectionAudio = new Audio('audio/30sec_first.mp3');
         bgSelectionAudio.loop = true;
@@ -737,6 +781,50 @@
         const bgPlayingAudio = new Audio('audio/150sec_second.mp3');
         bgPlayingAudio.loop = true;
         bgPlayingAudio.volume = 0.15;
+
+        function updateSoundUI() {
+            // Header icon
+            const headerIcon = document.getElementById('headerSoundIcon');
+            const isAnyMuted = (!bgMusicEnabled && !voiceCallerEnabled);
+            if (headerIcon) {
+                headerIcon.className = isAnyMuted ? "fa-solid fa-volume-xmark text-red-400" : "fa-solid fa-volume-high text-yellow-400";
+            }
+
+            // Quick modal buttons
+            const qBgBtn = document.getElementById('btnQuickBgMusic');
+            if (qBgBtn) {
+                qBgBtn.className = bgMusicEnabled 
+                    ? "px-3 py-1 rounded-xl font-black text-[11px] bg-green-500/20 text-green-400 border border-green-500/40" 
+                    : "px-3 py-1 rounded-xl font-black text-[11px] bg-red-500/20 text-red-400 border border-red-500/40";
+                qBgBtn.innerText = bgMusicEnabled ? "በርቷል (ON)" : "ጠፍቷል (OFF)";
+            }
+
+            const qCallBtn = document.getElementById('btnQuickCaller');
+            if (qCallBtn) {
+                qCallBtn.className = voiceCallerEnabled 
+                    ? "px-3 py-1 rounded-xl font-black text-[11px] bg-green-500/20 text-green-400 border border-green-500/40" 
+                    : "px-3 py-1 rounded-xl font-black text-[11px] bg-red-500/20 text-red-400 border border-red-500/40";
+                qCallBtn.innerText = voiceCallerEnabled ? "በርቷል (ON)" : "ጠፍቷል (OFF)";
+            }
+
+            // Settings buttons
+            const sBgBtn = document.getElementById('btnSettingsBgMusic');
+            if (sBgBtn) {
+                sBgBtn.className = bgMusicEnabled 
+                    ? "px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30" 
+                    : "px-3 py-1 rounded-lg font-black text-xs bg-red-500/20 text-red-400 border border-red-500/30";
+                sBgBtn.innerText = bgMusicEnabled ? "በርቷል (ON)" : "ጠፍቷል (OFF)";
+            }
+
+            const sCallBtn = document.getElementById('btnSettingsCaller');
+            if (sCallBtn) {
+                sCallBtn.className = voiceCallerEnabled 
+                    ? "px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30" 
+                    : "px-3 py-1 rounded-lg font-black text-xs bg-red-500/20 text-red-400 border border-red-500/30";
+                sCallBtn.innerText = voiceCallerEnabled ? "በርቷል (ON)" : "ጠፍቷል (OFF)";
+            }
+        }
+        updateSoundUI();
 
         function unlockAudio() {
             if (bgMusicEnabled && bgSelectionAudio.paused) {
@@ -750,55 +838,22 @@
 
         function toggleBgMusic() {
             bgMusicEnabled = !bgMusicEnabled;
-            const btn = document.getElementById('btnBgMusicToggle');
-            if (bgMusicEnabled) {
-                btn.className = "px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30";
-                btn.innerText = "በርቷል (ON)";
-                showToast("የጀርባ ሙዚቃ በርቷል", "success");
-            } else {
+            localStorage.setItem('dash_bg_music', bgMusicEnabled ? 'true' : 'false');
+            if (!bgMusicEnabled) {
                 bgSelectionAudio.pause();
                 bgPlayingAudio.pause();
-                btn.className = "px-3 py-1 rounded-lg font-black text-xs bg-red-500/20 text-red-400 border border-red-500/30";
-                btn.innerText = "ጠፍቷል (OFF)";
-                showToast("የጀርባ ሙዚቃ ጠፍቷል", "info");
+                showToast("የጀርባ ሙዚቃ ጠፍቷል (Muted)", "info");
+            } else {
+                showToast("የጀርባ ሙዚቃ በርቷል", "success");
             }
-        }
-
-        function toggleTouchSound() {
-            touchSoundEnabled = !touchSoundEnabled;
-            const btn = document.getElementById('btnTouchToggle');
-            btn.className = touchSoundEnabled 
-                ? "px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30"
-                : "px-3 py-1 rounded-lg font-black text-xs bg-red-500/20 text-red-400 border border-red-500/30";
-            btn.innerText = touchSoundEnabled ? "በርቷል (ON)" : "ጠፍቷል (OFF)";
-            showToast(`የንክኪ ድምጽ ${touchSoundEnabled ? 'በርቷል' : 'ጠፍቷል'}`, "info");
+            updateSoundUI();
         }
 
         function toggleVoiceCaller() {
             voiceCallerEnabled = !voiceCallerEnabled;
-            const btn = document.getElementById('btnVoiceToggle');
-            btn.className = voiceCallerEnabled 
-                ? "px-3 py-1 rounded-lg font-black text-xs bg-green-500/20 text-green-400 border border-green-500/30"
-                : "px-3 py-1 rounded-lg font-black text-xs bg-red-500/20 text-red-400 border border-red-500/30";
-            btn.innerText = voiceCallerEnabled ? "በርቷል (ON)" : "ጠፍቷል (OFF)";
-            showToast(`የቁጥር ጥሪ ድምጽ ${voiceCallerEnabled ? 'በርቷል' : 'ጠፍቷል'}`, "info");
-        }
-
-        function playTouchBeep() {
-            if (!touchSoundEnabled) return;
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(600, ctx.currentTime);
-                gain.gain.setValueAtTime(0.08, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.08);
-            } catch (e) {}
+            localStorage.setItem('dash_voice_caller', voiceCallerEnabled ? 'true' : 'false');
+            showToast(`የቁጥር ጥሪ ${voiceCallerEnabled ? 'በርቷል' : 'ጠፍቷል (Muted)'}`, voiceCallerEnabled ? "success" : "info");
+            updateSoundUI();
         }
 
         function getBingoLetter(num) {
@@ -813,7 +868,8 @@
             if (!voiceCallerEnabled) return;
             const letter = getBingoLetter(num);
             const formattedNum = num < 10 ? `0${num}` : `${num}`;
-            const audio = new Audio(`audio/${formattedNum}_${letter}.mp3`);
+            const audioFileName = `${formattedNum}_${letter}.mp3`;
+            const audio = new Audio(`audio/${audioFileName}`);
             audio.volume = 1.0;
             audio.play().catch(() => {});
         }
@@ -824,7 +880,6 @@
         const FAST_KENO_URL = "https://hulubetsupport.github.io/Keno-fast/";
 
         function openKenoGame() {
-            try { if (typeof playTouchBeep === 'function') playTouchBeep(); } catch(e) {}
             try {
                 if (typeof bgSelectionAudio !== 'undefined') bgSelectionAudio.pause();
                 if (typeof bgPlayingAudio !== 'undefined') bgPlayingAudio.pause();
@@ -857,7 +912,6 @@
         }
 
         function closeKenoGame() {
-            try { if (typeof playTouchBeep === 'function') playTouchBeep(); } catch(e) {}
             const modal = document.getElementById('kenoModalContainer');
             if (modal) modal.classList.add('hidden');
 
@@ -900,9 +954,10 @@
         });
     </script>
 
-    <!-- CLIENT CORE ENGINE & PAYMENT SWITCHER -->
+    <!-- CLIENT CORE ENGINE -->
     <script>
-        const BACKEND_URL = window.location.origin;
+        // ⚡ ቋሚው Render Backend URL (ግንኙነት እንዳይቋረጥ)
+        const BACKEND_URL = "https://dashserver-wyol.onrender.com";
 
         const tg = window.Telegram?.WebApp;
         if (tg) tg.expand();
@@ -916,7 +971,7 @@
         document.getElementById('refLinkInput').value = refLink;
 
         function shareReferralToTelegram() {
-            const shareText = encodeURIComponent(`⚡ Dash Bingo እና Fast Keno ላይ አሁኑኑ ተቀላቀሉኝና 20 ETB ነፃ ስጦታ ይውሰዱ! 👇\n${refLink}`);
+            const shareText = encodeURIComponent(`⚡ Dash Bingo እና Fast Keno ላይ አሁኑኑ ተቀላቀሉኝና ይጫወቱ! 👇\n${refLink}`);
             window.open(`https://t.me/share/url?url=${refLink}&text=${shareText}`, '_blank');
         }
 
@@ -929,7 +984,7 @@
         let userData = { balance: 0, real_balance: 0, total_deposited: 0 };
         let myBetHistory = JSON.parse(localStorage.getItem(`bets_${user.id}`) || '[]');
 
-        // ================= 💳 PAYMENT DETAILS STATE ================= //
+        // ================= 💳 PAYMENT DETAILS STATE (TELEBIRR & CBE) ================= //
         const PAYMENT_METHODS = {
             TELEBIRR: {
                 name: "ቴሌብር (Telebirr)",
@@ -937,8 +992,7 @@
                 owner: "Aymen",
                 label: "የቴሌብር ስልክ ቁጥር",
                 logo: "https://i.postimg.cc/1zH5wqRj/20260805-174415.png",
-                qr: "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=0996910607&bgcolor=000000&color=ffffff",
-                placeholder: "የቴሌብር ግብይት ቁጥር (DJ...)"
+                qr: "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=0996910607&bgcolor=000000&color=ffffff"
             },
             CBE: {
                 name: "የኢትዮጵያ ንግድ ባንክ (CBE)",
@@ -946,8 +1000,7 @@
                 owner: "Aymen",
                 label: "የ CBE ባንክ ሂሳብ ቁጥር",
                 logo: "https://i.postimg.cc/Hk1pN2VS/20260805-174301.png",
-                qr: null,
-                placeholder: "የ CBE ባንክ ግብይት ቁጥር (FT...)"
+                qr: null
             }
         };
 
@@ -958,7 +1011,6 @@
         let checkoutTimerInterval = null;
 
         function selectPaymentMethod(method) {
-            playTouchBeep();
             selectedDepositMethod = method;
 
             const tCard = document.getElementById('methodCardTelebirr');
@@ -981,7 +1033,6 @@
         }
 
         function setWithdrawMethod(method) {
-            playTouchBeep();
             selectedWithdrawMethod = method;
             const btnT = document.getElementById('btnWithTelebirr');
             const btnC = document.getElementById('btnWithCbe');
@@ -998,7 +1049,6 @@
         }
 
         function copyCurrentAccount() {
-            playTouchBeep();
             const config = PAYMENT_METHODS[selectedDepositMethod];
             copyToClipboard(config.account);
         }
@@ -1034,7 +1084,6 @@
         syncUser();
 
         function switchTab(tabId) {
-            playTouchBeep();
             ['game', 'wallet', 'leaderboard', 'profile', 'settings'].forEach(t => {
                 const el = document.getElementById(`tab-${t}`);
                 if (el) el.classList.add('hidden');
@@ -1059,7 +1108,6 @@
         }
 
         function switchWalletView(view) {
-            playTouchBeep();
             if (view === 'deposit') {
                 document.getElementById('walletDepositView').classList.remove('hidden');
                 document.getElementById('walletWithdrawView').classList.add('hidden');
@@ -1074,7 +1122,6 @@
         }
 
         function selectQuickChip(amount) {
-            playTouchBeep();
             document.getElementById('depositStep1Amount').value = amount;
             validateStep1Amount();
 
@@ -1090,7 +1137,6 @@
         }
 
         function goToStep2() {
-            playTouchBeep();
             validateStep1Amount();
             if (isNaN(checkoutAmount) || checkoutAmount < 50 || checkoutAmount > 10000) {
                 return showToast("እባክዎ በደረጃ 1 ላይ ከ 50 እስከ 10,000 ETB መካከል መጠን ያስገቡ!", "error");
@@ -1125,7 +1171,6 @@
         }
 
         function goToStep1() {
-            playTouchBeep();
             stopCheckoutTimer();
             document.getElementById('checkoutStep1').classList.remove('hidden');
             document.getElementById('checkoutStep2').classList.add('hidden');
@@ -1133,14 +1178,12 @@
         }
 
         function goToStep3() {
-            playTouchBeep();
             document.getElementById('checkoutStep1').classList.add('hidden');
             document.getElementById('checkoutStep2').classList.add('hidden');
             document.getElementById('checkoutStep3').classList.remove('hidden');
         }
 
         function cancelCheckout() {
-            playTouchBeep();
             stopCheckoutTimer();
             document.getElementById('depositStep1Amount').value = '';
             document.getElementById('checkoutVerifyInput').value = '';
@@ -1179,7 +1222,7 @@
             document.getElementById('checkoutTimerDisplay').innerText = str;
         }
 
-        // Auto extraction for both CBE (FT...) and Telebirr (DJ...)
+        // 🔍 Auto-extraction for CBE (FT...) and Telebirr (DJ / DK / DL...)
         function autoExtractRefAndAmount() {
             const val = document.getElementById('checkoutVerifyInput').value.trim();
             const badge = document.getElementById('checkoutExtractedBadge');
@@ -1196,8 +1239,9 @@
                 const cbeMatch = val.match(/\b(FT[A-Z0-9]{8,14})\b/i) || val.match(/(?:Txn\s*ID|Txn\s*Ref|Ref|ቁጥር)\s*[:፡-]?\s*([A-Z0-9]{8,16})/i);
                 if (cbeMatch) foundRef = cbeMatch[1].toUpperCase();
             } else {
-                const djMatch = val.match(/\b(DJ[A-Z0-9]{8,12})\b/i);
-                if (djMatch) foundRef = djMatch[1].toUpperCase();
+                // DJ, DK, DL
+                const tbMatch = val.match(/\b(D[A-Z][A-Z0-9]{8,12})\b/i);
+                if (tbMatch) foundRef = tbMatch[1].toUpperCase();
             }
 
             if (!foundRef) {
@@ -1218,7 +1262,6 @@
         }
 
         async function submitFinalVerification() {
-            playTouchBeep();
             const rawInput = document.getElementById('checkoutVerifyInput').value.trim();
 
             if (!rawInput) {
@@ -1282,7 +1325,6 @@
         }
 
         async function submitWithdraw() {
-            playTouchBeep();
             const amount = parseFloat(document.getElementById('withAmount').value);
             const accountNumber = document.getElementById('withAccount').value.trim();
             const accountName = document.getElementById('withName').value.trim();
@@ -1375,12 +1417,10 @@
         initMasterBingoBoard();
 
         function buyCard(index) {
-            playTouchBeep();
             socket.emit('buy_card', { telegramId: user.id, cardIndex: index });
         }
 
         function buyCustomCard() {
-            playTouchBeep();
             const inputVal = document.getElementById('directCardInput').value;
             const cardNum = parseInt(inputVal);
             if (!cardNum || cardNum < 1 || cardNum > 999) {
@@ -1391,7 +1431,6 @@
         }
 
         function buyRandomCard() {
-            playTouchBeep();
             const rand = Math.floor(Math.random() * 999) + 1;
             buyCard(rand);
         }
@@ -1495,14 +1534,12 @@
         });
 
         function prevCard() {
-            playTouchBeep();
             if (myCards.length <= 1) return;
             currentCardViewIndex = (currentCardViewIndex - 1 + myCards.length) % myCards.length;
             renderCurrentActiveCard();
         }
 
         function nextCard() {
-            playTouchBeep();
             if (myCards.length <= 1) return;
             currentCardViewIndex = (currentCardViewIndex + 1) % myCards.length;
             renderCurrentActiveCard();
@@ -1705,7 +1742,6 @@
         }
 
         function switchHistorySubTab(tab) {
-            playTouchBeep();
             if (tab === 'txs') {
                 document.getElementById('historyListTxs').classList.remove('hidden');
                 document.getElementById('historyListBets').classList.add('hidden');
@@ -1775,3 +1811,4 @@
     </script>
 </body>
 </html>
+
